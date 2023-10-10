@@ -21,10 +21,10 @@ if [ "${MOVIEPILOT_AUTO_UPDATE_DEV}" = "true" ]; then
         if [ $? -eq 0 ]; then
             echo " Dependencies installed successfully"
             #  Check for the latest version of the front-end
-            frontend_version=$(curl ${CURL_OPTIONS} "https://api.github.com/repos/AlexanderHel/MoviePilotEngrisk-Frontend/releases/latest" | jq -r .tag_name)
+            frontend_version=$(curl ${CURL_OPTIONS} "https://api.github.com/repos/AlexanderHel/MoviePilot-Frontend-Engrisk/releases/latest" | jq -r .tag_name)
             if [[ "${frontend_version}" == *v* ]]; then
                 echo " Downloading the front-end program ${frontend_version}..."
-                curl ${CURL_OPTIONS} "https://github.com/AlexanderHel/MoviePilotEngrisk-Frontend/releases/download/${frontend_version}/dist.zip" | busybox unzip -d /tmp -
+                curl ${CURL_OPTIONS} "https://github.com/AlexanderHel/MoviePilot-Frontend-Engrisk/releases/download/${frontend_version}/dist.zip" | busybox unzip -d /tmp -
                 if [ $? -eq 0 ]; then
                     echo " Front-end program downloaded successfully"
                     rm -rf /app
@@ -66,10 +66,10 @@ else
                     if [ $? -eq 0 ]; then
                         echo " Dependencies installed successfully"
                         #  Check for the latest version of the front-end
-                        frontend_version=$(curl ${CURL_OPTIONS} "https://api.github.com/repos/AlexanderHel/MoviePilotEngrisk-Frontend/releases/latest" | jq -r .tag_name)
+                        frontend_version=$(curl ${CURL_OPTIONS} "https://api.github.com/repos/AlexanderHel/MoviePilot-Frontend-Engrisk/releases/latest" | jq -r .tag_name)
                         if [[ "${frontend_version}" == *v* ]]; then
                             echo " Downloading the front-end program ${frontend_version}..."
-                            curl ${CURL_OPTIONS} "https://github.com/AlexanderHel/MoviePilotEngrisk-Frontend/releases/download/${frontend_version}/dist.zip" | busybox unzip -d /tmp -
+                            curl ${CURL_OPTIONS} "https://github.com/AlexanderHel/MoviePilot-Frontend-Engrisk/releases/download/${frontend_version}/dist.zip" | busybox unzip -d /tmp -
                             if [ $? -eq 0 ]; then
                                 echo " Front-end program downloaded successfully"
                                 rm -rf /app
