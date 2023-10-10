@@ -23,7 +23,7 @@ class ObjectUtils:
     @staticmethod
     def arguments(func: Callable) -> int:
         """
-        返回函数的参数个数
+        Returns the number of arguments to the function
         """
         signature = inspect.signature(func)
         parameters = signature.parameters
@@ -33,20 +33,20 @@ class ObjectUtils:
     @staticmethod
     def check_method(func: FunctionType) -> bool:
         """
-        检查函数是否已实现
+        Check if the function has been implemented
         """
         return func.__code__.co_code not in [b'd\x01S\x00', b'\x97\x00d\x00S\x00']
 
     @staticmethod
     def check_signature(func: FunctionType, *args) -> bool:
         """
-        检查输出与函数的参数类型是否一致
+        Check that the output matches the type of the function's arguments
         """
-        # 获取函数的参数信息
+        #  Getting information about a function's arguments
         signature = inspect.signature(func)
         parameters = signature.parameters
 
-        # 检查输入参数个数和类型是否一致
+        #  Check the number and type of input parameters for consistency
         if len(args) != len(parameters):
             return False
         for arg, param in zip(args, parameters.values()):

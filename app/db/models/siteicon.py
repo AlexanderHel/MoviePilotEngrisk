@@ -6,16 +6,16 @@ from app.db.models import Base
 
 class SiteIcon(Base):
     """
-    站点图标表
+    Site icon table
     """
     id = Column(Integer, Sequence('id'), primary_key=True, index=True)
-    # 站点名称
+    #  Site name
     name = Column(String, nullable=False)
-    # 域名Key
+    #  Domain nameKey
     domain = Column(String, index=True)
-    # 图标地址
+    #  Icon address
     url = Column(String, nullable=False)
-    # 图标Base64
+    #  Icon (computing)Base64
     base64 = Column(String)
 
     @staticmethod

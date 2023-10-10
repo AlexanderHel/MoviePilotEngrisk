@@ -16,20 +16,20 @@ from app.utils.singleton import Singleton
 
 class DoubanApi(metaclass=Singleton):
     _urls = {
-        # 搜索类
-        # sort=U:近期热门 T:标记最多 S:评分最高 R:最新上映
+        #  Search class
+        # sort=U: Recent hits T: Maximum number of markers S: Highest rated R: Latest releases
         # q=search_word&start=0&count=20&sort=U
-        # 聚合搜索
+        #  Polymerization search
         "search": "/search/weixin",
         "search_agg": "/search",
 
-        # 电影探索
-        # sort=U:综合排序 T:近期热度 S:高分优先 R:首播时间
-        # tags='日本,动画,2022'&start=0&count=20&sort=U
+        #  Movie exploration
+        # sort=U: Overall ranking T: Recent heat S: Higher scores are preferred. R: Premiere time
+        # tags=' Japanese, Anime,2022'&start=0&count=20&sort=U
         "movie_recommend": "/movie/recommend",
-        # 电视剧探索
+        #  Drama quest
         "tv_recommend": "/tv/recommend",
-        # 搜索
+        #  Look for sth.
         "movie_tag": "/movie/tag",
         "tv_tag": "/tv/tag",
         # q=search_word&start=0&count=20
@@ -38,59 +38,59 @@ class DoubanApi(metaclass=Singleton):
         "book_search": "/search/book",
         "group_search": "/search/group",
 
-        # 各类主题合集
+        #  Various theme collections
         # start=0&count=20
-        # 正在上映
+        #  It's in theaters now.
         "movie_showing": "/subject_collection/movie_showing/items",
-        # 热门电影
+        #  Hot movies
         "movie_hot_gaia": "/subject_collection/movie_hot_gaia/items",
-        # 即将上映
+        #  Coming soon.
         "movie_soon": "/subject_collection/movie_soon/items",
         # TOP250
         "movie_top250": "/subject_collection/movie_top250/items",
-        # 高分经典科幻片榜
+        #  Highly rated classic sci-fi movie list
         "movie_scifi": "/subject_collection/movie_scifi/items",
-        # 高分经典喜剧片榜
+        #  List of highly rated classic comedy movies
         "movie_comedy": "/subject_collection/movie_comedy/items",
-        # 高分经典动作片榜
+        #  Top rated classic action movies
         "movie_action": "/subject_collection/movie_action/items",
-        # 高分经典爱情片榜
+        #  Top rated classic romance movies
         "movie_love": "/subject_collection/movie_love/items",
 
-        # 热门剧集
+        #  Hot episodes
         "tv_hot": "/subject_collection/tv_hot/items",
-        # 国产剧
+        #  Nationalized drama
         "tv_domestic": "/subject_collection/tv_domestic/items",
-        # 美剧
+        #  American theater
         "tv_american": "/subject_collection/tv_american/items",
-        # 本剧
+        #  The present play
         "tv_japanese": "/subject_collection/tv_japanese/items",
-        # 韩剧
+        #  Korean drama
         "tv_korean": "/subject_collection/tv_korean/items",
-        # 动画
+        #  Anime
         "tv_animation": "/subject_collection/tv_animation/items",
-        # 综艺
+        #  Comprehensive arts and entertainment
         "tv_variety_show": "/subject_collection/tv_variety_show/items",
-        # 华语口碑周榜
+        #  Chinese word of mouth weekly ranking
         "tv_chinese_best_weekly": "/subject_collection/tv_chinese_best_weekly/items",
-        # 全球口碑周榜
+        #  Global word of mouth weekly ranking
         "tv_global_best_weekly": "/subject_collection/tv_global_best_weekly/items",
 
-        # 执门综艺
+        #  Deacon's variety
         "show_hot": "/subject_collection/show_hot/items",
-        # 国内综艺
+        #  Domestic variety
         "show_domestic": "/subject_collection/show_domestic/items",
-        # 国外综艺
+        #  Foreign variety
         "show_foreign": "/subject_collection/show_foreign/items",
 
         "book_bestseller": "/subject_collection/book_bestseller/items",
         "book_top250": "/subject_collection/book_top250/items",
-        # 虚构类热门榜
+        #  Fiction hot list
         "book_fiction_hot_weekly": "/subject_collection/book_fiction_hot_weekly/items",
-        # 非虚构类热门
+        #  Nonfiction favorites
         "book_nonfiction_hot_weekly": "/subject_collection/book_nonfiction_hot_weekly/items",
 
-        # 音乐
+        #  Concert
         "music_single": "/subject_collection/music_single/items",
 
         # rank list
@@ -296,19 +296,19 @@ class DoubanApi(metaclass=Singleton):
 
     def doulist_detail(self, subject_id):
         """
-        豆列详情
-        :param subject_id: 豆列id
+        Bean column details
+        :param subject_id:  Bean curdid
         """
         return self.__invoke(self._urls["doulist"] + subject_id)
 
     def doulist_items(self, subject_id, start=0, count=20,
                       ts=datetime.strftime(datetime.now(), '%Y%m%d')):
         """
-        豆列列表
-        :param subject_id: 豆列id
-        :param start: 开始
-        :param count: 数量
-        :param ts: 时间戳
+        Bean listing
+        :param subject_id:  Bean curdid
+        :param start:  Commencement
+        :param count:  Quantities
+        :param ts:  Timestamp
         """
         return self.__invoke(self._urls["doulist_items"] % subject_id,
                              start=start, count=count, _ts=ts)

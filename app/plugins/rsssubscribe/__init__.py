@@ -23,28 +23,28 @@ lock = Lock()
 
 
 class RssSubscribe(_PluginBase):
-    # 插件名称
-    plugin_name = "自定义订阅"
-    # 插件描述
-    plugin_desc = "定时刷新RSS报文，识别内容后添加订阅或直接下载。"
-    # 插件图标
+    #  Plug-in name
+    plugin_name = " Custom subscriptions"
+    #  Plugin description
+    plugin_desc = " Timed refreshRSS Telegram， Add a subscription or download directly after recognizing the content。"
+    #  Plug-in icons
     plugin_icon = "rss.png"
-    # 主题色
+    #  Theme color
     plugin_color = "#F78421"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "jxxghp"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/jxxghp"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "rsssubscribe_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 19
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 2
 
-    # 私有变量
+    #  Private variable
     _scheduler: Optional[BackgroundScheduler] = None
     _cache_path: Optional[Path] = None
     rsshelper = None
@@ -52,7 +52,7 @@ class RssSubscribe(_PluginBase):
     searchchain = None
     subscribechain = None
 
-    # 配置属性
+    #  Configuration properties
     _enabled: bool = False
     _cron: str = ""
     _notify: bool = False
@@ -73,10 +73,10 @@ class RssSubscribe(_PluginBase):
         self.searchchain = SearchChain(self.db)
         self.subscribechain = SubscribeChain(self.db)
 
-        # 停止现有任务
+        #  Discontinuation of existing mandates
         self.stop_service()
 
-        # 配置
+        #  Configure
         if config:
             self._enabled = config.get("enabled")
             self._cron = config.get("cron")
@@ -98,32 +98,32 @@ class RssSubscribe(_PluginBase):
                 try:
                     self._scheduler.add_job(func=self.check,
                                             trigger=CronTrigger.from_crontab(self._cron),
-                                            name="RSS订阅")
+                                            name="RSS Subscribe to")
                 except Exception as err:
-                    logger.error(f"定时任务配置错误：{err}")
-                    # 推送实时消息
-                    self.systemmessage.put(f"执行周期配置错误：{err}")
+                    logger.error(f" Timed task configuration error：{err}")
+                    #  Push real-time messages
+                    self.systemmessage.put(f" Execution cycle misconfiguration：{err}")
             else:
-                self._scheduler.add_job(self.check, "interval", minutes=30, name="RSS订阅")
+                self._scheduler.add_job(self.check, "interval", minutes=30, name="RSS Subscribe to")
 
             if self._onlyonce:
-                logger.info(f"RSS订阅服务启动，立即运行一次")
+                logger.info(f"RSS Subscription service startup， Run one immediately")
                 self._scheduler.add_job(func=self.check, trigger='date',
                                         run_date=datetime.datetime.now(
                                             tz=pytz.timezone(settings.TZ)) + datetime.timedelta(seconds=3)
                                         )
 
             if self._onlyonce or self._clear:
-                # 关闭一次性开关
+                #  Turn off the disposable switch
                 self._onlyonce = False
-                # 记录清理缓存设置
+                #  Record clear cache settings
                 self._clearflag = self._clear
-                # 关闭清理缓存开关
+                #  Turn off the clear cache switch
                 self._clear = False
-                # 保存设置
+                #  Save settings
                 self.__update_config()
 
-            # 启动任务
+            #  Initiate tasks
             if self._scheduler.get_jobs():
                 self._scheduler.print_jobs()
                 self._scheduler.start()
@@ -134,26 +134,26 @@ class RssSubscribe(_PluginBase):
     @staticmethod
     def get_command() -> List[Dict[str, Any]]:
         """
-        定义远程控制命令
-        :return: 命令关键字、事件、描述、附带数据
+        Defining remote control commands
+        :return:  Command keywords、 Event、 Descriptive、 Accompanying data
         """
         pass
 
     def get_api(self) -> List[Dict[str, Any]]:
         """
-        获取插件API
+        Get pluginsAPI
         [{
             "path": "/xx",
             "endpoint": self.xxx,
             "methods": ["GET", "POST"],
-            "summary": "API说明"
+            "summary": "API Clarification"
         }]
         """
         pass
 
     def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
         """
-        拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
+        Assembly plugin configuration page， Two pieces of data need to be returned：1、 Page configuration；2、 Data structure
         """
         return [
             {
@@ -173,7 +173,7 @@ class RssSubscribe(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'enabled',
-                                            'label': '启用插件',
+                                            'label': ' Enabling plug-ins',
                                         }
                                     }
                                 ]
@@ -189,7 +189,7 @@ class RssSubscribe(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'notify',
-                                            'label': '发送通知',
+                                            'label': ' Send notification',
                                         }
                                     }
                                 ]
@@ -205,7 +205,7 @@ class RssSubscribe(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'onlyonce',
-                                            'label': '立即运行一次',
+                                            'label': ' Run one immediately',
                                         }
                                     }
                                 ]
@@ -226,8 +226,8 @@ class RssSubscribe(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'cron',
-                                            'label': '执行周期',
-                                            'placeholder': '5位cron表达式，留空自动'
+                                            'label': ' Implementation period',
+                                            'placeholder': '5 Classifier for honorific peoplecron Displayed formula， Leave blank spaces in writing'
                                         }
                                     }
                                 ]
@@ -243,10 +243,10 @@ class RssSubscribe(_PluginBase):
                                         'component': 'VSelect',
                                         'props': {
                                             'model': 'action',
-                                            'label': '动作',
+                                            'label': ' Movements',
                                             'items': [
-                                                {'title': '订阅', 'value': 'subscribe'},
-                                                {'title': '下载', 'value': 'download'}
+                                                {'title': ' Subscribe to', 'value': 'subscribe'},
+                                                {'title': ' Downloading', 'value': 'download'}
                                             ]
                                         }
                                     }
@@ -267,9 +267,9 @@ class RssSubscribe(_PluginBase):
                                         'component': 'VTextarea',
                                         'props': {
                                             'model': 'address',
-                                            'label': 'RSS地址',
+                                            'label': 'RSS Address',
                                             'rows': 3,
-                                            'placeholder': '每行一个RSS地址'
+                                            'placeholder': ' One per lineRSS Address'
                                         }
                                     }
                                 ]
@@ -290,8 +290,8 @@ class RssSubscribe(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'include',
-                                            'label': '包含',
-                                            'placeholder': '支持正则表达式'
+                                            'label': ' Embody',
+                                            'placeholder': ' Regular expression support'
                                         }
                                     }
                                 ]
@@ -307,8 +307,8 @@ class RssSubscribe(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'exclude',
-                                            'label': '排除',
-                                            'placeholder': '支持正则表达式'
+                                            'label': ' Rule out',
+                                            'placeholder': ' Regular expression support'
                                         }
                                     }
                                 ]
@@ -329,8 +329,8 @@ class RssSubscribe(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'save_path',
-                                            'label': '保存目录',
-                                            'placeholder': '下载时有效，留空自动'
+                                            'label': ' Save directory',
+                                            'placeholder': ' Valid for download， Leave blank spaces in writing'
                                         }
                                     }
                                 ]
@@ -351,7 +351,7 @@ class RssSubscribe(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'proxy',
-                                            'label': '使用代理服务器',
+                                            'label': ' Using a proxy server',
                                         }
                                     }
                                 ]
@@ -366,7 +366,7 @@ class RssSubscribe(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'filter',
-                                            'label': '使用过滤规则',
+                                            'label': ' Using filter rules',
                                         }
                                     }
                                 ]
@@ -382,7 +382,7 @@ class RssSubscribe(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'clear',
-                                            'label': '清理历史记录',
+                                            'label': ' Clear history',
                                         }
                                     }
                                 ]
@@ -408,23 +408,23 @@ class RssSubscribe(_PluginBase):
 
     def get_page(self) -> List[dict]:
         """
-        拼装插件详情页面，需要返回页面配置，同时附带数据
+        Patchwork plug-in detail page， Need to return to page configuration， Also with data
         """
-        # 查询同步详情
+        #  Query synchronization details
         historys = self.get_data('history')
         if not historys:
             return [
                 {
                     'component': 'div',
-                    'text': '暂无数据',
+                    'text': ' No data available',
                     'props': {
                         'class': 'text-center',
                     }
                 }
             ]
-        # 数据按时间降序排序
+        #  Data is sorted in descending chronological order
         historys = sorted(historys, key=lambda x: x.get('time'), reverse=True)
-        # 拼装页面
+        #  Assembly page
         contents = []
         for history in historys:
             title = history.get("title")
@@ -472,14 +472,14 @@ class RssSubscribe(_PluginBase):
                                             'props': {
                                                 'class': 'pa-0 px-2'
                                             },
-                                            'text': f'类型：{mtype}'
+                                            'text': f' Typology：{mtype}'
                                         },
                                         {
                                             'component': 'VCardText',
                                             'props': {
                                                 'class': 'pa-0 px-2'
                                             },
-                                            'text': f'时间：{time_str}'
+                                            'text': f' Timing：{time_str}'
                                         }
                                     ]
                                 }
@@ -501,7 +501,7 @@ class RssSubscribe(_PluginBase):
 
     def stop_service(self):
         """
-        退出插件
+        Exit plugin
         """
         try:
             if self._scheduler:
@@ -510,11 +510,11 @@ class RssSubscribe(_PluginBase):
                     self._scheduler.shutdown()
                 self._scheduler = None
         except Exception as e:
-            logger.error("退出插件失败：%s" % str(e))
+            logger.error("Exit plugin失败：%s" % str(e))
 
     def __update_config(self):
         """
-        更新设置
+        Update settings
         """
         self.update_config({
             "enabled": self._enabled,
@@ -530,27 +530,27 @@ class RssSubscribe(_PluginBase):
 
     def check(self):
         """
-        通过用户RSS同步豆瓣想看数据
+        Via the userRSS Synchronized douban wants to see the data
         """
         if not self._address:
             return
-        # 读取历史记录
+        #  Read history
         if self._clearflag:
             history = []
         else:
             history: List[dict] = self.get_data('history') or []
         for url in self._address.split("\n"):
-            # 处理每一个RSS链接
+            #  Handling of eachRSS Link (on a website)
             if not url:
                 continue
-            logger.info(f"开始刷新RSS：{url} ...")
+            logger.info(f" Start refreshingRSS：{url} ...")
             results = self.rsshelper.parse(url, proxy=self._proxy)
             if not results:
-                logger.error(f"未获取到RSS数据：{url}")
+                logger.error(f" Not availableRSS Digital：{url}")
                 return
-            # 过滤规则
+            #  Filter rules
             filter_rule = self.systemconfig.get(SystemConfigKey.SubscribeFilterRules)
-            # 解析数据
+            #  Parsing data
             for result in results:
                 try:
                     title = result.get("title")
@@ -559,28 +559,28 @@ class RssSubscribe(_PluginBase):
                     link = result.get("link")
                     sise = result.get("sise")
                     pubdate: datetime.datetime = result.get("pubdate")
-                    # 检查是否处理过
+                    #  Check to see if it's been handled
                     if not title or title in [h.get("key") for h in history]:
                         continue
-                    # 检查规则
+                    #  Inspection rules
                     if self._include and not re.search(r"%s" % self._include,
                                                        f"{title} {description}", re.IGNORECASE):
-                        logger.info(f"{title} - {description} 不符合包含规则")
+                        logger.info(f"{title} - {description}  Failure to comply with inclusion rules")
                         continue
                     if self._exclude and re.search(r"%s" % self._exclude,
                                                    f"{title} {description}", re.IGNORECASE):
-                        logger.info(f"{title} - {description} 不符合排除规则")
+                        logger.info(f"{title} - {description}  Failure to meet the exclusionary rule")
                         continue
-                    # 识别媒体信息
+                    #  Identify media messages
                     meta = MetaInfo(title=title, subtitle=description)
                     if not meta.name:
-                        logger.warn(f"{title} 未识别到有效数据")
+                        logger.warn(f"{title}  No valid data recognized")
                         continue
                     mediainfo: MediaInfo = self.chain.recognize_media(meta=meta)
                     if not mediainfo:
-                        logger.warn(f'未识别到媒体信息，标题：{title}')
+                        logger.warn(f' No media messages recognized， Caption：{title}')
                         continue
-                    # 种子
+                    #  Torrent
                     torrentinfo = TorrentInfo(
                         title=title,
                         description=description,
@@ -589,7 +589,7 @@ class RssSubscribe(_PluginBase):
                         size=sise,
                         pubdate=pubdate.strftime("%Y-%m-%d %H:%M:%S") if pubdate else None,
                     )
-                    # 过滤种子
+                    #  Filtering seeds
                     if self._filter:
                         result = self.chain.filter_torrents(
                             rule_string=filter_rule,
@@ -597,12 +597,12 @@ class RssSubscribe(_PluginBase):
                             mediainfo=mediainfo
                         )
                         if not result:
-                            logger.info(f"{title} {description} 不匹配过滤规则")
+                            logger.info(f"{title} {description}  Mismatch filter rules")
                             continue
-                    # 查询缺失的媒体信息
+                    #  Querying missing media information
                     exist_flag, no_exists = self.downloadchain.get_no_exists_info(meta=meta, mediainfo=mediainfo)
                     if exist_flag:
-                        logger.info(f'{mediainfo.title_year} 媒体库中已存在')
+                        logger.info(f'{mediainfo.title_year}  Already exists in the media library')
                         continue
                     else:
                         if self._action == "download":
@@ -611,13 +611,13 @@ class RssSubscribe(_PluginBase):
                                     exist_info = no_exists.get(mediainfo.tmdb_id)
                                     season_info = exist_info.get(meta.begin_season or 1)
                                     if not season_info:
-                                        logger.info(f'{mediainfo.title_year} {meta.season} 己存在')
+                                        logger.info(f'{mediainfo.title_year} {meta.season}  Exist on one's own')
                                         continue
                                     if (season_info.episodes
                                             and not set(meta.episode_list).issubset(set(season_info.episodes))):
-                                        logger.info(f'{mediainfo.title_year} {meta.season_episode} 己存在')
+                                        logger.info(f'{mediainfo.title_year} {meta.season_episode}  Exist on one's own')
                                         continue
-                            # 添加下载
+                            #  Add download
                             result = self.downloadchain.download_single(
                                 context=Context(
                                     meta_info=meta,
@@ -627,23 +627,23 @@ class RssSubscribe(_PluginBase):
                                 save_path=self._save_path
                             )
                             if not result:
-                                logger.error(f'{title} 下载失败')
+                                logger.error(f'{title}  Failed to download')
                                 continue
                         else:
-                            # 检查是否在订阅中
+                            #  Check if the subscription is in
                             subflag = self.subscribechain.exists(mediainfo=mediainfo, meta=meta)
                             if subflag:
-                                logger.info(f'{mediainfo.title_year} {meta.season} 正在订阅中')
+                                logger.info(f'{mediainfo.title_year} {meta.season}  Subscription in progress')
                                 continue
-                            # 添加订阅
+                            #  Add subscription
                             self.subscribechain.add(title=mediainfo.title,
                                                     year=mediainfo.year,
                                                     mtype=mediainfo.type,
                                                     tmdbid=mediainfo.tmdb_id,
                                                     season=meta.begin_season,
                                                     exist_ok=True,
-                                                    username="RSS订阅")
-                    # 存储历史记录
+                                                    username="RSS Subscribe to")
+                    #  Storing history
                     history.append({
                         "title": f"{mediainfo.title} {meta.season}",
                         "key": f"{title}",
@@ -655,9 +655,9 @@ class RssSubscribe(_PluginBase):
                         "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     })
                 except Exception as err:
-                    logger.error(f'刷新RSS数据出错：{err}')
-            logger.info(f"RSS {url} 刷新完成")
-        # 保存历史记录
+                    logger.error(f' Refresh (computer window)RSS Data error：{err}')
+            logger.info(f"RSS {url}  Refresh complete.")
+        #  Save history
         self.save_data('history', history)
-        # 缓存只清理一次
+        #  Cache is only cleared once
         self._clearflag = False

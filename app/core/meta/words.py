@@ -16,53 +16,53 @@ class WordsMatcher(metaclass=Singleton):
 
     def prepare(self, title: str) -> Tuple[str, List[str]]:
         """
-        预处理标题，支持三种格式
-        1：屏蔽词
-        2：被替换词 => 替换词
-        3：前定位词 <> 后定位词 >> 偏移量（EP）
+        Preprocessing headings， Three formats are supported
+        1： Blocked word
+        2： Superseded word =>  Alternative word
+        3： Prepositioning words <>  Post locator >>  Offset（EP）
         """
         appley_words = []
-        # 读取自定义识别词
+        #  Read customized identifiers
         words: List[str] = self.systemconfig.get(SystemConfigKey.CustomIdentifiers) or []
         for word in words:
             if not word:
                 continue
             try:
                 if word.count(" => ") and word.count(" && ") and word.count(" >> ") and word.count(" <> "):
-                    # 替换词
+                    #  Alternative word
                     thc = str(re.findall(r'(.*?)\s*=>', word)[0]).strip()
-                    # 被替换词
+                    #  Superseded word
                     bthc = str(re.findall(r'=>\s*(.*?)\s*&&', word)[0]).strip()
-                    # 集偏移前字段
+                    #  Set pre-offset field
                     pyq = str(re.findall(r'&&\s*(.*?)\s*<>', word)[0]).strip()
-                    # 集偏移后字段
+                    #  Set post-offset fields
                     pyh = str(re.findall(r'<>(.*?)\s*>>', word)[0]).strip()
-                    # 集偏移
+                    #  Set offset
                     offsets = str(re.findall(r'>>\s*(.*?)$', word)[0]).strip()
-                    # 替换词
+                    #  Alternative word
                     title, message, state = self.__replace_regex(title, thc, bthc)
                     if state:
-                        # 替换词成功再进行集偏移
+                        #  Alternative word成功再进行集偏移
                         title, message, state = self.__episode_offset(title, pyq, pyh, offsets)
                 elif word.count(" => "):
-                    # 替换词
+                    #  Alternative word
                     strings = word.split(" => ")
                     title, message, state = self.__replace_regex(title, strings[0], strings[1])
                 elif word.count(" >> ") and word.count(" <> "):
-                    # 集偏移
+                    #  Set offset
                     strings = word.split(" <> ")
                     offsets = strings[1].split(" >> ")
                     strings[1] = offsets[0]
                     title, message, state = self.__episode_offset(title, strings[0], strings[1],
                                                                   offsets[1])
                 else:
-                    # 屏蔽词
+                    #  Blocked word
                     title, message, state = self.__replace_regex(title, word, "")
 
                 if state:
                     appley_words.append(word)
                 else:
-                    logger.debug(f"自定义识别词替换失败：{message}")
+                    logger.debug(f" Failure to replace customized identifiers：{message}")
             except Exception as err:
                 print(str(err))
 
@@ -71,7 +71,7 @@ class WordsMatcher(metaclass=Singleton):
     @staticmethod
     def __replace_regex(title: str, replaced: str, replace: str) -> Tuple[str, str, bool]:
         """
-        正则替换
+        Regular substitution
         """
         try:
             if not re.findall(r'%s' % replaced, title):
@@ -85,14 +85,14 @@ class WordsMatcher(metaclass=Singleton):
     @staticmethod
     def __episode_offset(title: str, front: str, back: str, offset: str) -> Tuple[str, str, bool]:
         """
-        集数偏移
+        Offset of set number (math.)
         """
         try:
             if back and not re.findall(r'%s' % back, title):
                 return title, "", False
             if front and not re.findall(r'%s' % front, title):
                 return title, "", False
-            offset_word_info_re = re.compile(r'(?<=%s.*?)[0-9一二三四五六七八九十]+(?=.*?%s)' % (front, back))
+            offset_word_info_re = re.compile(r'(?<=%s.*?)[0-9 One, two, three, four, five, six, seven, eight, nine, ten.]+(?=.*?%s)' % (front, back))
             episode_nums_str = re.findall(offset_word_info_re, title)
             if not episode_nums_str:
                 return title, "", False
@@ -102,13 +102,13 @@ class WordsMatcher(metaclass=Singleton):
                 episode_num_int = int(cn2an.cn2an(episode_num_str, "smart"))
                 offset_caculate = offset.replace("EP", str(episode_num_int))
                 episode_num_offset_int = int(eval(offset_caculate))
-                # 向前偏移
+                #  Forward offset
                 if episode_num_int > episode_num_offset_int:
                     offset_order_flag = True
-                # 向后偏移
+                #  Backward offset
                 elif episode_num_int < episode_num_offset_int:
                     offset_order_flag = False
-                # 原值是中文数字，转换回中文数字，阿拉伯数字则还原0的填充
+                #  The original value is a chinese numeral， Convert back to chinese numerals， Arabic numerals are reverted to0 Padding
                 if not episode_num_str.isdigit():
                     episode_num_offset_str = cn2an.an2cn(episode_num_offset_int, "low")
                 else:
@@ -119,10 +119,10 @@ class WordsMatcher(metaclass=Singleton):
                         episode_num_offset_str = str(episode_num_offset_int)
                 episode_nums_offset_str.append(episode_num_offset_str)
             episode_nums_dict = dict(zip(episode_nums_str, episode_nums_offset_str))
-            # 集数向前偏移，集数按升序处理
+            #  Number of sets shifted forward， Episodes are processed in ascending order
             if offset_order_flag:
                 episode_nums_list = sorted(episode_nums_dict.items(), key=lambda x: x[1])
-            # 集数向后偏移，集数按降序处理
+            #  The set number is shifted backward， Episodes are processed in descending order
             else:
                 episode_nums_list = sorted(episode_nums_dict.items(), key=lambda x: x[1], reverse=True)
             for episode_num in episode_nums_list:

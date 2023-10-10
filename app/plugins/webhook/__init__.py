@@ -7,28 +7,28 @@ from app.log import logger
 
 
 class WebHook(_PluginBase):
-    # 插件名称
+    #  Plug-in name
     plugin_name = "Webhook"
-    # 插件描述
-    plugin_desc = "事件发生时向第三方地址发送请求。"
-    # 插件图标
+    #  Plugin description
+    plugin_desc = " Sending requests to third-party addresses when an event occurs。"
+    #  Plug-in icons
     plugin_icon = "webhook.png"
-    # 主题色
+    #  Theme color
     plugin_color = "#C73A63"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "jxxghp"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/jxxghp"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "webhook_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 14
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 1
 
-    # 私有属性
+    #  Private property
     _webhook_url = None
     _method = None
     _enabled = False
@@ -51,7 +51,7 @@ class WebHook(_PluginBase):
 
     def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
         """
-        拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
+        Assembly plugin configuration page， Two pieces of data need to be returned：1、 Page configuration；2、 Data structure
         """
         request_options = ["POST", "GET"]
         return [
@@ -72,7 +72,7 @@ class WebHook(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'enabled',
-                                            'label': '启用插件',
+                                            'label': ' Enabling plug-ins',
                                         }
                                     }
                                 ]
@@ -93,7 +93,7 @@ class WebHook(_PluginBase):
                                         'component': 'VSelect',
                                         'props': {
                                             'model': 'request_method',
-                                            'label': '请求方式',
+                                            'label': ' Request method',
                                             'items': request_options
                                         }
                                     }
@@ -110,7 +110,7 @@ class WebHook(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'webhook_url',
-                                            'label': 'webhook地址'
+                                            'label': 'webhook Address'
                                         }
                                     }
                                 ]
@@ -131,14 +131,14 @@ class WebHook(_PluginBase):
     @eventmanager.register(EventType)
     def send(self, event):
         """
-        向第三方Webhook发送请求
+        To third partiesWebhook Send request
         """
         if not self._enabled or not self._webhook_url:
             return
 
         def __to_dict(_event):
             """
-            递归将对象转换为字典
+            Recursively converting objects to dictionaries
             """
             if isinstance(_event, dict):
                 for k, v in _event.items():
@@ -171,14 +171,14 @@ class WebHook(_PluginBase):
         else:
             ret = RequestUtils().get_res(self._webhook_url, params=event_info)
         if ret:
-            logger.info("发送成功：%s" % self._webhook_url)
+            logger.info(" Sent successfully：%s" % self._webhook_url)
         elif ret is not None:
-            logger.error(f"发送失败，状态码：{ret.status_code}，返回信息：{ret.text} {ret.reason}")
+            logger.error(f" Send failure， Status code：{ret.status_code}， Back to information：{ret.text} {ret.reason}")
         else:
-            logger.error("发送失败，未获取到返回信息")
+            logger.error(" Send failure， Return information not obtained")
 
     def stop_service(self):
         """
-        退出插件
+        Exit plugin
         """
         pass

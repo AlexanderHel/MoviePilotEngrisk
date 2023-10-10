@@ -6,11 +6,11 @@ from alembic.command import revision as alembic_revision
 
 from app.core.config import settings
 
-# 导入模块，避免建表缺失
+#  Import module， Avoid building missing tables
 for module in Path(__file__).with_name("models").glob("*.py"):
     importlib.import_module(f"app.db.models.{module.stem}")
 
-db_version = input("请输入版本号：")
+db_version = input(" Please enter the version number：")
 db_location = settings.CONFIG_PATH / 'user.db'
 script_location = settings.ROOT_PATH / 'database'
 alembic_cfg = AlembicConfig()

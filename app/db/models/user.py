@@ -7,21 +7,21 @@ from app.db.models import Base
 
 class User(Base):
     """
-    用户表
+    User interface
     """
     # ID
     id = Column(Integer, Sequence('id'), primary_key=True, index=True)
-    # 用户名
+    #  User id
     name = Column(String, index=True, nullable=False)
-    # 邮箱，未启用
+    #  Inbox， Not yet activated
     email = Column(String)
-    # 加密后密码
+    #  Encrypted password
     hashed_password = Column(String)
-    # 是否启用
+    #  Enable or disable
     is_active = Column(Boolean(), default=True)
-    # 是否管理员
+    #  Administrator or not
     is_superuser = Column(Boolean(), default=False)
-    # 头像
+    #  Avatar
     avatar = Column(String)
 
     @staticmethod

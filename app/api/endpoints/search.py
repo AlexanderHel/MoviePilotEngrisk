@@ -13,24 +13,24 @@ from app.schemas.types import MediaType
 router = APIRouter()
 
 
-@router.get("/last", summary="查询搜索结果", response_model=List[schemas.Context])
+@router.get("/last", summary=" Query search results", response_model=List[schemas.Context])
 async def search_latest(db: Session = Depends(get_db),
                         _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    查询搜索结果
+    Query search results
     """
     torrents = SearchChain(db).last_search_results()
     return [torrent.to_dict() for torrent in torrents]
 
 
-@router.get("/media/{mediaid}", summary="精确搜索资源", response_model=List[schemas.Context])
+@router.get("/media/{mediaid}", summary=" Precise search of resources", response_model=List[schemas.Context])
 def search_by_tmdbid(mediaid: str,
                      mtype: str = None,
                      area: str = "title",
                      db: Session = Depends(get_db),
                      _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    根据TMDBID/豆瓣ID精确搜索站点资源 tmdb:/douban:/
+    According toTMDBID/ Douban, prc social networking websiteID Accurate search of site resources tmdb:/douban:/
     """
     if mediaid.startswith("tmdb:"):
         tmdbid = int(mediaid.replace("tmdb:", ""))
@@ -39,7 +39,7 @@ def search_by_tmdbid(mediaid: str,
         torrents = SearchChain(db).search_by_tmdbid(tmdbid=tmdbid, mtype=mtype, area=area)
     elif mediaid.startswith("douban:"):
         doubanid = mediaid.replace("douban:", "")
-        # 识别豆瓣信息
+        #  Recognizing doujinshi information
         context = DoubanChain(db).recognize_by_doubanid(doubanid)
         if not context or not context.media_info or not context.media_info.tmdb_id:
             return []
@@ -51,14 +51,14 @@ def search_by_tmdbid(mediaid: str,
     return [torrent.to_dict() for torrent in torrents]
 
 
-@router.get("/title", summary="模糊搜索资源", response_model=List[schemas.TorrentInfo])
+@router.get("/title", summary=" Fuzzy search resources", response_model=List[schemas.TorrentInfo])
 async def search_by_title(keyword: str = None,
                           page: int = 0,
                           site: int = None,
                           db: Session = Depends(get_db),
                           _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    根据名称模糊搜索站点资源，支持分页，关键词为空是返回首页资源
+    Fuzzy search for site resources by name， Pagination support， Empty keywords are back to homepage resources
     """
     torrents = SearchChain(db).search_by_title(title=keyword, page=page, site=site)
     return [torrent.to_dict() for torrent in torrents]

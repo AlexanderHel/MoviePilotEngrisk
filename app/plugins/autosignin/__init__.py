@@ -29,37 +29,37 @@ from app.utils.timer import TimerUtils
 
 
 class AutoSignIn(_PluginBase):
-    # 插件名称
-    plugin_name = "站点自动签到"
-    # 插件描述
-    plugin_desc = "自动模拟登录站点、签到。"
-    # 插件图标
+    #  Plug-in name
+    plugin_name = " Automatic site check-in"
+    #  Plugin description
+    plugin_desc = " Automatic simulation of the login site、 Sign in。"
+    #  Plug-in icons
     plugin_icon = "signin.png"
-    # 主题色
+    #  Theme color
     plugin_color = "#4179F4"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.1"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "thsrite"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/thsrite"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "autosignin_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 0
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 2
 
-    # 私有属性
+    #  Private property
     sites: SitesHelper = None
-    # 事件管理器
+    #  Event manager
     event: EventManager = None
-    # 定时器
+    #  Timers
     _scheduler: Optional[BackgroundScheduler] = None
-    # 加载的模块
+    #  Loaded modules
     _site_schema: list = []
 
-    # 配置属性
+    #  Configuration properties
     _enabled: bool = False
     _cron: str = ""
     _onlyonce: bool = False
@@ -76,10 +76,10 @@ class AutoSignIn(_PluginBase):
         self.sites = SitesHelper()
         self.event = EventManager()
 
-        # 停止现有任务
+        #  Discontinuation of existing mandates
         self.stop_service()
 
-        # 配置
+        #  Configure
         if config:
             self._enabled = config.get("enabled")
             self._cron = config.get("cron")
@@ -91,43 +91,43 @@ class AutoSignIn(_PluginBase):
             self._retry_keyword = config.get("retry_keyword")
             self._clean = config.get("clean")
 
-            # 过滤掉已删除的站点
+            #  Filter out deleted sites
             all_sites = [site for site in self.sites.get_indexers() if not site.get("public")]
             self._sign_sites = [site.get("id") for site in all_sites if site.get("id") in self._sign_sites]
             self._login_sites = [site.get("id") for site in all_sites if site.get("id") in self._login_sites]
-            # 保存配置
+            #  Save configuration
             self.__update_config()
 
-        # 加载模块
+        #  Load modules
         if self._enabled or self._onlyonce:
 
             self._site_schema = ModuleHelper.load('app.plugins.autosignin.sites',
                                                   filter_func=lambda _, obj: hasattr(obj, 'match'))
 
-            # 定时服务
+            #  Time service
             self._scheduler = BackgroundScheduler(timezone=settings.TZ)
 
-            # 立即运行一次
+            #  Run one immediately
             if self._onlyonce:
-                logger.info("站点自动签到服务启动，立即运行一次")
+                logger.info(" Site automated check-in service activated， Run one immediately")
                 self._scheduler.add_job(func=self.sign_in, trigger='date',
                                         run_date=datetime.now(tz=pytz.timezone(settings.TZ)) + timedelta(seconds=3),
-                                        name="站点自动签到")
+                                        name=" Automatic site check-in")
 
-                # 关闭一次性开关
+                #  Turn off the disposable switch
                 self._onlyonce = False
-                # 保存配置
+                #  Save configuration
                 self.__update_config()
 
-            # 周期运行
+            #  Periodic operation
             if self._enabled:
                 if self._cron:
                     try:
                         if str(self._cron).strip().count(" ") == 4:
                             self._scheduler.add_job(func=self.sign_in,
                                                     trigger=CronTrigger.from_crontab(self._cron),
-                                                    name="站点自动签到")
-                            logger.info(f"站点自动签到服务启动，执行周期 {self._cron}")
+                                                    name=" Automatic site check-in")
+                            logger.info(f" Site automated check-in service activated， Implementation period {self._cron}")
                         else:
                             # 2.3/9-23
                             crons = str(self._cron).strip().split("/")
@@ -145,35 +145,35 @@ class AutoSignIn(_PluginBase):
                                     self._scheduler.add_job(func=self.sign_in,
                                                             trigger="interval",
                                                             hours=float(str(cron).strip()),
-                                                            name="站点自动签到")
+                                                            name=" Automatic site check-in")
                                     logger.info(
-                                        f"站点自动签到服务启动，执行周期 {self._start_time}点-{self._end_time}点 每{cron}小时执行一次")
+                                        f" Site automated check-in service activated， Implementation period {self._start_time} Point (in space or time)-{self._end_time} Point (in space or time)  Each{cron} Performed once an hour")
                                 else:
-                                    logger.error("站点自动签到服务启动失败，周期格式错误")
-                                    # 推送实时消息
-                                    self.systemmessage.put(f"执行周期配置错误")
+                                    logger.error(" Failure to start site auto check-in service， Periodicity formatting error")
+                                    #  Push real-time messages
+                                    self.systemmessage.put(f" Execution cycle misconfiguration")
                                     self._cron = ""
                                     self._enabled = False
                                     self.__update_config()
                             else:
-                                # 默认0-24 按照周期运行
+                                #  Default (setting)0-24  Follow the cycle
                                 self._start_time = 0
                                 self._end_time = 24
                                 self._scheduler.add_job(func=self.sign_in,
                                                         trigger="interval",
                                                         hours=float(str(self._cron).strip()),
-                                                        name="站点自动签到")
+                                                        name=" Automatic site check-in")
                                 logger.info(
-                                    f"站点自动签到服务启动，执行周期 {self._start_time}点-{self._end_time}点 每{self._cron}小时执行一次")
+                                    f" Site automated check-in service activated， Implementation period {self._start_time} Point (in space or time)-{self._end_time} Point (in space or time)  Each{self._cron} Performed once an hour")
                     except Exception as err:
-                        logger.error(f"定时任务配置错误：{err}")
-                        # 推送实时消息
-                        self.systemmessage.put(f"执行周期配置错误：{err}")
+                        logger.error(f" Timed task configuration error：{err}")
+                        #  Push real-time messages
+                        self.systemmessage.put(f" Execution cycle misconfiguration：{err}")
                         self._cron = ""
                         self._enabled = False
                         self.__update_config()
                 else:
-                    # 随机时间
+                    #  Random period of time
                     triggers = TimerUtils.random_scheduler(num_executions=2,
                                                            begin_hour=9,
                                                            end_hour=23,
@@ -182,9 +182,9 @@ class AutoSignIn(_PluginBase):
                     for trigger in triggers:
                         self._scheduler.add_job(self.sign_in, "cron",
                                                 hour=trigger.hour, minute=trigger.minute,
-                                                name="站点自动签到")
+                                                name=" Automatic site check-in")
 
-            # 启动任务
+            #  Initiate tasks
             if self._scheduler.get_jobs():
                 self._scheduler.print_jobs()
                 self._scheduler.start()
@@ -193,7 +193,7 @@ class AutoSignIn(_PluginBase):
         return self._enabled
 
     def __update_config(self):
-        # 保存配置
+        #  Save configuration
         self.update_config(
             {
                 "enabled": self._enabled,
@@ -211,40 +211,40 @@ class AutoSignIn(_PluginBase):
     @staticmethod
     def get_command() -> List[Dict[str, Any]]:
         """
-        定义远程控制命令
-        :return: 命令关键字、事件、描述、附带数据
+        Defining remote control commands
+        :return:  Command keywords、 Event、 Descriptive、 Accompanying data
         """
         return [{
             "cmd": "/site_signin",
             "event": EventType.SiteSignin,
-            "desc": "站点签到",
-            "category": "站点",
+            "desc": " Site check-in",
+            "category": " Website",
             "data": {}
         }]
 
     def get_api(self) -> List[Dict[str, Any]]:
         """
-        获取插件API
+        Get pluginsAPI
         [{
             "path": "/xx",
             "endpoint": self.xxx,
             "methods": ["GET", "POST"],
-            "summary": "API说明"
+            "summary": "API Clarification"
         }]
         """
         return [{
             "path": "/signin_by_domain",
             "endpoint": self.signin_by_domain,
             "methods": ["GET"],
-            "summary": "站点签到",
-            "description": "使用站点域名签到站点",
+            "summary": " Site check-in",
+            "description": " Signing in to a site using a site domain",
         }]
 
     def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
         """
-        拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
+        Assembly plugin configuration page， Two pieces of data need to be returned：1、 Page configuration；2、 Data structure
         """
-        # 站点的可选项
+        #  Options for the site
         site_options = [{"title": site.name, "value": site.id}
                         for site in Site.list_order_by_pri(self.db)]
         return [
@@ -265,7 +265,7 @@ class AutoSignIn(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'enabled',
-                                            'label': '启用插件',
+                                            'label': ' Enabling plug-ins',
                                         }
                                     }
                                 ]
@@ -281,7 +281,7 @@ class AutoSignIn(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'notify',
-                                            'label': '发送通知',
+                                            'label': ' Send notification',
                                         }
                                     }
                                 ]
@@ -297,7 +297,7 @@ class AutoSignIn(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'onlyonce',
-                                            'label': '立即运行一次',
+                                            'label': ' Run one immediately',
                                         }
                                     }
                                 ]
@@ -313,7 +313,7 @@ class AutoSignIn(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'clean',
-                                            'label': '清理本日缓存',
+                                            'label': ' Clear the current day's cache',
                                         }
                                     }
                                 ]
@@ -334,8 +334,8 @@ class AutoSignIn(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'cron',
-                                            'label': '执行周期',
-                                            'placeholder': '5位cron表达式，留空自动'
+                                            'label': ' Implementation period',
+                                            'placeholder': '5 Classifier for honorific peoplecron Displayed formula， Leave blank spaces in writing'
                                         }
                                     }
                                 ]
@@ -351,7 +351,7 @@ class AutoSignIn(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'queue_cnt',
-                                            'label': '队列数量'
+                                            'label': ' Number of queues'
                                         }
                                     }
                                 ]
@@ -367,8 +367,8 @@ class AutoSignIn(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'retry_keyword',
-                                            'label': '重试关键词',
-                                            'placeholder': '支持正则表达式，命中才重签'
+                                            'label': ' Retry keywords',
+                                            'placeholder': ' Regular expression support， Only when it's meant to be will you re-sign (idiom); it's fate to re-sign a contract'
                                         }
                                     }
                                 ]
@@ -387,7 +387,7 @@ class AutoSignIn(_PluginBase):
                                             'chips': True,
                                             'multiple': True,
                                             'model': 'sign_sites',
-                                            'label': '签到站点',
+                                            'label': ' Check-in site',
                                             'items': site_options
                                         }
                                     }
@@ -407,7 +407,7 @@ class AutoSignIn(_PluginBase):
                                             'chips': True,
                                             'multiple': True,
                                             'model': 'login_sites',
-                                            'label': '登录站点',
+                                            'label': ' Login site',
                                             'items': site_options
                                         }
                                     }
@@ -427,11 +427,11 @@ class AutoSignIn(_PluginBase):
                                     {
                                         'component': 'VAlert',
                                         'props': {
-                                            'text': '执行周期支持：'
-                                                    '1、5位cron表达式；'
-                                                    '2、配置间隔（小时），如2.3/9-23（9-23点之间每隔2.3小时执行一次）；'
-                                                    '3、周期不填默认9-23点随机执行2次。'
-                                                    '每天首次全量执行，其余执行命中重试关键词的站点。'
+                                            'text': ' Implementation cycle support：'
+                                                    '1、5 Classifier for honorific peoplecron Displayed formula；'
+                                                    '2、 Configuration interval（ Hourly）， As if2.3/9-23（9-23 The points are separated by2.3 Performed once an hour）；'
+                                                    '3、 Periodicity is not filled in by default9-23 Point randomized execution2 Substandard。'
+                                                    ' First full implementation per day， The rest of the sites that perform hit retry keywords。'
                                         }
                                     }
                                 ]
@@ -449,20 +449,20 @@ class AutoSignIn(_PluginBase):
             "queue_cnt": 5,
             "sign_sites": [],
             "login_sites": [],
-            "retry_keyword": "错误|失败"
+            "retry_keyword": " Incorrect| Fail (e.g. experiments)"
         }
 
     def get_page(self) -> List[dict]:
         """
-        拼装插件详情页面，需要返回页面配置，同时附带数据
+        Patchwork plug-in detail page， Need to return to page configuration， Also with data
         """
-        # 最近两天的日期数组
+        #  Array of dates for the last two days
         date_list = [(datetime.now() - timedelta(days=i)).date() for i in range(2)]
-        # 最近一天的签到数据
+        #  Last day's check-in data
         current_day = ""
         sign_data = []
         for day in date_list:
-            current_day = f"{day.month}月{day.day}日"
+            current_day = f"{day.month} Moon{day.day} Date"
             sign_data = self.get_data(current_day)
             if sign_data:
                 break
@@ -506,7 +506,7 @@ class AutoSignIn(_PluginBase):
                                 'colspan': 3,
                                 'class': 'text-center'
                             },
-                            'text': '暂无数据'
+                            'text': ' No data available'
                         }
                     ]
                 }
@@ -526,21 +526,21 @@ class AutoSignIn(_PluginBase):
                                 'props': {
                                     'class': 'text-start ps-4'
                                 },
-                                'text': '日期'
+                                'text': ' Dates'
                             },
                             {
                                 'component': 'th',
                                 'props': {
                                     'class': 'text-start ps-4'
                                 },
-                                'text': '站点'
+                                'text': ' Website'
                             },
                             {
                                 'component': 'th',
                                 'props': {
                                     'class': 'text-start ps-4'
                                 },
-                                'text': '状态'
+                                'text': ' State of affairs'
                             }
                         ]
                     },
@@ -555,79 +555,79 @@ class AutoSignIn(_PluginBase):
     @eventmanager.register(EventType.SiteSignin)
     def sign_in(self, event: Event = None):
         """
-        自动签到|模拟登陆
+        Automatic check-in| Simulated login
         """
-        # 日期
+        #  Dates
         today = datetime.today()
         if self._start_time and self._end_time:
             if int(datetime.today().hour) < self._start_time or int(datetime.today().hour) > self._end_time:
                 logger.error(
-                    f"当前时间 {int(datetime.today().hour)} 不在 {self._start_time}-{self._end_time} 范围内，暂不执行任务")
+                    f" Current time {int(datetime.today().hour)}  (euphemism) pass away {self._start_time}-{self._end_time}  Coverage， Withdrawal of the mandate")
                 return
         if event:
-            logger.info("收到命令，开始站点签到 ...")
+            logger.info(" Command received.， Start site check-in ...")
             self.post_message(channel=event.event_data.get("channel"),
-                              title="开始站点签到 ...",
+                              title=" Start site check-in ...",
                               userid=event.event_data.get("user"))
 
         if self._sign_sites:
-            self.__do(today=today, type="签到", do_sites=self._sign_sites, event=event)
+            self.__do(today=today, type=" Sign in", do_sites=self._sign_sites, event=event)
         if self._login_sites:
-            self.__do(today=today, type="登录", do_sites=self._login_sites, event=event)
+            self.__do(today=today, type=" Log in", do_sites=self._login_sites, event=event)
 
     def __do(self, today: datetime, type: str, do_sites: list, event: Event = None):
         """
-        签到逻辑
+        Check-in logic
         """
         yesterday = today - timedelta(days=1)
         yesterday_str = yesterday.strftime('%Y-%m-%d')
-        # 删除昨天历史
+        #  Delete yesterday's history
         self.del_data(key=type + "-" + yesterday_str)
-        self.del_data(key=f"{yesterday.month}月{yesterday.day}日")
+        self.del_data(key=f"{yesterday.month} Moon{yesterday.day} Date")
 
-        # 查看今天有没有签到|登录历史
+        #  Check if you have signed in today| Login history
         today = today.strftime('%Y-%m-%d')
         today_history = self.get_data(key=type + "-" + today)
 
-        # 查询所有站点
+        #  Search all sites
         all_sites = [site for site in self.sites.get_indexers() if not site.get("public")]
-        # 过滤掉没有选中的站点
+        #  Filter out unchecked sites
         if do_sites:
             do_sites = [site for site in all_sites if site.get("id") in do_sites]
         else:
             do_sites = all_sites
 
-        # 今日没数据
+        #  No data today.
         if not today_history or self._clean:
-            logger.info(f"今日 {today} 未{type}，开始{type}已选站点")
+            logger.info(f" Today {today}  8th earthly branch: 1-3 p.m., 6th solar month (7th july-6th august){type}， Commencement{type} Selected sites")
             if self._clean:
-                # 关闭开关
+                #  Turn off the switch.
                 self._clean = False
         else:
-            # 需要重试站点
+            #  Need to retry site
             retry_sites = today_history.get("retry") or []
-            # 今天已签到|登录站点
+            #  Signed in today| Login site
             already_sites = today_history.get("do") or []
 
-            # 今日未签|登录站点
+            #  Not signed today| Login site
             no_sites = [site for site in do_sites if
                         site.get("id") not in already_sites or site.get("id") in retry_sites]
 
             if not no_sites:
-                logger.info(f"今日 {today} 已{type}，无重新{type}站点，本次任务结束")
+                logger.info(f" Today {today}  Afterwards{type}， Recklessly{type} Website， End of current mandate")
                 return
 
-            # 任务站点 = 需要重试+今日未do
+            #  Mission site =  Need to retry+ Not todaydo
             do_sites = no_sites
-            logger.info(f"今日 {today} 已{type}，开始重试命中关键词站点")
+            logger.info(f" Today {today}  Afterwards{type}， Start retrying hit keyword sites")
 
         if not do_sites:
-            logger.info(f"没有需要{type}的站点")
+            logger.info(f" No need.{type} Sites")
             return
 
-        # 执行签到
-        logger.info(f"开始执行{type}任务 ...")
-        if type == "签到":
+        #  Executive check-in
+        logger.info(f" Commence{type} Mandates ...")
+        if type == " Sign in":
             with ThreadPool(min(len(do_sites), int(self._queue_cnt))) as p:
                 status = p.map(self.signin_site, do_sites)
         else:
@@ -635,9 +635,9 @@ class AutoSignIn(_PluginBase):
                 status = p.map(self.login_site, do_sites)
 
         if status:
-            logger.info(f"站点{type}任务完成！")
-            # 获取今天的日期
-            key = f"{datetime.now().month}月{datetime.now().day}日"
+            logger.info(f" Website{type} Mission accomplished！")
+            #  Get today's date
+            key = f"{datetime.now().month} Moon{datetime.now().day} Date"
             today_data = self.get_data(key)
             if today_data:
                 if not isinstance(today_data, list):
@@ -652,22 +652,22 @@ class AutoSignIn(_PluginBase):
                     "site": s[0],
                     "status": s[1]
                 } for s in status]
-            # 保存数据
+            #  Save data
             self.save_data(key, today_data)
 
-            # 命中重试词的站点id
+            #  Sites that hit retry wordsid
             retry_sites = []
-            # 命中重试词的站点签到msg
+            #  Site check-in for hit retry wordsmsg
             retry_msg = []
-            # 登录成功
+            #  Login successful
             login_success_msg = []
-            # 签到成功
+            #  Sign in successfully
             sign_success_msg = []
-            # 已签到
+            #  Signed in
             already_sign_msg = []
-            # 仿真签到成功
+            #  Successful simulation check-in
             fz_sign_msg = []
-            # 失败｜错误
+            #  Fail (e.g. experiments)｜ Incorrect
             failed_msg = []
 
             sites = {site.get('name'): site.get("id") for site in self.sites.get_indexers() if not site.get("public")}
@@ -676,65 +676,65 @@ class AutoSignIn(_PluginBase):
                 site_id = None
                 if site_name:
                     site_id = sites.get(site_name)
-                # 记录本次命中重试关键词的站点
+                #  Record the sites that hit this retry keyword
                 if self._retry_keyword:
                     if site_id:
                         match = re.search(self._retry_keyword, s[1])
                         if match:
-                            logger.debug(f"站点 {site_name} 命中重试关键词 {self._retry_keyword}")
+                            logger.debug(f" Website {site_name}  Hit retry keywords {self._retry_keyword}")
                             retry_sites.append(site_id)
-                            # 命中的站点
+                            #  Hit sites
                             retry_msg.append(s)
                             continue
 
-                if "登录成功" in s:
+                if " Login successful" in s:
                     login_success_msg.append(s)
-                elif "仿真签到成功" in s:
+                elif " Successful simulation check-in" in s:
                     fz_sign_msg.append(s)
                     continue
-                elif "签到成功" in s:
+                elif " Sign in successfully" in s:
                     sign_success_msg.append(s)
-                elif '已签到' in s:
+                elif ' Signed in' in s:
                     already_sign_msg.append(s)
                 else:
                     failed_msg.append(s)
 
             if not self._retry_keyword:
-                # 没设置重试关键词则重试已选站点
-                retry_sites = self._sign_sites if type == "签到" else self._login_sites
-            logger.debug(f"下次{type}重试站点 {retry_sites}")
+                #  Retry the selected site if no retry keyword is set.
+                retry_sites = self._sign_sites if type == " Sign in" else self._login_sites
+            logger.debug(f" Next time{type} Retry site {retry_sites}")
 
-            # 存入历史
+            #  Commit to history (to a higher standard)
             self.save_data(key=type + "-" + today,
                            value={
-                               "do": self._sign_sites if type == "签到" else self._login_sites,
+                               "do": self._sign_sites if type == " Sign in" else self._login_sites,
                                "retry": retry_sites
                            })
 
-            # 发送通知
+            #  Send notification
             if self._notify:
-                # 签到详细信息 登录成功、签到成功、已签到、仿真签到成功、失败--命中重试
+                #  Check-in details  Login successful、 Sign in successfully、 Signed in、 Successful simulation check-in、 Fail (e.g. experiments)-- Retry after a hit
                 signin_message = login_success_msg + sign_success_msg + already_sign_msg + fz_sign_msg + failed_msg
                 if len(retry_msg) > 0:
                     signin_message += retry_msg
 
                 signin_message = "\n".join([f'【{s[0]}】{s[1]}' for s in signin_message if s])
-                self.post_message(title=f"【站点自动{type}】",
+                self.post_message(title=f"【 Site automation{type}】",
                                   mtype=NotificationType.SiteMessage,
-                                  text=f"全部{type}数量: {len(self._sign_sites if type == '签到' else self._login_sites)} \n"
-                                       f"本次{type}数量: {len(do_sites)} \n"
-                                       f"下次{type}数量: {len(retry_sites) if self._retry_keyword else 0} \n"
+                                  text=f" Full{type} Quantities: {len(self._sign_sites if type == ' Sign in' else self._login_sites)} \n"
+                                       f" This time{type} Quantities: {len(do_sites)} \n"
+                                       f" Next time{type} Quantities: {len(retry_sites) if self._retry_keyword else 0} \n"
                                        f"{signin_message}"
                                   )
             if event:
                 self.post_message(channel=event.event_data.get("channel"),
-                                  title=f"站点{type}完成！", userid=event.event_data.get("user"))
+                                  title=f" Website{type} Fulfillment！", userid=event.event_data.get("user"))
         else:
-            logger.error(f"站点{type}任务失败！")
+            logger.error(f" Website{type} Mission failure！")
             if event:
                 self.post_message(channel=event.event_data.get("channel"),
-                                  title=f"站点{type}任务失败！", userid=event.event_data.get("user"))
-        # 保存配置
+                                  title=f" Website{type} Mission failure！", userid=event.event_data.get("user"))
+        #  Save configuration
         self.__update_config()
 
     def __build_class(self, url) -> Any:
@@ -743,19 +743,19 @@ class AutoSignIn(_PluginBase):
                 if site_schema.match(url):
                     return site_schema
             except Exception as e:
-                logger.error("站点模块加载失败：%s" % str(e))
+                logger.error(" Site module load failure：%s" % str(e))
         return None
 
     def signin_by_domain(self, url: str) -> schemas.Response:
         """
-        签到一个站点，可由API调用
+        Sign in to a site， Transferring entityAPI Call (programming)
         """
         domain = StringUtils.get_url_domain(url)
         site_info = self.sites.get_indexer(domain)
         if not site_info:
             return schemas.Response(
                 success=True,
-                message=f"站点【{url}】不存在"
+                message=f" Website【{url}】 Non-existent"
             )
         else:
             return schemas.Response(
@@ -765,26 +765,26 @@ class AutoSignIn(_PluginBase):
 
     def signin_site(self, site_info: CommentedMap) -> Tuple[str, str]:
         """
-        签到一个站点
+        Sign in to a site
         """
         site_module = self.__build_class(site_info.get("url"))
         if site_module and hasattr(site_module, "signin"):
             try:
                 _, msg = site_module().signin(site_info)
-                # 特殊站点直接返回签到信息，防止仿真签到、模拟登陆有歧义
+                #  Special sites return check-in information directly， Preventing simulated check-ins、 Simulated logins are ambiguous
                 return site_info.get("name"), msg or ""
             except Exception as e:
                 traceback.print_exc()
-                return site_info.get("name"), f"签到失败：{str(e)}"
+                return site_info.get("name"), f" Failed to sign in：{str(e)}"
         else:
             return site_info.get("name"), self.__signin_base(site_info)
 
     @staticmethod
     def __signin_base(site_info: CommentedMap) -> str:
         """
-        通用签到处理
-        :param site_info: 站点信息
-        :return: 签到结果信息
+        Generic check-in processing
+        :param site_info:  Site information
+        :return:  Check-in results information
         """
         if not site_info:
             return ""
@@ -796,16 +796,16 @@ class AutoSignIn(_PluginBase):
         proxies = settings.PROXY if site_info.get("proxy") else None
         proxy_server = settings.PROXY_SERVER if site_info.get("proxy") else None
         if not site_url or not site_cookie:
-            logger.warn(f"未配置 {site} 的站点地址或Cookie，无法签到")
+            logger.warn(f" Unconfigured {site}  The site address orCookie， Unable to sign in")
             return ""
-        # 模拟登录
+        #  Analog login
         try:
-            # 访问链接
+            #  Access link
             checkin_url = site_url
             if site_url.find("attendance.php") == -1:
-                # 拼登签到地址
+                #  Spellbound check-in address
                 checkin_url = urljoin(site_url, "attendance.php")
-            logger.info(f"开始站点签到：{site}，地址：{checkin_url}...")
+            logger.info(f" Start site check-in：{site}， Address：{checkin_url}...")
             if render:
                 page_source = PlaywrightHelper().get_page_source(url=checkin_url,
                                                                  cookies=site_cookie,
@@ -813,62 +813,62 @@ class AutoSignIn(_PluginBase):
                                                                  proxies=proxy_server)
                 if not SiteUtils.is_logged_in(page_source):
                     if under_challenge(page_source):
-                        return f"无法通过Cloudflare！"
-                    return f"仿真登录失败，Cookie已失效！"
+                        return f" Failure to passCloudflare！"
+                    return f" Emulation login failure，Cookie Expired！"
                 else:
-                    # 判断是否已签到
-                    if re.search(r'已签|签到已得', page_source, re.IGNORECASE) \
+                    #  Determine if you are signed in or not
+                    if re.search(r' Signed| Sign in and get it!', page_source, re.IGNORECASE) \
                             or SiteUtils.is_checkin(page_source):
-                        return f"签到成功"
-                    return "仿真签到成功"
+                        return f" Sign in successfully"
+                    return " Successful simulation check-in"
             else:
                 res = RequestUtils(cookies=site_cookie,
                                    ua=ua,
                                    proxies=proxies
                                    ).get_res(url=checkin_url)
                 if not res and site_url != checkin_url:
-                    logger.info(f"开始站点模拟登录：{site}，地址：{site_url}...")
+                    logger.info(f" Start site simulation login：{site}， Address：{site_url}...")
                     res = RequestUtils(cookies=site_cookie,
                                        ua=ua,
                                        proxies=proxies
                                        ).get_res(url=site_url)
-                # 判断登录状态
+                #  Determine login status
                 if res and res.status_code in [200, 500, 403]:
                     if not SiteUtils.is_logged_in(res.text):
                         if under_challenge(res.text):
-                            msg = "站点被Cloudflare防护，请打开站点浏览器仿真"
+                            msg = " Web site has beenCloudflare Defend， Please open the site browser simulation"
                         elif res.status_code == 200:
-                            msg = "Cookie已失效"
+                            msg = "Cookie Expired"
                         else:
-                            msg = f"状态码：{res.status_code}"
-                        logger.warn(f"{site} 签到失败，{msg}")
-                        return f"签到失败，{msg}！"
+                            msg = f" Status code：{res.status_code}"
+                        logger.warn(f"{site}  Failed to sign in，{msg}")
+                        return f" Failed to sign in，{msg}！"
                     else:
-                        logger.info(f"{site} 签到成功")
-                        return f"签到成功"
+                        logger.info(f"{site}  Sign in successfully")
+                        return f" Sign in successfully"
                 elif res is not None:
-                    logger.warn(f"{site} 签到失败，状态码：{res.status_code}")
-                    return f"签到失败，状态码：{res.status_code}！"
+                    logger.warn(f"{site}  Failed to sign in， Status code：{res.status_code}")
+                    return f" Failed to sign in， Status code：{res.status_code}！"
                 else:
-                    logger.warn(f"{site} 签到失败，无法打开网站")
-                    return f"签到失败，无法打开网站！"
+                    logger.warn(f"{site}  Failed to sign in， Unable to open website")
+                    return f" Failed to sign in， Unable to open website！"
         except Exception as e:
-            logger.warn("%s 签到失败：%s" % (site, str(e)))
+            logger.warn("%s  Failed to sign in：%s" % (site, str(e)))
             traceback.print_exc()
-            return f"签到失败：{str(e)}！"
+            return f" Failed to sign in：{str(e)}！"
 
     def login_site(self, site_info: CommentedMap) -> Tuple[str, str]:
         """
-        模拟登陆一个站点
+        Simulate logging into a site
         """
         return site_info.get("name"), self.__login_base(site_info)
 
     @staticmethod
     def __login_base(site_info: CommentedMap) -> str:
         """
-        模拟登陆通用处理
-        :param site_info: 站点信息
-        :return: 签到结果信息
+        Generic processing for analog login
+        :param site_info:  Site information
+        :return:  Check-in results information
         """
         if not site_info:
             return ""
@@ -880,13 +880,13 @@ class AutoSignIn(_PluginBase):
         proxies = settings.PROXY if site_info.get("proxy") else None
         proxy_server = settings.PROXY_SERVER if site_info.get("proxy") else None
         if not site_url or not site_cookie:
-            logger.warn(f"未配置 {site} 的站点地址或Cookie，无法签到")
+            logger.warn(f" Unconfigured {site}  The site address orCookie， Unable to sign in")
             return ""
-        # 模拟登录
+        #  Analog login
         try:
-            # 访问链接
+            #  Access link
             site_url = str(site_url).replace("attendance.php", "")
-            logger.info(f"开始站点模拟登陆：{site}，地址：{site_url}...")
+            logger.info(f" Start site simulation login：{site}， Address：{site_url}...")
             if render:
                 page_source = PlaywrightHelper().get_page_source(url=site_url,
                                                                  cookies=site_cookie,
@@ -894,43 +894,43 @@ class AutoSignIn(_PluginBase):
                                                                  proxies=proxy_server)
                 if not SiteUtils.is_logged_in(page_source):
                     if under_challenge(page_source):
-                        return f"无法通过Cloudflare！"
-                    return f"仿真登录失败，Cookie已失效！"
+                        return f" Failure to passCloudflare！"
+                    return f" Emulation login failure，Cookie Expired！"
                 else:
-                    return "模拟登陆成功"
+                    return " Successful simulated login"
             else:
                 res = RequestUtils(cookies=site_cookie,
                                    ua=ua,
                                    proxies=proxies
                                    ).get_res(url=site_url)
-                # 判断登录状态
+                #  Determine login status
                 if res and res.status_code in [200, 500, 403]:
                     if not SiteUtils.is_logged_in(res.text):
                         if under_challenge(res.text):
-                            msg = "站点被Cloudflare防护，请打开站点浏览器仿真"
+                            msg = " Web site has beenCloudflare Defend， Please open the site browser simulation"
                         elif res.status_code == 200:
-                            msg = "Cookie已失效"
+                            msg = "Cookie Expired"
                         else:
-                            msg = f"状态码：{res.status_code}"
-                        logger.warn(f"{site} 模拟登陆失败，{msg}")
-                        return f"模拟登陆失败，{msg}！"
+                            msg = f" Status code：{res.status_code}"
+                        logger.warn(f"{site}  Simulated login failure，{msg}")
+                        return f" Simulated login failure，{msg}！"
                     else:
-                        logger.info(f"{site} 模拟登陆成功")
-                        return f"模拟登陆成功"
+                        logger.info(f"{site}  Successful simulated login")
+                        return f" Successful simulated login"
                 elif res is not None:
-                    logger.warn(f"{site} 模拟登陆失败，状态码：{res.status_code}")
-                    return f"模拟登陆失败，状态码：{res.status_code}！"
+                    logger.warn(f"{site}  Simulated login failure， Status code：{res.status_code}")
+                    return f" Simulated login failure， Status code：{res.status_code}！"
                 else:
-                    logger.warn(f"{site} 模拟登陆失败，无法打开网站")
-                    return f"模拟登陆失败，无法打开网站！"
+                    logger.warn(f"{site}  Simulated login failure， Unable to open website")
+                    return f" Simulated login failure， Unable to open website！"
         except Exception as e:
-            logger.warn("%s 模拟登陆失败：%s" % (site, str(e)))
+            logger.warn("%s  Simulated login failure：%s" % (site, str(e)))
             traceback.print_exc()
-            return f"模拟登陆失败：{str(e)}！"
+            return f" Simulated login failure：{str(e)}！"
 
     def stop_service(self):
         """
-        退出插件
+        Exit plugin
         """
         try:
             if self._scheduler:
@@ -939,19 +939,19 @@ class AutoSignIn(_PluginBase):
                     self._scheduler.shutdown()
                 self._scheduler = None
         except Exception as e:
-            logger.error("退出插件失败：%s" % str(e))
+            logger.error("Exit plugin失败：%s" % str(e))
 
     @eventmanager.register(EventType.SiteDeleted)
     def site_deleted(self, event):
         """
-        删除对应站点选中
+        Delete the corresponding site selection
         """
         site_id = event.event_data.get("site_id")
         config = self.get_config()
         if config:
             self._sign_sites = self.__remove_site_id(config.get("sign_sites") or [], site_id)
             self._login_sites = self.__remove_site_id(config.get("login_sites") or [], site_id)
-            # 保存配置
+            #  Save configuration
             self.__update_config()
 
     def __remove_site_id(self, do_sites, site_id):
@@ -959,14 +959,14 @@ class AutoSignIn(_PluginBase):
             if isinstance(do_sites, str):
                 do_sites = [do_sites]
 
-            # 删除对应站点
+            #  Delete the corresponding site
             if site_id:
                 do_sites = [site for site in do_sites if int(site) != int(site_id)]
             else:
-                # 清空
+                #  Empty
                 do_sites = []
 
-            # 若无站点，则停止
+            #  If no site， Failing agreement
             if len(do_sites) == 0:
                 self._enabled = False
 

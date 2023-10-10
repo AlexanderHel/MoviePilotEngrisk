@@ -21,7 +21,7 @@ class IyuuHelper(object):
 
     def __request_iyuu(self, url, method="get", params=None):
         """
-        向IYUUApi发送请求
+        TowardIYUUApi Send request
         """
         if params:
             if not params.get("sign"):
@@ -30,7 +30,7 @@ class IyuuHelper(object):
                 params.update({"version": self._version})
         else:
             params = {"sign": self._token, "version": self._version}
-        # 开始请求
+        #  Starting a request
         if method == "get":
             ret = RequestUtils(
                 accept_type="application/json"
@@ -44,11 +44,11 @@ class IyuuHelper(object):
             if result.get('ret') == 200:
                 return result.get('data'), ""
             else:
-                return None, f"请求IYUU失败，状态码：{result.get('ret')}，返回信息：{result.get('msg')}"
+                return None, f" RequestingIYUU Fail (e.g. experiments)， Status code：{result.get('ret')}， Back to information：{result.get('msg')}"
         elif ret is not None:
-            return None, f"请求IYUU失败，状态码：{ret.status_code}，错误原因：{ret.reason}"
+            return None, f" RequestingIYUU Fail (e.g. experiments)， Status code：{ret.status_code}， Cause of error：{ret.reason}"
         else:
-            return None, f"请求IYUU失败，未获取到返回信息"
+            return None, f" RequestingIYUU Fail (e.g. experiments)， Return information not obtained"
 
     def get_torrent_url(self, sid):
         if not sid:
@@ -62,8 +62,8 @@ class IyuuHelper(object):
 
     def __get_sites(self):
         """
-        返回支持辅种的全部站点
-        :return: 站点列表、错误信息
+        Back to all sites supporting auxiliary species
+        :return:  Site list、 Error message
         {
             "ret": 200,
             "data": {
@@ -71,7 +71,7 @@ class IyuuHelper(object):
                     {
                         "id": 1,
                         "site": "keepfrds",
-                        "nickname": "朋友",
+                        "nickname": " Friends",
                         "base_url": "pt.keepfrds.com",
                         "download_page": "download.php?id={}&passkey={passkey}",
                         "reseed_check": "passkey",
@@ -94,7 +94,7 @@ class IyuuHelper(object):
 
     def get_seed_info(self, info_hashs: list):
         """
-        返回info_hash对应的站点id、种子id
+        Come (or go) backinfo_hash Corresponding siteid、 Torrentid
         {
             "ret": 200,
             "data": [
@@ -131,7 +131,7 @@ class IyuuHelper(object):
 
     def get_auth_sites(self):
         """
-        返回支持鉴权的站点列表
+        Return to the list of sites that support authentication
         [
             {
                 "id": 2,
@@ -149,11 +149,11 @@ class IyuuHelper(object):
 
     def bind_site(self, site, passkey, uid):
         """
-        绑定站点
-        :param site: 站点名称
+        Binding site
+        :param site:  Site name
         :param passkey: passkey
-        :param uid: 用户id
-        :return: 状态码、错误信息
+        :param uid:  Subscribersid
+        :return:  Status code、 Error message
         """
         result, msg = self.__request_iyuu(url=self._api_base % 'App.Api.Bind',
                                           method="get",

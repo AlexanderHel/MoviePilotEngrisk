@@ -26,9 +26,9 @@ class OpenAi:
     @staticmethod
     def __save_session(session_id: str, message: str):
         """
-        保存会话
-        :param session_id: 会话ID
-        :param message: 消息
+        Save session
+        :param session_id:  ConversationsID
+        :param message:  Messages
         :return:
         """
         seasion = OpenAISessionCache.get(session_id)
@@ -42,9 +42,9 @@ class OpenAi:
     @staticmethod
     def __get_session(session_id: str, message: str) -> List[dict]:
         """
-        获取会话
-        :param session_id: 会话ID
-        :return: 会话上下文
+        Get session
+        :param session_id:  ConversationsID
+        :return:  Session context
         """
         seasion = OpenAISessionCache.get(session_id)
         if seasion:
@@ -56,7 +56,7 @@ class OpenAi:
             seasion = [
                 {
                     "role": "system",
-                    "content": "请在接下来的对话中请使用中文回复，并且内容尽可能详细。"
+                    "content": " Please reply in chinese for the rest of the conversation.， And as detailed as possible。"
                 },
                 {
                     "role": "user",
@@ -71,7 +71,7 @@ class OpenAi:
                     user: str = "MoviePilot",
                     **kwargs):
         """
-        获取模型
+        Getting the model
         """
         if not isinstance(message, list):
             if prompt:
@@ -102,8 +102,8 @@ class OpenAi:
     @staticmethod
     def __clear_session(session_id: str):
         """
-        清除会话
-        :param session_id: 会话ID
+        Clearing a session
+        :param session_id:  ConversationsID
         :return:
         """
         if OpenAISessionCache.get(session_id):
@@ -111,8 +111,8 @@ class OpenAi:
 
     def get_media_name(self, filename: str):
         """
-        从文件名中提取媒体名称等要素
-        :param filename: 文件名
+        Extract elements such as media names from file names
+        :param filename:  Filename
         :return: Json
         """
         if not self.get_state():
@@ -131,22 +131,22 @@ class OpenAi:
 
     def get_response(self, text: str, userid: str):
         """
-        聊天对话，获取答案
-        :param text: 输入文本
-        :param userid: 用户ID
+        Chat， Get answers
+        :param text:  Input text
+        :param userid:  SubscribersID
         :return:
         """
         if not self.get_state():
             return ""
         try:
             if not userid:
-                return "用户信息错误"
+                return " User information error"
             else:
                 userid = str(userid)
-            if text == "#清除":
+            if text == "# Removals":
                 self.__clear_session(userid)
-                return "会话已清除"
-            # 获取历史上下文
+                return " Session cleared"
+            #  Getting historical context
             messages = self.__get_session(userid, text)
             completion = self.__get_model(message=messages, user=userid)
             result = completion.choices[0].message.content
@@ -154,18 +154,18 @@ class OpenAi:
                 self.__save_session(userid, text)
             return result
         except openai.error.RateLimitError as e:
-            return f"请求被ChatGPT拒绝了，{str(e)}"
+            return f" Requested byChatGPT Rejected.，{str(e)}"
         except openai.error.APIConnectionError as e:
-            return f"ChatGPT网络连接失败：{str(e)}"
+            return f"ChatGPT Network connection failure：{str(e)}"
         except openai.error.Timeout as e:
-            return f"没有接收到ChatGPT的返回消息：{str(e)}"
+            return f" No reception.ChatGPT Return message of the：{str(e)}"
         except Exception as e:
-            return f"请求ChatGPT出现错误：{str(e)}"
+            return f" RequestingChatGPT Error：{str(e)}"
 
     def translate_to_zh(self, text: str):
         """
-        翻译为中文
-        :param text: 输入文本
+        Translation into chinese
+        :param text:  Input text
         """
         if not self.get_state():
             return False, None
@@ -187,15 +187,15 @@ class OpenAi:
 
     def get_question_answer(self, question: str):
         """
-        从给定问题和选项中获取正确答案
-        :param question: 问题及选项
+        Getting the right answer from the given question and options
+        :param question:  Questions and options
         :return: Json
         """
         if not self.get_state():
             return None
         result = ""
         try:
-            _question_prompt = "下面我们来玩一个游戏，你是老师，我是学生，你需要回答我的问题，我会给你一个题目和几个选项，你的回复必须是给定选项中正确答案对应的序号，请直接回复数字"
+            _question_prompt = " Let's play a game.， You're a teacher.， I'm a student.， You need to answer my questions.， I'll give you a question and a few options.， Your response must be the serial number corresponding to the correct answer in the given options， Please reply directly to the number"
             completion = self.__get_model(prompt=_question_prompt, message=question)
             result = completion.choices[0].message.content
             return result

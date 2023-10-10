@@ -9,32 +9,32 @@ from app.utils.web import WebUtils
 
 class WebhookChain(ChainBase):
     """
-    Webhook处理链
+    Webhook Process chain
     """
 
     def message(self, body: Any, form: Any, args: Any) -> None:
         """
-        处理Webhook报文并发送消息
+        Deal withWebhook Message and send the message
         """
-        # 获取主体内容
+        #  Getting the main content
         event_info = self.webhook_parser(body=body, form=form, args=args)
         if not event_info:
             return
-        # 广播事件
+        #  Broadcasting incident
         self.eventmanager.send_event(EventType.WebhookMessage, event_info)
-        # 拼装消息内容
+        #  Assembly message content
         _webhook_actions = {
-            "library.new": "新入库",
-            "system.webhooktest": "测试",
-            "playback.start": "开始播放",
-            "playback.stop": "停止播放",
-            "user.authenticated": "登录成功",
-            "user.authenticationfailed": "登录失败",
-            "media.play": "开始播放",
-            "media.stop": "停止播放",
-            "PlaybackStart": "开始播放",
-            "PlaybackStop": "停止播放",
-            "item.rate": "标记了"
+            "library.new": " New entry",
+            "system.webhooktest": " Beta (software)",
+            "playback.start": " Start playing",
+            "playback.stop": " Stop playing",
+            "user.authenticated": " Login successful",
+            "user.authenticationfailed": " Login failure",
+            "media.play": " Start playing",
+            "media.stop": " Stop playing",
+            "PlaybackStart": " Start playing",
+            "PlaybackStop": " Stop playing",
+            "item.rate": " Marked"
         }
         _webhook_images = {
             "emby": "https://emby.media/notificationicon.png",
@@ -45,37 +45,37 @@ class WebhookChain(ChainBase):
         if not _webhook_actions.get(event_info.event):
             return
 
-        # 消息标题
+        #  Message title
         if event_info.item_type in ["TV", "SHOW"]:
-            message_title = f"{_webhook_actions.get(event_info.event)}剧集 {event_info.item_name}"
+            message_title = f"{_webhook_actions.get(event_info.event)} Episode {event_info.item_name}"
         elif event_info.item_type == "MOV":
-            message_title = f"{_webhook_actions.get(event_info.event)}电影 {event_info.item_name}"
+            message_title = f"{_webhook_actions.get(event_info.event)} Cinematic {event_info.item_name}"
         elif event_info.item_type == "AUD":
-            message_title = f"{_webhook_actions.get(event_info.event)}有声书 {event_info.item_name}"
+            message_title = f"{_webhook_actions.get(event_info.event)} Audiobook {event_info.item_name}"
         else:
             message_title = f"{_webhook_actions.get(event_info.event)}"
 
-        # 消息内容
+        #  Message
         message_texts = []
         if event_info.user_name:
-            message_texts.append(f"用户：{event_info.user_name}")
+            message_texts.append(f" Subscribers：{event_info.user_name}")
         if event_info.device_name:
-            message_texts.append(f"设备：{event_info.client} {event_info.device_name}")
+            message_texts.append(f" Installations：{event_info.client} {event_info.device_name}")
         if event_info.ip:
-            message_texts.append(f"IP地址：{event_info.ip} {WebUtils.get_location(event_info.ip)}")
+            message_texts.append(f"IP Address：{event_info.ip} {WebUtils.get_location(event_info.ip)}")
         if event_info.percentage:
             percentage = round(float(event_info.percentage), 2)
-            message_texts.append(f"进度：{percentage}%")
+            message_texts.append(f" Degree of progress (on project)：{percentage}%")
         if event_info.overview:
-            message_texts.append(f"剧情：{event_info.overview}")
-        message_texts.append(f"时间：{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))}")
+            message_texts.append(f" Plots：{event_info.overview}")
+        message_texts.append(f" Timing：{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))}")
 
-        # 消息内容
+        #  Message
         message_content = "\n".join(message_texts)
 
-        # 消息图片
+        #  Message pictures
         image_url = event_info.image_url
-        # 查询剧集图片
+        #  Check episode images
         if (event_info.tmdb_id
                 and event_info.season_id
                 and event_info.episode_id):
@@ -88,10 +88,10 @@ class WebhookChain(ChainBase):
             )
             if specific_image:
                 image_url = specific_image
-        # 使用默认图片
+        #  Using the default image
         if not image_url:
             image_url = _webhook_images.get(event_info.channel)
 
-        # 发送消息
+        #  Send a message
         self.post_message(Notification(mtype=NotificationType.MediaServer,
                                        title=message_title, text=message_content, image=image_url))

@@ -33,26 +33,26 @@ class FileTransferModule(_ModuleBase):
                  transfer_type: str, target: Path = None,
                  episodes_info: List[TmdbEpisode] = None) -> TransferInfo:
         """
-        文件转移
-        :param path:  文件路径
-        :param meta: 预识别的元数据，仅单文件转移时传递
-        :param mediainfo:  识别的媒体信息
-        :param transfer_type:  转移方式
-        :param target:  目标路径
-        :param episodes_info: 当前季的全部集信息
+        File transfer
+        :param path:   File path
+        :param meta: 预识别的元数据，仅单File transfer时传递
+        :param mediainfo:   Identified media messages
+        :param transfer_type:   Migration pattern
+        :param target:   Target path
+        :param episodes_info:  All episode information for the current season
         :return: {path, target_path, message}
         """
-        # 获取目标路径
+        #  Getting the target path
         if not target:
             target = self.get_target_path(in_path=path)
         else:
             target = self.get_library_path(target)
         if not target:
-            logger.error("未找到媒体库目录，无法转移文件")
+            logger.error(" Media library catalog not found， Unable to transfer files")
             return TransferInfo(success=False,
                                 path=path,
-                                message="未找到媒体库目录")
-        # 转移
+                                message=" Media library catalog not found")
+        #  Divert or distract (attention etc)
         return self.transfer_media(in_path=path,
                                    in_meta=meta,
                                    mediainfo=mediainfo,
@@ -63,25 +63,25 @@ class FileTransferModule(_ModuleBase):
     @staticmethod
     def __transfer_command(file_item: Path, target_file: Path, transfer_type: str) -> int:
         """
-        使用系统命令处理单个文件
-        :param file_item: 文件路径
-        :param target_file: 目标文件路径
-        :param transfer_type: RmtMode转移方式
+        Using system commands to process individual files
+        :param file_item:  File path
+        :param target_file:  Target file path
+        :param transfer_type: RmtMode Migration pattern
         """
         with lock:
 
-            # 转移
+            #  Divert or distract (attention etc)
             if transfer_type == 'link':
-                # 硬链接
+                #  Hard link
                 retcode, retmsg = SystemUtils.link(file_item, target_file)
             elif transfer_type == 'softlink':
-                # 软链接
+                #  Soft link (computing)
                 retcode, retmsg = SystemUtils.softlink(file_item, target_file)
             elif transfer_type == 'move':
-                # 移动
+                #  Mobility
                 retcode, retmsg = SystemUtils.move(file_item, target_file)
             else:
-                # 复制
+                #  Make a copy of
                 retcode, retmsg = SystemUtils.copy(file_item, target_file)
 
         if retcode != 0:
@@ -92,11 +92,11 @@ class FileTransferModule(_ModuleBase):
     def __transfer_other_files(self, org_path: Path, new_path: Path,
                                transfer_type: str, over_flag: bool) -> int:
         """
-        根据文件名转移其他相关文件
-        :param org_path: 原文件名
-        :param new_path: 新文件名
-        :param transfer_type: RmtMode转移方式
-        :param over_flag: 是否覆盖，为True时会先删除再转移
+        Transfer of other related documents by filename
+        :param org_path:  Original filename
+        :param new_path:  New filename
+        :param transfer_type: RmtMode Migration pattern
+        :param over_flag:  Whether or not to override， Because ofTrue It will be deleted and then transferred.
         """
         retcode = self.__transfer_subtitles(org_path, new_path, transfer_type)
         if retcode != 0:
@@ -108,35 +108,35 @@ class FileTransferModule(_ModuleBase):
 
     def __transfer_subtitles(self, org_path: Path, new_path: Path, transfer_type: str) -> int:
         """
-        根据文件名转移对应字幕文件
-        :param org_path: 原文件名
-        :param new_path: 新文件名
-        :param transfer_type: RmtMode转移方式
+        Transfer the corresponding subtitle file according to the file name
+        :param org_path:  Original filename
+        :param new_path:  New filename
+        :param transfer_type: RmtMode Migration pattern
         """
-        # 字幕正则式
+        #  Regular formula for subtitles
         _zhcn_sub_re = r"([.\[(](((zh[-_])?(cn|ch[si]|sg|sc))|zho?" \
                        r"|chinese|(cn|ch[si]|sg|zho?|eng)[-_&](cn|ch[si]|sg|zho?|eng)" \
-                       r"|简[体中]?)[.\])])" \
-                       r"|([\u4e00-\u9fa5]{0,3}[中双][\u4e00-\u9fa5]{0,2}[字文语][\u4e00-\u9fa5]{0,3})" \
-                       r"|简体|简中|JPSC" \
+                       r"| Bamboo strips used for writing (old)[ Embodiment]?)[.\])])" \
+                       r"|([\u4e00-\u9fa5]{0,3}[ Both sides of the coin][\u4e00-\u9fa5]{0,2}[ Literary language][\u4e00-\u9fa5]{0,3})" \
+                       r"| Simplified chinese| Simple chinese|JPSC" \
                        r"|(?<![a-z0-9])gb(?![a-z0-9])"
         _zhtw_sub_re = r"([.\[(](((zh[-_])?(hk|tw|cht|tc))" \
-                       r"|繁[体中]?)[.\])])" \
-                       r"|繁体中[文字]|中[文字]繁体|繁体|JPTC" \
+                       r"| In great numbers[ Embodiment]?)[.\])])" \
+                       r"| Traditional chinese[ Writing style]| Center[ Writing style] Elaborate form| Elaborate form|JPTC" \
                        r"|(?<![a-z0-9])big5(?![a-z0-9])"
         _eng_sub_re = r"[.\[(]eng[.\])]"
 
-        # 比对文件名并转移字幕
+        #  Compare filenames and transfer subtitles
         org_dir: Path = org_path.parent
         file_list: List[Path] = SystemUtils.list_files(org_dir, settings.RMT_SUBEXT)
         if len(file_list) == 0:
-            logger.debug(f"{org_dir} 目录下没有找到字幕文件...")
+            logger.debug(f"{org_dir}  No subtitle files found in the directory...")
         else:
-            logger.debug("字幕文件清单：" + str(file_list))
-            # 识别文件名
+            logger.debug(" List of subtitle files：" + str(file_list))
+            #  Recognizing file names
             metainfo = MetaInfo(title=org_path.name)
             for file_item in file_list:
-                # 识别字幕文件名
+                #  Recognizing subtitle file names
                 sub_file_name = re.sub(_zhtw_sub_re,
                                        ".",
                                        re.sub(_zhcn_sub_re,
@@ -146,7 +146,7 @@ class FileTransferModule(_ModuleBase):
                                        flags=re.I)
                 sub_file_name = re.sub(_eng_sub_re, ".", sub_file_name, flags=re.I)
                 sub_metainfo = MetaInfo(title=file_item.name)
-                # 匹配字幕文件名
+                #  Match subtitle file name
                 if (org_path.stem == Path(sub_file_name).stem) or \
                         (sub_metainfo.cn_name and sub_metainfo.cn_name == metainfo.cn_name) \
                         or (sub_metainfo.en_name and sub_metainfo.en_name == metainfo.en_name):
@@ -157,7 +157,7 @@ class FileTransferModule(_ModuleBase):
                             and metainfo.episode != sub_metainfo.episode:
                         continue
                     new_file_type = ""
-                    # 兼容jellyfin字幕识别(多重识别), emby则会识别最后一个后缀
+                    #  Compatibilityjellyfin Subtitle recognition( Multiple identification), emby Then the last suffix will be recognized
                     if re.search(_zhcn_sub_re, file_item.name, re.I):
                         new_file_type = ".chi.zh-cn"
                     elif re.search(_zhtw_sub_re, file_item.name,
@@ -165,12 +165,12 @@ class FileTransferModule(_ModuleBase):
                         new_file_type = ".zh-tw"
                     elif re.search(_eng_sub_re, file_item.name, re.I):
                         new_file_type = ".eng"
-                    # 通过对比字幕文件大小  尽量转移所有存在的字幕
+                    #  By comparing subtitle file sizes   Try to transfer all the subtitles present
                     file_ext = file_item.suffix
                     new_sub_tag_dict = {
-                        ".eng": ".英文",
-                        ".chi.zh-cn": ".简体中文",
-                        ".zh-tw": ".繁体中文"
+                        ".eng": ". English (language)",
+                        ".chi.zh-cn": ". Simplified chinese",
+                        ".zh-tw": ". Traditional chinese"
                     }
                     new_sub_tag_list = [
                         new_file_type if t == 0 else "%s%s(%s)" % (new_file_type,
@@ -181,103 +181,103 @@ class FileTransferModule(_ModuleBase):
                     ]
                     for new_sub_tag in new_sub_tag_list:
                         new_file: Path = new_path.with_name(new_path.stem + new_sub_tag + file_ext)
-                        # 如果字幕文件不存在, 直接转移字幕, 并跳出循环
+                        #  If the subtitle file does not exist,  Direct transfer subtitles,  And jump out of the loop
                         try:
                             if not new_file.exists():
-                                logger.debug(f"正在处理字幕：{file_item.name}")
+                                logger.debug(f" Subtitles are being processed.：{file_item.name}")
                                 retcode = self.__transfer_command(file_item=file_item,
                                                                   target_file=new_file,
                                                                   transfer_type=transfer_type)
                                 if retcode == 0:
-                                    logger.info(f"字幕 {file_item.name} {transfer_type}完成")
+                                    logger.info(f" Subtitling {file_item.name} {transfer_type} Fulfillment")
                                     break
                                 else:
-                                    logger.error(f"字幕 {file_item.name} {transfer_type}失败，错误码 {retcode}")
+                                    logger.error(f" Subtitling {file_item.name} {transfer_type} Fail (e.g. experiments)， Error code {retcode}")
                                     return retcode
-                            # 如果字幕文件的大小与已存在文件相同, 说明已经转移过了, 则跳出循环
+                            #  If the subtitle file is the same size as an existing file,  It means it's been transferred.,  Then jump out of the loop
                             elif new_file.stat().st_size == file_item.stat().st_size:
-                                logger.info(f"字幕 new_file 已存在")
+                                logger.info(f" Subtitling new_file  Pre-existing")
                                 break
-                            # 否则 循环继续 > 通过new_sub_tag_list 获取新的tag附加到字幕文件名, 继续检查是否能转移
+                            #  If not  The cycle continues >  Pass (a bill or inspection etc)new_sub_tag_list  Get newtag Attach to subtitle filename,  Keep checking to see if you can transfer
                         except OSError as reason:
-                            logger.info(f"字幕 {new_file} 出错了,原因: {reason}")
+                            logger.info(f" Subtitling {new_file}  There's been an error., Rationale: {reason}")
         return 0
 
     def __transfer_audio_track_files(self, org_path: Path, new_path: Path,
                                      transfer_type: str, over_flag: bool) -> int:
         """
-        根据文件名转移对应音轨文件
-        :param org_path: 原文件名
-        :param new_path: 新文件名
-        :param transfer_type: RmtMode转移方式
-        :param over_flag: 是否覆盖，为True时会先删除再转移
+        Transfer the corresponding track file according to its filename
+        :param org_path:  Original filename
+        :param new_path:  New filename
+        :param transfer_type: RmtMode Migration pattern
+        :param over_flag:  Whether or not to override， Because ofTrue It will be deleted and then transferred.
         """
         dir_name = org_path.parent
         file_name = org_path.name
         file_list: List[Path] = SystemUtils.list_files(dir_name, ['.mka'])
         pending_file_list: List[Path] = [file for file in file_list if org_path.stem == file.stem]
         if len(pending_file_list) == 0:
-            logger.debug(f"{dir_name} 目录下没有找到匹配的音轨文件")
+            logger.debug(f"{dir_name}  No matching track file found in the directory")
         else:
-            logger.debug("音轨文件清单：" + str(pending_file_list))
+            logger.debug(" Track file list：" + str(pending_file_list))
             for track_file in pending_file_list:
                 track_ext = track_file.suffix
                 new_track_file = new_path.with_name(new_path.stem + track_ext)
                 if new_track_file.exists():
                     if not over_flag:
-                        logger.warn(f"音轨文件已存在：{new_track_file}")
+                        logger.warn(f" Track file already exists：{new_track_file}")
                         continue
                     else:
-                        logger.info(f"正在删除已存在的音轨文件：{new_track_file}")
+                        logger.info(f" Existing track files are being deleted：{new_track_file}")
                         new_track_file.unlink()
                 try:
-                    logger.info(f"正在转移音轨文件：{track_file} 到 {new_track_file}")
+                    logger.info(f" Transferring track files：{track_file}  Until (a time) {new_track_file}")
                     retcode = self.__transfer_command(file_item=track_file,
                                                       target_file=new_track_file,
                                                       transfer_type=transfer_type)
                     if retcode == 0:
-                        logger.info(f"音轨文件 {file_name} {transfer_type}完成")
+                        logger.info(f" Audio track files {file_name} {transfer_type} Fulfillment")
                     else:
-                        logger.error(f"音轨文件 {file_name} {transfer_type}失败，错误码：{retcode}")
+                        logger.error(f" Audio track files {file_name} {transfer_type} Fail (e.g. experiments)， Error code：{retcode}")
                 except OSError as reason:
-                    logger.error(f"音轨文件 {file_name} {transfer_type}失败：{reason}")
+                    logger.error(f" Audio track files {file_name} {transfer_type} Fail (e.g. experiments)：{reason}")
         return 0
 
     def __transfer_dir(self, file_path: Path, new_path: Path, transfer_type: str) -> int:
         """
-        转移整个文件夹
-        :param file_path: 原路径
-        :param new_path: 新路径
-        :param transfer_type: RmtMode转移方式
+        Transferring an entire folder
+        :param file_path:  Original path
+        :param new_path:  New pathway
+        :param transfer_type: RmtMode Migration pattern
         """
-        logger.info(f"正在{transfer_type}目录：{file_path} 到 {new_path}")
-        # 复制
+        logger.info(f" In the process of (doing something or happening){transfer_type} Catalogs：{file_path}  Until (a time) {new_path}")
+        #  Make a copy of
         retcode = self.__transfer_dir_files(src_dir=file_path,
                                             target_dir=new_path,
                                             transfer_type=transfer_type)
         if retcode == 0:
-            logger.info(f"文件 {file_path} {transfer_type}完成")
+            logger.info(f" File {file_path} {transfer_type} Fulfillment")
         else:
-            logger.error(f"文件{file_path} {transfer_type}失败，错误码：{retcode}")
+            logger.error(f" File{file_path} {transfer_type} Fail (e.g. experiments)， Error code：{retcode}")
 
         return retcode
 
     def __transfer_dir_files(self, src_dir: Path, target_dir: Path, transfer_type: str) -> int:
         """
-        按目录结构转移目录下所有文件
-        :param src_dir: 原路径
-        :param target_dir: 新路径
-        :param transfer_type: RmtMode转移方式
+        Transfer all files in a directory by directory structure
+        :param src_dir:  Original path
+        :param target_dir:  New pathway
+        :param transfer_type: RmtMode Migration pattern
         """
         retcode = 0
         for file in src_dir.glob("**/*"):
-            # 过滤掉目录
+            #  Filter out directories
             if file.is_dir():
                 continue
-            # 使用target_dir的父目录作为新的父目录
+            #  Utilizationtarget_dir As the new parent directory of the
             new_file = target_dir.joinpath(file.relative_to(src_dir))
             if new_file.exists():
-                logger.warn(f"{new_file} 文件已存在")
+                logger.warn(f"{new_file}  File already exists")
                 continue
             if not new_file.parent.exists():
                 new_file.parent.mkdir(parents=True, exist_ok=True)
@@ -292,31 +292,31 @@ class FileTransferModule(_ModuleBase):
     def __transfer_file(self, file_item: Path, new_file: Path, transfer_type: str,
                         over_flag: bool = False) -> int:
         """
-        转移一个文件，同时处理其他相关文件
-        :param file_item: 原文件路径
-        :param new_file: 新文件路径
-        :param transfer_type: RmtMode转移方式
-        :param over_flag: 是否覆盖，为True时会先删除再转移
+        Transferring a file， Simultaneous processing of other relevant documents
+        :param file_item:  Original file path
+        :param new_file:  New file path
+        :param transfer_type: RmtMode Migration pattern
+        :param over_flag:  Whether or not to override， Because ofTrue It will be deleted and then transferred.
         """
         if new_file.exists():
             if not over_flag:
-                logger.warn(f"文件已存在：{new_file}")
+                logger.warn(f" File already exists：{new_file}")
                 return 0
             else:
-                logger.info(f"正在删除已存在的文件：{new_file}")
+                logger.info(f" Existing files are being deleted：{new_file}")
                 new_file.unlink()
-        logger.info(f"正在转移文件：{file_item} 到 {new_file}")
-        # 创建父目录
+        logger.info(f" Transferring files：{file_item}  Until (a time) {new_file}")
+        #  Creating a parent directory
         new_file.parent.mkdir(parents=True, exist_ok=True)
         retcode = self.__transfer_command(file_item=file_item,
                                           target_file=new_file,
                                           transfer_type=transfer_type)
         if retcode == 0:
-            logger.info(f"文件 {file_item} {transfer_type}完成")
+            logger.info(f" File {file_item} {transfer_type} Fulfillment")
         else:
-            logger.error(f"文件 {file_item} {transfer_type}失败，错误码：{retcode}")
+            logger.error(f" File {file_item} {transfer_type} Fail (e.g. experiments)， Error code：{retcode}")
             return retcode
-        # 处理其他相关文件
+        #  Processing of other relevant documents
         return self.__transfer_other_files(org_path=file_item,
                                            new_path=new_file,
                                            transfer_type=transfer_type,
@@ -325,30 +325,30 @@ class FileTransferModule(_ModuleBase):
     @staticmethod
     def __get_dest_dir(mediainfo: MediaInfo, target_dir: Path) -> Path:
         """
-        根据设置并装媒体库目录
-        :param mediainfo: 媒体信息
-        :target_dir: 媒体库根目录
+        Based on the setup and installation of the media library directory
+        :param mediainfo:  Media information
+        :target_dir:  Media library root directory
         """
         if mediainfo.type == MediaType.MOVIE:
-            # 电影
+            #  Cinematic
             if settings.LIBRARY_MOVIE_NAME:
                 target_dir = target_dir / settings.LIBRARY_MOVIE_NAME / mediainfo.category
             else:
-                # 目的目录加上类型和二级分类
+                #  Purpose directory plus type and secondary categorization
                 target_dir = target_dir / mediainfo.type.value / mediainfo.category
 
         if mediainfo.type == MediaType.TV:
-            # 电视剧
+            #  Dramas
             if settings.LIBRARY_ANIME_NAME \
                     and mediainfo.genre_ids \
                     and set(mediainfo.genre_ids).intersection(set(settings.ANIME_GENREIDS)):
-                # 动漫
+                #  Cartoons and comics
                 target_dir = target_dir / settings.LIBRARY_ANIME_NAME / mediainfo.category
             elif settings.LIBRARY_TV_NAME:
-                # 电视剧
+                #  Dramas
                 target_dir = target_dir / settings.LIBRARY_TV_NAME / mediainfo.category
             else:
-                # 目的目录加上类型和二级分类
+                #  Purpose directory plus type and secondary categorization
                 target_dir = target_dir / mediainfo.type.value / mediainfo.category
         return target_dir
 
@@ -361,88 +361,88 @@ class FileTransferModule(_ModuleBase):
                        episodes_info: List[TmdbEpisode] = None
                        ) -> TransferInfo:
         """
-        识别并转移一个文件或者一个目录下的所有文件
-        :param in_path: 转移的路径，可能是一个文件也可以是一个目录
-        :param in_meta：预识别元数据
-        :param mediainfo: 媒体信息
-        :param target_dir: 媒体库根目录
-        :param transfer_type: 文件转移方式
-        :param episodes_info: 当前季的全部集信息
-        :return: TransferInfo、错误信息
+        Identify and move a file or all files in a directory
+        :param in_path:  Paths of transfer， May be a file or a directory
+        :param in_meta： Pre-identified metadata
+        :param mediainfo:  Media information
+        :param target_dir:  Media library root directory
+        :param transfer_type: File transfer方式
+        :param episodes_info:  All episode information for the current season
+        :return: TransferInfo、 Error message
         """
-        # 检查目录路径
+        #  Checking directory paths
         if not in_path.exists():
             return TransferInfo(success=False,
                                 path=in_path,
-                                message=f"{in_path} 路径不存在")
+                                message=f"{in_path}  Path does not exist")
 
         if not target_dir.exists():
             return TransferInfo(success=False,
                                 path=in_path,
-                                message=f"{target_dir} 目标路径不存在")
+                                message=f"{target_dir}  Target path does not exist")
 
-        # 媒体库目的目录
+        #  Catalog of media library purposes
         target_dir = self.__get_dest_dir(mediainfo=mediainfo, target_dir=target_dir)
 
-        # 重命名格式
+        #  Rename format
         rename_format = settings.TV_RENAME_FORMAT \
             if mediainfo.type == MediaType.TV else settings.MOVIE_RENAME_FORMAT
 
-        # 判断是否为文件夹
+        #  Determine if a folder
         if in_path.is_dir():
-            # 转移整个目录
-            # 是否蓝光原盘
+            #  Divert or distract (attention etc)整个目录
+            #  Whether or not the original blu-ray disc
             bluray_flag = SystemUtils.is_bluray_dir(in_path)
             if bluray_flag:
-                logger.info(f"{in_path} 是蓝光原盘文件夹")
-            # 目的路径
+                logger.info(f"{in_path}  It's the original blu-ray folder.")
+            #  Destination path
             new_path = self.get_rename_path(
                 path=target_dir,
                 template_string=rename_format,
                 rename_dict=self.__get_naming_dict(meta=in_meta,
                                                    mediainfo=mediainfo)
             ).parent
-            # 转移蓝光原盘
+            #  Divert or distract (attention etc)蓝光原盘
             retcode = self.__transfer_dir(file_path=in_path,
                                           new_path=new_path,
                                           transfer_type=transfer_type)
             if retcode != 0:
-                logger.error(f"文件夹 {in_path} 转移失败，错误码：{retcode}")
+                logger.error(f" File (paper) {in_path}  Transfer failure， Error code：{retcode}")
                 return TransferInfo(success=False,
-                                    message=f"错误码：{retcode}",
+                                    message=f" Error code：{retcode}",
                                     path=in_path,
                                     target_path=new_path,
                                     is_bluray=bluray_flag)
 
-            logger.info(f"文件夹 {in_path} 转移成功")
-            # 返回转移后的路径
+            logger.info(f" File (paper) {in_path}  The transfer was successful.")
+            #  Returns the path after the transfer
             return TransferInfo(success=True,
                                 path=in_path,
                                 target_path=new_path,
                                 total_size=new_path.stat().st_size,
                                 is_bluray=bluray_flag)
         else:
-            # 转移单个文件
+            #  Divert or distract (attention etc)单个文件
             if mediainfo.type == MediaType.TV:
-                # 电视剧
+                #  Dramas
                 if in_meta.begin_episode is None:
-                    logger.warn(f"文件 {in_path} 转移失败：未识别到文件集数")
+                    logger.warn(f" File {in_path}  Transfer failure： Number of unrecognized file sets")
                     return TransferInfo(success=False,
-                                        message=f"未识别到文件集数",
+                                        message=f" Number of unrecognized file sets",
                                         path=in_path,
                                         fail_list=[str(in_path)])
 
-                # 文件结束季为空
+                #  End-of-file season is empty
                 in_meta.end_season = None
-                # 文件总季数为1
+                #  The total number of document seasons is1
                 if in_meta.total_season:
                     in_meta.total_season = 1
-                # 文件不可能超过2集
+                #  It is unlikely that the file will exceed2 Classifier for sections of a tv series e.g. episode
                 if in_meta.total_episode > 2:
                     in_meta.total_episode = 1
                     in_meta.end_episode = None
 
-            # 目的文件名
+            #  Destination file name
             new_file = self.get_rename_path(
                 path=target_dir,
                 template_string=rename_format,
@@ -454,27 +454,27 @@ class FileTransferModule(_ModuleBase):
                 )
             )
 
-            # 判断是否要覆盖
+            #  Determine whether to override
             overflag = False
             if new_file.exists():
                 if new_file.stat().st_size < in_path.stat().st_size:
-                    logger.info(f"目标文件已存在，但文件大小更小，将覆盖：{new_file}")
+                    logger.info(f" Target file already exists， But the file size is smaller， Will cover：{new_file}")
                     overflag = True
 
-            # 转移文件
+            #  Divert or distract (attention etc)文件
             retcode = self.__transfer_file(file_item=in_path,
                                            new_file=new_file,
                                            transfer_type=transfer_type,
                                            over_flag=overflag)
             if retcode != 0:
-                logger.error(f"文件 {in_path} 转移失败，错误码：{retcode}")
+                logger.error(f" File {in_path}  Transfer failure， Error code：{retcode}")
                 return TransferInfo(success=False,
-                                    message=f"错误码：{retcode}",
+                                    message=f" Error code：{retcode}",
                                     path=in_path,
                                     target_path=new_file,
                                     fail_list=[str(in_path)])
 
-            logger.info(f"文件 {in_path} 转移成功")
+            logger.info(f" File {in_path}  The transfer was successful.")
             return TransferInfo(success=True,
                                 path=in_path,
                                 target_path=new_file,
@@ -488,13 +488,13 @@ class FileTransferModule(_ModuleBase):
     def __get_naming_dict(meta: MetaBase, mediainfo: MediaInfo, file_ext: str = None,
                           episodes_info: List[TmdbEpisode] = None) -> dict:
         """
-        根据媒体信息，返回Format字典
-        :param meta: 文件元数据
-        :param mediainfo: 识别的媒体信息
-        :param file_ext: 文件扩展名
-        :param episodes_info: 当前季的全部集信息
+        Based on media information， Come (or go) backFormat Dictionaries
+        :param meta:  Document metadata
+        :param mediainfo:  Identified media messages
+        :param file_ext:  File extension
+        :param episodes_info:  All episode information for the current season
         """
-        # 获取集标题
+        #  Get set title
         episode_title = None
         if meta.begin_episode and episodes_info:
             for episode in episodes_info:
@@ -503,60 +503,60 @@ class FileTransferModule(_ModuleBase):
                     break
 
         return {
-            # 标题
+            #  Caption
             "title": mediainfo.title,
-            # 原文件名
+            #  Original filename
             "original_name": f"{meta.org_string}{file_ext}",
-            # 原语种标题
+            #  Title in original language
             "original_title": mediainfo.original_title,
-            # 识别名称
+            #  Identifying name
             "name": meta.name,
-            # 年份
+            #  Particular year
             "year": mediainfo.year or meta.year,
-            # 资源类型
+            #  Resource type
             "resourceType": meta.resource_type,
-            # 特效
+            #  Especially efficacious
             "effect": meta.resource_effect,
-            # 版本
+            #  Releases
             "edition": meta.edition,
-            # 分辨率
+            #  Resolution (of a photo)
             "videoFormat": meta.resource_pix,
-            # 制作组/字幕组
+            #  Production team/ Subtitling team
             "releaseGroup": meta.resource_team,
-            # 视频编码
+            #  Video encoding
             "videoCodec": meta.video_encode,
-            # 音频编码
+            #  Audio encoding
             "audioCodec": meta.audio_encode,
             # TMDBID
             "tmdbid": mediainfo.tmdb_id,
             # IMDBID
             "imdbid": mediainfo.imdb_id,
-            # 季号
+            #  Quarter
             "season": meta.season_seq,
-            # 集号
+            #  Bugle call
             "episode": meta.episode_seqs,
-            # 季集 SxxExx
+            #  End of a season SxxExx
             "season_episode": "%s%s" % (meta.season, meta.episodes),
-            # 段/节
+            #  Stage (of a process)/ Classifier for segments, e.g. lessons, train wagons, biblical verses
             "part": meta.part,
-            # 剧集标题
+            #  Episode title
             "episode_title": episode_title,
-            # 文件后缀
+            #  File suffix
             "fileExt": file_ext,
-            # 自定义占位符
+            #  Custom placeholders
             "customization": meta.customization
         }
 
     @staticmethod
     def get_rename_path(template_string: str, rename_dict: dict, path: Path = None) -> Path:
         """
-        生成重命名后的完整路径
+        Generate the full path after renaming
         """
-        # 创建jinja2模板对象
+        #  Establishjinja2 Template object
         template = Template(template_string)
-        # 渲染生成的字符串
+        #  Render the generated string
         render_str = template.render(rename_dict)
-        # 目的路径
+        #  Destination path
         if path:
             return path / render_str
         else:
@@ -565,37 +565,37 @@ class FileTransferModule(_ModuleBase):
     @staticmethod
     def get_library_path(path: Path):
         """
-        根据目录查询其所在的媒体库目录，查询不到的返回输入目录
+        Query the media library directory based on the directory it is in， Return to the input directory if you can't find it
         """
         if not path:
             return None
         if not settings.LIBRARY_PATHS:
             return path
-        # 目的路径，多路径以,分隔
+        #  Destination path，多路径以,分隔
         dest_paths = settings.LIBRARY_PATHS
         for libpath in dest_paths:
             try:
                 if path.is_relative_to(libpath):
                     return libpath
             except Exception as e:
-                logger.debug(f"计算媒体库路径时出错：{e}")
+                logger.debug(f" Error calculating media library path：{e}")
                 continue
         return path
 
     @staticmethod
     def get_target_path(in_path: Path = None) -> Optional[Path]:
         """
-        计算一个最好的目的目录，有in_path时找与in_path同路径的，没有in_path时，顺序查找1个符合大小要求的，没有in_path和size时，返回第1个
-        :param in_path: 源目录
+        Calculate a best destination catalog， There arein_path Look for a match within_path Homologous， Hasn'tin_path Hour， Sequential search1 One size fits all， Hasn'tin_path Cap (a poem)size Hour， Return to section1 Classifier for individual things or people, general, catch-all classifier
+        :param in_path:  Source catalog
         """
         if not settings.LIBRARY_PATHS:
             return None
-        # 目的路径，多路径以,分隔
+        #  Destination path，多路径以,分隔
         dest_paths = settings.LIBRARY_PATHS
-        # 只有一个路径，直接返回
+        #  There's only one path.， Direct return
         if len(dest_paths) == 1:
             return dest_paths[0]
-        # 匹配有最长共同上级路径的目录
+        #  Match directories with the longest common parent path
         max_length = 0
         target_path = None
         if in_path:
@@ -606,69 +606,69 @@ class FileTransferModule(_ModuleBase):
                         max_length = len(relative)
                         target_path = path
                 except Exception as e:
-                    logger.debug(f"计算目标路径时出错：{e}")
+                    logger.debug(f" Error while calculating target path：{e}")
                     continue
             if target_path:
                 return target_path
-        # 顺序匹配第1个满足空间存储要求的目录
+        #  Sequential matching of the first1 Directories that meet space storage requirements
         if in_path.exists():
             file_size = in_path.stat().st_size
             for path in dest_paths:
                 if SystemUtils.free_space(path) > file_size:
                     return path
-        # 默认返回第1个
+        #  Defaults to the first1 Classifier for individual things or people, general, catch-all classifier
         return dest_paths[0]
 
     def media_exists(self, mediainfo: MediaInfo, itemid: str = None) -> Optional[ExistMediaInfo]:
         """
-        判断媒体文件是否存在于本地文件系统
-        :param mediainfo:  识别的媒体信息
-        :param itemid:  媒体服务器ItemID
-        :return: 如不存在返回None，存在时返回信息，包括每季已存在所有集{type: movie/tv, seasons: {season: [episodes]}}
+        Determine if a media file exists on the local file system
+        :param mediainfo:   Identified media messages
+        :param itemid:   Media serverItemID
+        :return:  Returns if not presentNone， Return information when present， Includes all existing episodes of each season{type: movie/tv, seasons: {season: [episodes]}}
         """
         if not settings.LIBRARY_PATHS:
             return None
-        # 目的路径
+        #  Destination path
         dest_paths = settings.LIBRARY_PATHS
-        # 检查每一个媒体库目录
+        #  Check every media library directory
         for dest_path in dest_paths:
-            # 媒体库路径
+            #  Media library path
             target_dir = self.get_target_path(dest_path)
             if not target_dir:
                 continue
-            # 媒体分类路径
+            #  Media classification path
             target_dir = self.__get_dest_dir(mediainfo=mediainfo, target_dir=target_dir)
-            # 重命名格式
+            #  Rename format
             rename_format = settings.TV_RENAME_FORMAT \
                 if mediainfo.type == MediaType.TV else settings.MOVIE_RENAME_FORMAT
-            # 相对路径
+            #  Relative path
             meta = MetaInfo(mediainfo.title)
             rel_path = self.get_rename_path(
                 template_string=rename_format,
                 rename_dict=self.__get_naming_dict(meta=meta,
                                                    mediainfo=mediainfo)
             )
-            # 取相对路径的第1层目录
+            #  Take the relative path of the first1 Top-level catalog
             if rel_path.parts:
                 media_path = target_dir / rel_path.parts[0]
             else:
                 continue
 
-            # 检查媒体文件夹是否存在
+            #  Check if the media folder exists
             if not media_path.exists():
                 continue
 
-            # 检索媒体文件
+            #  Retrieve media files
             media_files = SystemUtils.list_files(directory=media_path, extensions=settings.RMT_MEDIAEXT)
             if not media_files:
                 continue
 
             if mediainfo.type == MediaType.MOVIE:
-                # 电影存在任何文件为存在
-                logger.info(f"文件系统已存在：{mediainfo.title_year}")
+                #  Cinematic存在任何文件为存在
+                logger.info(f" The file system already exists：{mediainfo.title_year}")
                 return ExistMediaInfo(type=MediaType.MOVIE)
             else:
-                # 电视剧检索集数
+                #  Dramas检索集数
                 seasons: Dict[int, list] = {}
                 for media_file in media_files:
                     file_meta = MetaInfo(media_file.stem)
@@ -679,8 +679,8 @@ class FileTransferModule(_ModuleBase):
                     if season_index not in seasons:
                         seasons[season_index] = []
                     seasons[season_index].append(episode_index)
-                # 返回剧集情况
-                logger.info(f"{mediainfo.title_year} 文件系统已存在：{seasons}")
+                #  Back to episode status
+                logger.info(f"{mediainfo.title_year}  The file system already exists：{seasons}")
                 return ExistMediaInfo(type=MediaType.TV, seasons=seasons)
-        # 不存在
+        #  Non-existent
         return None

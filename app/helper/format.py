@@ -11,11 +11,11 @@ class FormatParser(object):
     def __init__(self, eformat: str, details: str = None, part: str = None,
                  offset: int = None, key: str = "ep"):
         """
-        :params eformat: 格式化字符串
-        :params details: 格式化详情
-        :params part: 分集
-        :params offset: 偏移量
-        :prams key: EP关键字
+        :params eformat:  Formatting strings
+        :params details:  Formatting details
+        :params part:  Subset
+        :params offset:  Offset
+        :prams key: EP Keywords.
         """
         self._format = eformat
         self._start_ep = None
@@ -71,9 +71,9 @@ class FormatParser(object):
 
     def split_episode(self, file_name: str) -> Tuple[Optional[int], Optional[int], Optional[str]]:
         """
-        拆分集数，返回开始集数，结束集数，Part信息
+        No. of split episodes， Returns the number of starting episodes， Number of ending episodes，Part Text
         """
-        # 指定的具体集数，直接返回
+        #  Specific episodes assigned， Direct return
         if self._start_ep is not None and self._start_ep == self._end_ep:
             if isinstance(self._start_ep, str):
                 s, e = self._start_ep.split("-")
@@ -89,7 +89,7 @@ class FormatParser(object):
 
     def __handle_single(self, file: str) -> Tuple[Optional[int], Optional[int]]:
         """
-        处理单集，返回单集的开始和结束集数
+        Process a single set， Returns the number of beginning and ending episodes of a single episode
         """
         if not self._format:
             return None, None

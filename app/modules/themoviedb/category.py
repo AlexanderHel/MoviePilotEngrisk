@@ -10,7 +10,7 @@ from app.utils.singleton import Singleton
 
 class CategoryHelper(metaclass=Singleton):
     """
-    二级分类
+    Secondary classification
     """
     _categorys = {}
     _movie_categorys = {}
@@ -18,7 +18,7 @@ class CategoryHelper(metaclass=Singleton):
 
     def __init__(self):
         self._category_path: Path = settings.CONFIG_PATH / "category.yaml"
-        # 二级分类策略关闭
+        # Secondary classification策略关闭
         if not settings.LIBRARY_CATEGORY:
             return
         try:
@@ -29,20 +29,20 @@ class CategoryHelper(metaclass=Singleton):
                     yaml = ruamel.yaml.YAML()
                     self._categorys = yaml.load(f)
                 except Exception as e:
-                    logger.warn(f"二级分类策略配置文件格式出现严重错误！请检查：{str(e)}")
+                    logger.warn(f"Secondary classification策略配置文件格式出现严重错误！请检查：{str(e)}")
                     self._categorys = {}
         except Exception as err:
-            logger.warn(f"二级分类策略配置文件加载出错：{err}")
+            logger.warn(f"Secondary classification策略配置文件加载出错：{err}")
 
         if self._categorys:
             self._movie_categorys = self._categorys.get('movie')
             self._tv_categorys = self._categorys.get('tv')
-        logger.info(f"已加载二级分类策略 category.yaml")
+        logger.info(f"已加载Secondary classification策略 category.yaml")
 
     @property
     def is_movie_category(self) -> bool:
         """
-        获取电影分类标志
+        Get movie category flags
         """
         if self._movie_categorys:
             return True
@@ -51,7 +51,7 @@ class CategoryHelper(metaclass=Singleton):
     @property
     def is_tv_category(self) -> bool:
         """
-        获取电视剧分类标志
+        Get tv series category flags
         """
         if self._tv_categorys:
             return True
@@ -60,7 +60,7 @@ class CategoryHelper(metaclass=Singleton):
     @property
     def movie_categorys(self) -> list:
         """
-        获取电影分类清单
+        Get a list of movie categories
         """
         if not self._movie_categorys:
             return []
@@ -69,7 +69,7 @@ class CategoryHelper(metaclass=Singleton):
     @property
     def tv_categorys(self) -> list:
         """
-        获取电视剧分类清单
+        Get a categorized list of tv series
         """
         if not self._tv_categorys:
             return []
@@ -77,27 +77,27 @@ class CategoryHelper(metaclass=Singleton):
 
     def get_movie_category(self, tmdb_info) -> str:
         """
-        判断电影的分类
-        :param tmdb_info: 识别的TMDB中的信息
-        :return: 二级分类的名称
+        Judging the classification of a movie
+        :param tmdb_info:  IdentifiableTMDB Information contained in
+        :return: Secondary classification的名称
         """
         return self.get_category(self._movie_categorys, tmdb_info)
 
     def get_tv_category(self, tmdb_info) -> str:
         """
-        判断电视剧的分类
-        :param tmdb_info: 识别的TMDB中的信息
-        :return: 二级分类的名称
+        Judging the classification of tv series
+        :param tmdb_info:  IdentifiableTMDB Information contained in
+        :return: Secondary classification的名称
         """
         return self.get_category(self._tv_categorys, tmdb_info)
 
     @staticmethod
     def get_category(categorys: dict, tmdb_info: dict) -> str:
         """
-        根据 TMDB信息与分类配置文件进行比较，确定所属分类
-        :param categorys: 分类配置
-        :param tmdb_info: TMDB信息
-        :return: 分类的名称
+        According to TMDB Compare information with categorized profiles， Determine the classification to which it belongs
+        :param categorys:  Categorized configurations
+        :param tmdb_info: TMDB Text
+        :return:  Name of the classification
         """
         if not tmdb_info:
             return ""

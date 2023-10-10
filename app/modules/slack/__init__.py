@@ -26,17 +26,17 @@ class SlackModule(_ModuleBase):
     def message_parser(body: Any, form: Any,
                        args: Any) -> Optional[CommingMessage]:
         """
-        解析消息内容，返回字典，注意以下约定值：
-        userid: 用户ID
-        username: 用户名
-        text: 内容
-        :param body: 请求体
-        :param form: 表单
-        :param args: 参数
-        :return: 渠道、消息体
+        Parsing message content， Return to dictionary， Note the following convention values：
+        userid:  SubscribersID
+        username:  User id
+        text:  Element
+        :param body:  Requestor
+        :param form:  Form (document)
+        :param args:  Parameters
+        :return:  (fig.) channel、 Message body
         """
         """
-        # 消息
+        #  Messages
         {
             'client_msg_id': '',
             'type': 'message',
@@ -59,7 +59,7 @@ class SlackModule(_ModuleBase):
             'event_ts': '1670143568.444289',
             'channel_type': 'im'
         }
-        # 命令
+        #  Command
         {
           "token": "",
           "team_id": "",
@@ -75,7 +75,7 @@ class SlackModule(_ModuleBase):
           "response_url": "",
           "trigger_id": ""
         }
-        # 快捷方式
+        #  (computer) shortcut
         {
           "type": "shortcut",
           "token": "XXXXXXXXXXXXX",
@@ -92,7 +92,7 @@ class SlackModule(_ModuleBase):
           "callback_id": "shortcut_create_task",
           "trigger_id": "944799105734.773906753841.38b5894552bdd4a780554ee59d1f3638"
         }
-        # 按钮点击
+        #  Button click
         {
           "type": "block_actions",
           "team": {
@@ -144,14 +144,14 @@ class SlackModule(_ModuleBase):
           ]
         }
         """
-        # 校验token
+        #  Calibrationtoken
         token = args.get("token")
         if not token or token != settings.API_TOKEN:
             return None
         try:
             msg_json: dict = json.loads(body)
         except Exception as err:
-            logger.debug(f"解析Slack消息失败：{err}")
+            logger.debug(f" AnalyzeSlack Message failure：{err}")
             return None
         if msg_json:
             if msg_json.get("type") == "message":
@@ -176,7 +176,7 @@ class SlackModule(_ModuleBase):
                 username = msg_json.get("user_name")
             else:
                 return None
-            logger.info(f"收到Slack消息：userid={userid}, username={username}, text={text}")
+            logger.info(f" ReceivedSlack Messages：userid={userid}, username={username}, text={text}")
             return CommingMessage(channel=MessageChannel.Slack,
                                   userid=userid, username=username, text=text)
         return None
@@ -184,9 +184,9 @@ class SlackModule(_ModuleBase):
     @checkMessage(MessageChannel.Slack)
     def post_message(self, message: Notification) -> None:
         """
-        发送消息
-        :param message: 消息
-        :return: 成功或失败
+        Send a message
+        :param message:  Messages
+        :return:  Success or failure
         """
         self.slack.send_msg(title=message.title, text=message.text,
                             image=message.image, userid=message.userid)
@@ -194,20 +194,20 @@ class SlackModule(_ModuleBase):
     @checkMessage(MessageChannel.Slack)
     def post_medias_message(self, message: Notification, medias: List[MediaInfo]) -> Optional[bool]:
         """
-        发送媒体信息选择列表
-        :param message: 消息体
-        :param medias: 媒体信息
-        :return: 成功或失败
+        Send media message selection list
+        :param message:  Messages体
+        :param medias:  Media information
+        :return:  Success or failure
         """
         return self.slack.send_meidas_msg(title=message.title, medias=medias, userid=message.userid)
 
     @checkMessage(MessageChannel.Slack)
     def post_torrents_message(self, message: Notification, torrents: List[Context]) -> Optional[bool]:
         """
-        发送种子信息选择列表
-        :param message: 消息体
-        :param torrents: 种子信息
-        :return: 成功或失败
+        Send seed message selection list
+        :param message:  Messages体
+        :param torrents:  Seed information
+        :return:  Success or failure
         """
         return self.slack.send_torrents_msg(title=message.title, torrents=torrents,
                                             userid=message.userid)

@@ -33,35 +33,35 @@ lock = Lock()
 
 
 class SiteStatistic(_PluginBase):
-    # 插件名称
-    plugin_name = "站点数据统计"
-    # 插件描述
-    plugin_desc = "自动统计和展示站点数据。"
-    # 插件图标
+    #  Plug-in name
+    plugin_name = " Site statistics"
+    #  Plugin description
+    plugin_desc = " Automatic statistics and presentation of site data。"
+    #  Plug-in icons
     plugin_icon = "statistic.png"
-    # 主题色
+    #  Theme color
     plugin_color = "#324A5E"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "lightolly"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/lightolly"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "sitestatistic_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 1
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 2
 
-    # 私有属性
+    #  Private property
     sites = None
     _scheduler: Optional[BackgroundScheduler] = None
     _last_update_time: Optional[datetime] = None
     _sites_data: dict = {}
     _site_schema: List[ISiteUserInfo] = None
 
-    # 配置属性
+    #  Configuration properties
     _enabled: bool = False
     _onlyonce: bool = False
     _cron: str = ""
@@ -72,10 +72,10 @@ class SiteStatistic(_PluginBase):
 
     def init_plugin(self, config: dict = None):
         self.sites = SitesHelper()
-        # 停止现有任务
+        #  Discontinuation of existing mandates
         self.stop_service()
 
-        # 配置
+        #  Configure
         if config:
             self._enabled = config.get("enabled")
             self._onlyonce = config.get("onlyonce")
@@ -85,48 +85,48 @@ class SiteStatistic(_PluginBase):
             self._statistic_type = config.get("statistic_type") or "all"
             self._statistic_sites = config.get("statistic_sites") or []
 
-            # 过滤掉已删除的站点
+            #  Filter out deleted sites
             self._statistic_sites = [site.get("id") for site in self.sites.get_indexers() if
                                      not site.get("public") and site.get("id") in self._statistic_sites]
             self.__update_config()
 
         if self._enabled or self._onlyonce:
-            # 加载模块
+            #  Load modules
             self._site_schema = ModuleHelper.load('app.plugins.sitestatistic.siteuserinfo',
                                                   filter_func=lambda _, obj: hasattr(obj, 'schema'))
 
-            # 定时服务
+            #  Time service
             self._scheduler = BackgroundScheduler(timezone=settings.TZ)
 
             self._site_schema.sort(key=lambda x: x.order)
-            # 站点上一次更新时间
+            #  Site last updated
             self._last_update_time = None
-            # 站点数据
+            #  Site data
             self._sites_data = {}
 
-            # 立即运行一次
+            #  Run one immediately
             if self._onlyonce:
-                logger.info(f"站点数据统计服务启动，立即运行一次")
+                logger.info(f" Site data statistics service launched， Run one immediately")
                 self._scheduler.add_job(self.refresh_all_site_data, 'date',
                                         run_date=datetime.now(
                                             tz=pytz.timezone(settings.TZ)) + timedelta(seconds=3)
                                         )
-                # 关闭一次性开关
+                #  Turn off the disposable switch
                 self._onlyonce = False
 
-                # 保存配置
+                #  Save configuration
                 self.__update_config()
 
-            # 周期运行
+            #  Periodic operation
             if self._enabled and self._cron:
                 try:
                     self._scheduler.add_job(func=self.refresh_all_site_data,
                                             trigger=CronTrigger.from_crontab(self._cron),
-                                            name="站点数据统计")
+                                            name=" Site statistics")
                 except Exception as err:
-                    logger.error(f"定时任务配置错误：{err}")
-                    # 推送实时消息
-                    self.systemmessage.put(f"执行周期配置错误：{err}")
+                    logger.error(f" Timed task configuration error：{err}")
+                    #  Push real-time messages
+                    self.systemmessage.put(f" Execution cycle misconfiguration：{err}")
             else:
                 triggers = TimerUtils.random_scheduler(num_executions=1,
                                                        begin_hour=0,
@@ -136,9 +136,9 @@ class SiteStatistic(_PluginBase):
                 for trigger in triggers:
                     self._scheduler.add_job(self.refresh_all_site_data, "cron",
                                             hour=trigger.hour, minute=trigger.minute,
-                                            name="站点数据统计")
+                                            name=" Site statistics")
 
-            # 启动任务
+            #  Initiate tasks
             if self._scheduler.get_jobs():
                 self._scheduler.print_jobs()
                 self._scheduler.start()
@@ -149,40 +149,40 @@ class SiteStatistic(_PluginBase):
     @staticmethod
     def get_command() -> List[Dict[str, Any]]:
         """
-        定义远程控制命令
-        :return: 命令关键字、事件、描述、附带数据
+        Defining remote control commands
+        :return:  Command keywords、 Event、 Descriptive、 Accompanying data
         """
         return [{
             "cmd": "/site_statistic",
             "event": EventType.SiteStatistic,
-            "desc": "站点数据统计",
-            "category": "站点",
+            "desc": " Site statistics",
+            "category": " Website",
             "data": {}
         }]
 
     def get_api(self) -> List[Dict[str, Any]]:
         """
-        获取插件API
+        Get pluginsAPI
         [{
             "path": "/xx",
             "endpoint": self.xxx,
             "methods": ["GET", "POST"],
-            "summary": "API说明"
+            "summary": "API Clarification"
         }]
         """
         return [{
             "path": "/refresh_by_domain",
             "endpoint": self.refresh_by_domain,
             "methods": ["GET"],
-            "summary": "刷新站点数据",
-            "description": "刷新对应域名的站点数据",
+            "summary": " Refresh site data",
+            "description": " Refresh site data for the corresponding domain",
         }]
 
     def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
         """
-        拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
+        Assembly plugin configuration page， Two pieces of data need to be returned：1、 Page configuration；2、 Data structure
         """
-        # 站点的可选项
+        #  Options for the site
         site_options = [{"title": site.name, "value": site.id}
                         for site in Site.list_order_by_pri(self.db)]
         return [
@@ -203,7 +203,7 @@ class SiteStatistic(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'enabled',
-                                            'label': '启用插件',
+                                            'label': ' Enabling plug-ins',
                                         }
                                     }
                                 ]
@@ -219,7 +219,7 @@ class SiteStatistic(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'notify',
-                                            'label': '发送通知',
+                                            'label': ' Send notification',
                                         }
                                     }
                                 ]
@@ -235,7 +235,7 @@ class SiteStatistic(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'onlyonce',
-                                            'label': '立即运行一次',
+                                            'label': ' Run one immediately',
                                         }
                                     }
                                 ]
@@ -256,8 +256,8 @@ class SiteStatistic(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'cron',
-                                            'label': '执行周期',
-                                            'placeholder': '5位cron表达式，留空自动'
+                                            'label': ' Implementation period',
+                                            'placeholder': '5 Classifier for honorific peoplecron Displayed formula， Leave blank spaces in writing'
                                         }
                                     }
                                 ]
@@ -273,7 +273,7 @@ class SiteStatistic(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'queue_cnt',
-                                            'label': '队列数量'
+                                            'label': ' Number of queues'
                                         }
                                     }
                                 ]
@@ -289,10 +289,10 @@ class SiteStatistic(_PluginBase):
                                         'component': 'VSelect',
                                         'props': {
                                             'model': 'statistic_type',
-                                            'label': '统计类型',
+                                            'label': ' Type of statistics',
                                             'items': [
-                                                {'title': '全量', 'value': 'all'},
-                                                {'title': '增量', 'value': 'add'}
+                                                {'title': ' Full complement', 'value': 'all'},
+                                                {'title': ' Incremental', 'value': 'add'}
                                             ]
                                         }
                                     }
@@ -312,7 +312,7 @@ class SiteStatistic(_PluginBase):
                                             'chips': True,
                                             'multiple': True,
                                             'model': 'statistic_sites',
-                                            'label': '统计站点',
+                                            'label': ' Statistical sites',
                                             'items': site_options
                                         }
                                     }
@@ -334,12 +334,12 @@ class SiteStatistic(_PluginBase):
 
     def get_page(self) -> List[dict]:
         """
-        拼装插件详情页面，需要返回页面配置，同时附带数据
+        Patchwork plug-in detail page， Need to return to page configuration， Also with data
         """
         #
-        # 最近两天的日期数组
+        #  Array of dates for the last two days
         date_list = [(datetime.now() - timedelta(days=i)).date() for i in range(2)]
-        # 最近一天的签到数据
+        #  Last day's check-in data
         stattistic_data: Dict[str, Dict[str, Any]] = {}
         for day in date_list:
             current_day = day.strftime("%Y-%m-%d")
@@ -350,30 +350,30 @@ class SiteStatistic(_PluginBase):
             return [
                 {
                     'component': 'div',
-                    'text': '暂无数据',
+                    'text': ' No data available',
                     'props': {
                         'class': 'text-center',
                     }
                 }
             ]
-        # 数据按时间降序排序
+        #  Data is sorted in descending chronological order
         stattistic_data = dict(sorted(stattistic_data.items(),
                                       key=lambda item: item[1].get('upload') or 0,
                                       reverse=True))
-        # 总上传量
+        #  Total uploads
         total_upload = sum([data.get("upload")
                             for data in stattistic_data.values() if data.get("upload")])
-        # 总下载量
+        #  Total downloads
         total_download = sum([data.get("download")
                               for data in stattistic_data.values() if data.get("download")])
-        # 总做种数
+        #  Total number of species
         total_seed = sum([data.get("seeding")
                           for data in stattistic_data.values() if data.get("seeding")])
-        # 总做种体积
+        #  Total seeding volume
         total_seed_size = sum([data.get("seeding_size")
                                for data in stattistic_data.values() if data.get("seeding_size")])
 
-        # 站点数据明细
+        #  Site data明细
         site_trs = [
             {
                 'component': 'tr',
@@ -430,12 +430,12 @@ class SiteStatistic(_PluginBase):
             } for site, data in stattistic_data.items() if not data.get("err_msg")
         ]
 
-        # 拼装页面
+        #  Assembly page
         return [
             {
                 'component': 'VRow',
                 'content': [
-                    # 总上传量
+                    #  Total uploads
                     {
                         'component': 'VCol',
                         'props': {
@@ -480,7 +480,7 @@ class SiteStatistic(_PluginBase):
                                                         'props': {
                                                             'class': 'text-caption'
                                                         },
-                                                        'text': '总上传量'
+                                                        'text': ' Total uploads'
                                                     },
                                                     {
                                                         'component': 'div',
@@ -505,7 +505,7 @@ class SiteStatistic(_PluginBase):
                             },
                         ]
                     },
-                    # 总下载量
+                    #  Total downloads
                     {
                         'component': 'VCol',
                         'props': {
@@ -550,7 +550,7 @@ class SiteStatistic(_PluginBase):
                                                         'props': {
                                                             'class': 'text-caption'
                                                         },
-                                                        'text': '总下载量'
+                                                        'text': ' Total downloads'
                                                     },
                                                     {
                                                         'component': 'div',
@@ -575,7 +575,7 @@ class SiteStatistic(_PluginBase):
                             },
                         ]
                     },
-                    # 总做种数
+                    #  Total number of species
                     {
                         'component': 'VCol',
                         'props': {
@@ -620,7 +620,7 @@ class SiteStatistic(_PluginBase):
                                                         'props': {
                                                             'class': 'text-caption'
                                                         },
-                                                        'text': '总做种数'
+                                                        'text': ' Total number of species'
                                                     },
                                                     {
                                                         'component': 'div',
@@ -645,7 +645,7 @@ class SiteStatistic(_PluginBase):
                             },
                         ]
                     },
-                    # 总做种体积
+                    #  Total seeding volume
                     {
                         'component': 'VCol',
                         'props': {
@@ -690,7 +690,7 @@ class SiteStatistic(_PluginBase):
                                                         'props': {
                                                             'class': 'text-caption'
                                                         },
-                                                        'text': '总做种体积'
+                                                        'text': ' Total seeding volume'
                                                     },
                                                     {
                                                         'component': 'div',
@@ -715,7 +715,7 @@ class SiteStatistic(_PluginBase):
                             }
                         ]
                     },
-                    # 各站点数据明细
+                    #  Breakdown of data by site
                     {
                         'component': 'VCol',
                         'props': {
@@ -736,63 +736,63 @@ class SiteStatistic(_PluginBase):
                                                 'props': {
                                                     'class': 'text-start ps-4'
                                                 },
-                                                'text': '站点'
+                                                'text': ' Website'
                                             },
                                             {
                                                 'component': 'th',
                                                 'props': {
                                                     'class': 'text-start ps-4'
                                                 },
-                                                'text': '用户名'
+                                                'text': ' User id'
                                             },
                                             {
                                                 'component': 'th',
                                                 'props': {
                                                     'class': 'text-start ps-4'
                                                 },
-                                                'text': '用户等级'
+                                                'text': ' User level'
                                             },
                                             {
                                                 'component': 'th',
                                                 'props': {
                                                     'class': 'text-start ps-4'
                                                 },
-                                                'text': '上传量'
+                                                'text': ' Upload volume'
                                             },
                                             {
                                                 'component': 'th',
                                                 'props': {
                                                     'class': 'text-start ps-4'
                                                 },
-                                                'text': '下载量'
+                                                'text': ' Downloads'
                                             },
                                             {
                                                 'component': 'th',
                                                 'props': {
                                                     'class': 'text-start ps-4'
                                                 },
-                                                'text': '分享率'
+                                                'text': ' Sharing rate'
                                             },
                                             {
                                                 'component': 'th',
                                                 'props': {
                                                     'class': 'text-start ps-4'
                                                 },
-                                                'text': '魔力值'
+                                                'text': ' Magic power level'
                                             },
                                             {
                                                 'component': 'th',
                                                 'props': {
                                                     'class': 'text-start ps-4'
                                                 },
-                                                'text': '做种数'
+                                                'text': ' Determinant (math.)'
                                             },
                                             {
                                                 'component': 'th',
                                                 'props': {
                                                     'class': 'text-start ps-4'
                                                 },
-                                                'text': '做种体积'
+                                                'text': ' Seeding volume'
                                             }
                                         ]
                                     },
@@ -810,7 +810,7 @@ class SiteStatistic(_PluginBase):
 
     def stop_service(self):
         """
-        退出插件
+        Exit plugin
         """
         try:
             if self._scheduler:
@@ -819,7 +819,7 @@ class SiteStatistic(_PluginBase):
                     self._scheduler.shutdown()
                 self._scheduler = None
         except Exception as e:
-            logger.error("退出插件失败：%s" % str(e))
+            logger.error("Exit plugin失败：%s" % str(e))
 
     def __build_class(self, html_text: str) -> Any:
         for site_schema in self._site_schema:
@@ -827,12 +827,12 @@ class SiteStatistic(_PluginBase):
                 if site_schema.match(html_text):
                     return site_schema
             except Exception as e:
-                logger.error(f"站点匹配失败 {e}")
+                logger.error(f" Site match failure {e}")
         return None
 
     def build(self, site_info: CommentedMap) -> Optional[ISiteUserInfo]:
         """
-        构建站点信息
+        Build site information
         """
         site_cookie = site_info.get("cookie")
         if not site_cookie:
@@ -841,21 +841,21 @@ class SiteStatistic(_PluginBase):
         url = site_info.get("url")
         proxy = site_info.get("proxy")
         ua = site_info.get("ua")
-        # 会话管理
+        #  Session management
         with requests.Session() as session:
             proxies = settings.PROXY if proxy else None
             proxy_server = settings.PROXY_SERVER if proxy else None
             render = site_info.get("render")
 
-            logger.debug(f"站点 {site_name} url={url} site_cookie={site_cookie} ua={ua}")
+            logger.debug(f" Website {site_name} url={url} site_cookie={site_cookie} ua={ua}")
             if render:
-                # 演染模式
+                #  Evolutionary pattern
                 html_text = PlaywrightHelper().get_page_source(url=url,
                                                                cookies=site_cookie,
                                                                ua=ua,
                                                                proxies=proxy_server)
             else:
-                # 普通模式
+                #  Normal mode
                 res = RequestUtils(cookies=site_cookie,
                                    session=session,
                                    ua=ua,
@@ -867,7 +867,7 @@ class SiteStatistic(_PluginBase):
                     else:
                         res.encoding = res.apparent_encoding
                     html_text = res.text
-                    # 第一次登录反爬
+                    #  First login anti-climbing
                     if html_text.find("title") == -1:
                         i = html_text.find("window.location")
                         if i == -1:
@@ -891,10 +891,10 @@ class SiteStatistic(_PluginBase):
                             if not html_text:
                                 return None
                         else:
-                            logger.error("站点 %s 被反爬限制：%s, 状态码：%s" % (site_name, url, res.status_code))
+                            logger.error(" Website %s  Anti-climbing restriction：%s,  Status code：%s" % (site_name, url, res.status_code))
                             return None
 
-                    # 兼容假首页情况，假首页通常没有 <link rel="search" 属性
+                    #  Compatible fake home page situation， Fake homepages usually don't have <link rel="search"  Causality
                     if '"search"' not in html_text and '"csrf-token"' not in html_text:
                         res = RequestUtils(cookies=site_cookie,
                                            session=session,
@@ -910,23 +910,23 @@ class SiteStatistic(_PluginBase):
                             if not html_text:
                                 return None
                 elif res is not None:
-                    logger.error(f"站点 {site_name} 连接失败，状态码：{res.status_code}")
+                    logger.error(f" Website {site_name}  Connection failure， Status code：{res.status_code}")
                     return None
                 else:
-                    logger.error(f"站点 {site_name} 无法访问：{url}")
+                    logger.error(f" Website {site_name}  Inaccessible：{url}")
                     return None
-            # 解析站点类型
+            #  Parsing site types
             if html_text:
                 site_schema = self.__build_class(html_text)
                 if not site_schema:
-                    logger.error("站点 %s 无法识别站点类型" % site_name)
+                    logger.error(" Website %s  Unable to recognize site type" % site_name)
                     return None
                 return site_schema(site_name, url, site_cookie, html_text, session=session, ua=ua, proxy=proxy)
             return None
 
     def refresh_by_domain(self, domain: str) -> schemas.Response:
         """
-        刷新一个站点数据，可由API调用
+        Refresh a site's data， Transferring entityAPI Call (programming)
         """
         site_info = self.sites.get_indexer(domain)
         if site_info:
@@ -934,21 +934,21 @@ class SiteStatistic(_PluginBase):
             if site_data:
                 return schemas.Response(
                     success=True,
-                    message=f"站点 {domain} 刷新成功",
+                    message=f" Website {domain}  Refresh successful",
                     data=site_data.to_dict()
                 )
             return schemas.Response(
                 success=False,
-                message=f"站点 {domain} 刷新数据失败，未获取到数据"
+                message=f" Website {domain}  Failed to refresh data， Data not captured"
             )
         return schemas.Response(
             success=False,
-            message=f"站点 {domain} 不存在"
+            message=f" Website {domain}  Non-existent"
         )
 
     def __refresh_site_data(self, site_info: CommentedMap) -> Optional[ISiteUserInfo]:
         """
-        更新单个site 数据信息
+        Updating a singlesite  Data message
         :param site_info:
         :return:
         """
@@ -960,24 +960,24 @@ class SiteStatistic(_PluginBase):
         try:
             site_user_info: ISiteUserInfo = self.build(site_info=site_info)
             if site_user_info:
-                logger.debug(f"站点 {site_name} 开始以 {site_user_info.site_schema()} 模型解析")
-                # 开始解析
+                logger.debug(f" Website {site_name}  Beginning with {site_user_info.site_schema()}  Model resolution")
+                #  Start parsing
                 site_user_info.parse()
-                logger.debug(f"站点 {site_name} 解析完成")
+                logger.debug(f" Website {site_name}  Parse completion")
 
-                # 获取不到数据时，仅返回错误信息，不做历史数据更新
+                #  When data is not available， Returns only error messages， No historical data updates
                 if site_user_info.err_msg:
                     self._sites_data.update({site_name: {"err_msg": site_user_info.err_msg}})
                     return None
 
-                # 发送通知，存在未读消息
+                #  Send notification， There are unread messages
                 self.__notify_unread_msg(site_name, site_user_info, unread_msg_notify)
 
-                # 分享率接近1时，发送消息提醒
+                #  The sharing rate is close to1 Hour， Send a message alert
                 if site_user_info.ratio and float(site_user_info.ratio) < 1:
                     self.post_message(mtype=NotificationType.SiteMessage,
-                                      title=f"【站点分享率低预警】",
-                                      text=f"站点 {site_user_info.site_name} 分享率 {site_user_info.ratio}，请注意！")
+                                      title=f"【 Low site share rate warning】",
+                                      text=f" Website {site_user_info.site_name}  Sharing rate {site_user_info.ratio}， Please note！")
 
                 self._sites_data.update(
                     {
@@ -1000,7 +1000,7 @@ class SiteStatistic(_PluginBase):
                 return site_user_info
 
         except Exception as e:
-            logger.error(f"站点 {site_name} 获取流量数据失败：{str(e)}")
+            logger.error(f" Website {site_name}  Failed to get traffic data：{str(e)}")
         return None
 
     def __notify_unread_msg(self, site_name: str, site_user_info: ISiteUserInfo, unread_msg_notify: bool):
@@ -1011,44 +1011,44 @@ class SiteStatistic(_PluginBase):
         if not unread_msg_notify:
             return
 
-        # 解析出内容，则发送内容
+        #  Parse out the content， Then send the content
         if len(site_user_info.message_unread_contents) > 0:
             for head, date, content in site_user_info.message_unread_contents:
-                msg_title = f"【站点 {site_user_info.site_name} 消息】"
-                msg_text = f"时间：{date}\n标题：{head}\n内容：\n{content}"
+                msg_title = f"【 Website {site_user_info.site_name}  Messages】"
+                msg_text = f" Timing：{date}\n Caption：{head}\n Element：\n{content}"
                 self.post_message(mtype=NotificationType.SiteMessage, title=msg_title, text=msg_text)
         else:
             self.post_message(mtype=NotificationType.SiteMessage,
-                              title=f"站点 {site_user_info.site_name} 收到 "
-                                    f"{site_user_info.message_unread} 条新消息，请登陆查看")
+                              title=f" Website {site_user_info.site_name}  Received "
+                                    f"{site_user_info.message_unread}  A new message.， Please login to view")
 
     @eventmanager.register(EventType.SiteStatistic)
     def refresh(self, event: Event):
         """
-        刷新站点数据
+        Refresh site data
         """
         if event:
-            logger.info("收到命令，开始刷新站点数据 ...")
+            logger.info("收到命令，开始Refresh site data ...")
             self.post_message(channel=event.event_data.get("channel"),
-                              title="开始刷新站点数据 ...",
+                              title="开始Refresh site data ...",
                               userid=event.event_data.get("user"))
         self.refresh_all_site_data()
         if event:
             self.post_message(channel=event.event_data.get("channel"),
-                              title="站点数据刷新完成！", userid=event.event_data.get("user"))
+                              title=" Site data refresh complete！", userid=event.event_data.get("user"))
 
     def refresh_all_site_data(self):
         """
-        多线程刷新站点下载上传量，默认间隔6小时
+        Multi-threaded refresh of site download uploads， Default interval6 Hourly
         """
         if not self.sites.get_indexers():
             return
 
-        logger.info("开始刷新站点数据 ...")
+        logger.info("开始Refresh site data ...")
 
         with lock:
 
-            # 没有指定站点，默认使用全部站点
+            #  No site specified， Use all sites by default
             if not self._statistic_sites:
                 refresh_sites = [site for site in self.sites.get_indexers() if not site.get("public")]
             else:
@@ -1057,21 +1057,21 @@ class SiteStatistic(_PluginBase):
             if not refresh_sites:
                 return
 
-            # 并发刷新
+            #  Concurrent refresh
             with ThreadPool(min(len(refresh_sites), int(self._queue_cnt or 5))) as p:
                 p.map(self.__refresh_site_data, refresh_sites)
 
-            # 通知刷新完成
+            #  Notification refresh complete
             if self._notify:
                 yesterday_sites_data = {}
-                # 增量数据
+                #  Incremental data
                 if self._statistic_type == "add":
                     last_update_time = self.get_data("last_update_time")
                     if last_update_time:
                         yesterday_sites_data = self.get_data(last_update_time) or {}
 
                 messages = []
-                # 按照上传降序排序
+                #  Sort by uploads in descending order
                 sites = self._sites_data.keys()
                 uploads = [self._sites_data[site].get("upload") or 0 if not yesterday_sites_data.get(site) else
                            (self._sites_data[site].get("upload") or 0) - (
@@ -1082,9 +1082,9 @@ class SiteStatistic(_PluginBase):
                 data_list = sorted(list(zip(sites, uploads, downloads)),
                                    key=lambda x: x[1],
                                    reverse=True)
-                # 总上传
+                #  Total uploads
                 incUploads = 0
-                # 总下载
+                #  Total downloads
                 incDownloads = 0
                 for data in data_list:
                     site = data[0]
@@ -1094,26 +1094,26 @@ class SiteStatistic(_PluginBase):
                         incUploads += int(upload)
                         incDownloads += int(download)
                         messages.append(f"【{site}】\n"
-                                        f"上传量：{StringUtils.str_filesize(upload)}\n"
-                                        f"下载量：{StringUtils.str_filesize(download)}\n"
+                                        f" Upload volume：{StringUtils.str_filesize(upload)}\n"
+                                        f" Downloads：{StringUtils.str_filesize(download)}\n"
                                         f"————————————")
 
                 if incDownloads or incUploads:
-                    messages.insert(0, f"【汇总】\n"
-                                       f"总上传：{StringUtils.str_filesize(incUploads)}\n"
-                                       f"总下载：{StringUtils.str_filesize(incDownloads)}\n"
+                    messages.insert(0, f"【 Aggregate】\n"
+                                       f" Total uploads：{StringUtils.str_filesize(incUploads)}\n"
+                                       f" Total downloads：{StringUtils.str_filesize(incDownloads)}\n"
                                        f"————————————")
                     self.post_message(mtype=NotificationType.SiteMessage,
-                                      title="站点数据统计", text="\n".join(messages))
+                                      title=" Site statistics", text="\n".join(messages))
 
-            # 获取今天的日期
+            #  Get today's date
             key = datetime.now().strftime('%Y-%m-%d')
-            # 保存数据
+            #  Save data
             self.save_data(key, self._sites_data)
 
-            # 更新时间
+            #  Update time
             self.save_data("last_update_time", key)
-            logger.info("站点数据刷新完成")
+            logger.info(" Site data refresh complete")
 
     def __update_config(self):
         self.update_config({
@@ -1129,7 +1129,7 @@ class SiteStatistic(_PluginBase):
     @eventmanager.register(EventType.SiteDeleted)
     def site_deleted(self, event):
         """
-        删除对应站点选中
+        Delete the corresponding site selection
         """
         site_id = event.event_data.get("site_id")
         config = self.get_config()
@@ -1139,17 +1139,17 @@ class SiteStatistic(_PluginBase):
                 if isinstance(statistic_sites, str):
                     statistic_sites = [statistic_sites]
 
-                # 删除对应站点
+                #  Delete the corresponding site
                 if site_id:
                     statistic_sites = [site for site in statistic_sites if int(site) != int(site_id)]
                 else:
-                    # 清空
+                    #  Empty
                     statistic_sites = []
 
-                # 若无站点，则停止
+                #  If no site， Failing agreement
                 if len(statistic_sites) == 0:
                     self._enabled = False
 
                 self._statistic_sites = statistic_sites
-                # 保存配置
+                #  Save configuration
                 self.__update_config()

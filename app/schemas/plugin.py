@@ -5,32 +5,32 @@ from pydantic import BaseModel
 
 class Plugin(BaseModel):
     """
-    插件信息
+    Plugin information
     """
     id: str = None
-    # 插件名称
+    #  Plug-in name
     plugin_name: Optional[str] = None
-    # 插件描述
+    #  Plugin description
     plugin_desc: Optional[str] = None
-    # 插件图标
+    #  Plug-in icons
     plugin_icon: Optional[str] = None
-    # 主题色
+    #  Theme color
     plugin_color: Optional[str] = None
-    # 插件版本
+    #  Plug-in version
     plugin_version: Optional[str] = None
-    # 插件作者
+    #  Plug-in authors
     plugin_author: Optional[str] = None
-    # 作者主页
+    #  Author's homepage
     author_url: Optional[str] = None
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix: Optional[str] = None
-    # 加载顺序
+    #  Loading sequence
     plugin_order: Optional[int] = 0
-    # 可使用的用户级别
+    #  Available user levels
     auth_level: Optional[int] = 0
-    # 是否已安装
+    #  Installed or not
     installed: Optional[bool] = False
-    # 运行状态
+    #  Operational state
     state: Optional[bool] = False
-    # 是否有详情页面
+    #  Availability of detail pages
     has_page: Optional[bool] = False

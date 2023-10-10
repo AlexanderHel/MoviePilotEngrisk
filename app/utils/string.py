@@ -18,7 +18,7 @@ class StringUtils:
     @staticmethod
     def num_filesize(text: Union[str, int, float]) -> int:
         """
-        将文件大小文本转化为字节
+        Convert file size text to bytes
         """
         if not text:
             return 0
@@ -47,14 +47,14 @@ class StringUtils:
     @staticmethod
     def str_timelong(time_sec: Union[str, int, float]) -> str:
         """
-        将数字转换为时间描述
+        Converting numbers to time descriptions
         """
         if not isinstance(time_sec, int) or not isinstance(time_sec, float):
             try:
                 time_sec = float(time_sec)
             except ValueError:
                 return ""
-        d = [(0, '秒'), (60 - 1, '分'), (3600 - 1, '小时'), (86400 - 1, '天')]
+        d = [(0, ' Unit of angle or arc equivalent one sixtieth of a degree'), (60 - 1, ' Ingredient'), (3600 - 1, ' Hourly'), (86400 - 1, ' Sky')]
         s = [x[0] for x in d]
         index = bisect.bisect_left(s, time_sec) - 1
         if index == -1:
@@ -66,7 +66,7 @@ class StringUtils:
     @staticmethod
     def is_chinese(word: Union[str, list]) -> bool:
         """
-        判断是否含有中文
+        Determine whether it contains chinese
         """
         if not word:
             return False
@@ -81,7 +81,7 @@ class StringUtils:
     @staticmethod
     def is_japanese(word: str) -> bool:
         """
-        判断是否含有日文
+        Determine whether it contains japanese
         """
         jap = re.compile(r'[\u3040-\u309F\u30A0-\u30FF]')
         if jap.search(word):
@@ -92,7 +92,7 @@ class StringUtils:
     @staticmethod
     def is_korean(word: str) -> bool:
         """
-        判断是否包含韩文
+        Determine if korean is included
         """
         kor = re.compile(r'[\uAC00-\uD7FF]')
         if kor.search(word):
@@ -103,7 +103,7 @@ class StringUtils:
     @staticmethod
     def is_all_chinese(word: str) -> bool:
         """
-        判断是否全是中文
+        Determine whether all chinese
         """
         for ch in word:
             if ch == ' ':
@@ -117,7 +117,7 @@ class StringUtils:
     @staticmethod
     def str_int(text: str) -> int:
         """
-        web字符串转int
+        web String conversionint
         :param text:
         :return:
         """
@@ -133,7 +133,7 @@ class StringUtils:
     @staticmethod
     def str_float(text: str) -> float:
         """
-        web字符串转float
+        web String conversionfloat
         :param text:
         :return:
         """
@@ -153,9 +153,9 @@ class StringUtils:
     def clear(text: Union[list, str], replace_word: str = "",
               allow_space: bool = False) -> Union[list, str]:
         """
-        忽略特殊字符
+        Ignore special characters
         """
-        # 需要忽略的特殊字符
+        #  Special characters to be ignored
         CONVERT_EMPTY_CHARS = r"[、.。,，·:：;；!！'’\"“”()（）\[\]【】「」\-——\+\|\\_/&#～~]"
         if not text:
             return text
@@ -174,7 +174,7 @@ class StringUtils:
     @staticmethod
     def clear_upper(text: str) -> str:
         """
-        去除特殊字符，同时大写
+        Remove special characters， Capitalize
         """
         if not text:
             return ""
@@ -183,7 +183,7 @@ class StringUtils:
     @staticmethod
     def str_filesize(size: Union[str, float, int], pre: int = 2) -> str:
         """
-        将字节计算为文件大小描述（带单位的格式化后返回）
+        Calculates bytes into a file size description（ Return after formatting with units）
         """
         if size is None:
             return ""
@@ -209,7 +209,7 @@ class StringUtils:
     @staticmethod
     def url_equal(url1: str, url2: str) -> bool:
         """
-        比较两个地址是否为同一个网站
+        Compare two addresses to see if they are the same site
         """
         if not url1 or not url2:
             return False
@@ -224,7 +224,7 @@ class StringUtils:
     @staticmethod
     def get_url_netloc(url: str) -> Tuple[str, str]:
         """
-        获取URL的协议和域名部分
+        GainURL The protocol and domain name portion of the
         """
         if not url:
             return "", ""
@@ -236,7 +236,7 @@ class StringUtils:
     @staticmethod
     def get_url_domain(url: str) -> str:
         """
-        获取URL的域名部分，只保留最后两级
+        GainURL Domain name section， Retain only the last two levels
         """
         if not url:
             return ""
@@ -253,7 +253,7 @@ class StringUtils:
     @staticmethod
     def get_url_sld(url: str) -> str:
         """
-        获取URL的二级域名部分，不含端口，若为IP则返回IP
+        GainURL The second-level domain name portion of the， Portless， IfIP Then it returnsIP
         """
         if not url:
             return ""
@@ -268,7 +268,7 @@ class StringUtils:
     @staticmethod
     def get_base_url(url: str) -> str:
         """
-        获取URL根地址
+        GainURL Root address
         """
         if not url:
             return ""
@@ -284,7 +284,7 @@ class StringUtils:
     @staticmethod
     def generate_random_str(randomlength: int = 16) -> str:
         """
-        生成一个指定长度的随机字符串
+        Generate a random string of specified length
         """
         random_str = ''
         base_str = 'ABCDEFGHIGKLMNOPQRSTUVWXYZabcdefghigklmnopqrstuvwxyz0123456789'
@@ -303,18 +303,18 @@ class StringUtils:
     @staticmethod
     def unify_datetime_str(datetime_str: str) -> str:
         """
-        日期时间格式化 统一转成 2020-10-14 07:48:04 这种格式
-        # 场景1: 带有时区的日期字符串 eg: Sat, 15 Oct 2022 14:02:54 +0800
-        # 场景2: 中间带T的日期字符串 eg: 2020-10-14T07:48:04
-        # 场景3: 中间带T的日期字符串 eg: 2020-10-14T07:48:04.208
-        # 场景4: 日期字符串以GMT结尾 eg: Fri, 14 Oct 2022 07:48:04 GMT
-        # 场景5: 日期字符串以UTC结尾 eg: Fri, 14 Oct 2022 07:48:04 UTC
-        # 场景6: 日期字符串以Z结尾 eg: Fri, 14 Oct 2022 07:48:04Z
-        # 场景7: 日期字符串为相对时间 eg: 1 month, 2 days ago
+        Date time formatting  Convert to 2020-10-14 07:48:04  This format
+        #  Take1:  Date string with time zone eg: Sat, 15 Oct 2022 14:02:54 +0800
+        #  Take2:  Intermediate zoneT Date string eg: 2020-10-14T07:48:04
+        #  Take3:  Intermediate zoneT Date string eg: 2020-10-14T07:48:04.208
+        #  Take4:  The date string starts withGMT Wind up eg: Fri, 14 Oct 2022 07:48:04 GMT
+        #  Take5:  The date string starts withUTC Wind up eg: Fri, 14 Oct 2022 07:48:04 UTC
+        #  Take6:  The date string starts withZ Wind up eg: Fri, 14 Oct 2022 07:48:04Z
+        #  Take7:  Date string as relative time eg: 1 month, 2 days ago
         :param datetime_str:
         :return:
         """
-        # 传入的参数如果是None 或者空字符串 直接返回
+        #  If the incoming parameter isNone  Or empty string  Direct return
         if not datetime_str:
             return datetime_str
 
@@ -327,7 +327,7 @@ class StringUtils:
     @staticmethod
     def format_timestamp(timestamp: str, date_format: str = '%Y-%m-%d %H:%M:%S') -> str:
         """
-        时间戳转日期
+        Timestamp to date
         :param timestamp:
         :param date_format:
         :return:
@@ -343,9 +343,9 @@ class StringUtils:
     @staticmethod
     def to_bool(text: str, default_val: bool = False) -> bool:
         """
-        字符串转bool
-        :param text: 要转换的值
-        :param default_val: 默认值
+        String conversionbool
+        :param text:  Value to be converted
+        :param default_val:  Default value
         :return:
         """
         if isinstance(text, str) and not text:
@@ -361,7 +361,7 @@ class StringUtils:
     @staticmethod
     def str_from_cookiejar(cj: dict) -> str:
         """
-        将cookiejar转换为字符串
+        Commander-in-chief (military)cookiejar Convert to string
         :param cj:
         :return:
         """
@@ -370,9 +370,9 @@ class StringUtils:
     @staticmethod
     def get_idlist(content: str, dicts: List[dict]):
         """
-        从字符串中提取id列表
-        :param content: 字符串
-        :param dicts: 字典
+        Extract from stringid Listings
+        :param content:  String (computer science)
+        :param dicts:  Dictionaries
         :return:
         """
         if not content:
@@ -397,7 +397,7 @@ class StringUtils:
     @staticmethod
     def str_timehours(minutes: int) -> str:
         """
-        将分钟转换成小时和分钟
+        Converting minutes to hours and minutes
         :param minutes:
         :return:
         """
@@ -406,14 +406,14 @@ class StringUtils:
         hours = minutes // 60
         minutes = minutes % 60
         if hours:
-            return "%s小时%s分" % (hours, minutes)
+            return "%s Hourly%s Ingredient" % (hours, minutes)
         else:
-            return "%s分钟" % minutes
+            return "%s Minutes" % minutes
 
     @staticmethod
     def str_amount(amount: object, curr="$") -> str:
         """
-        格式化显示金额
+        Formatting display amounts
         """
         if not amount:
             return "0"
@@ -422,25 +422,25 @@ class StringUtils:
     @staticmethod
     def count_words(text: str) -> int:
         """
-        计算字符串中包含的单词或汉字的数量，需要兼容中英文混合的情况
-        :param text: 要计算的字符串
-        :return: 字符串中包含的词数量
+        Counts the number of words or characters contained in a string， Need to be compatible with mixed chinese and english
+        :param text:  String to be calculated
+        :return:  Number of words contained in the string
         """
         if not text:
             return 0
-        # 使用正则表达式匹配汉字和英文单词
+        #  Matching chinese characters and english words with regular expressions
         chinese_pattern = '[\u4e00-\u9fa5]'
         english_pattern = '[a-zA-Z]+'
 
-        # 匹配汉字和英文单词
+        #  Match chinese characters and english words
         chinese_matches = re.findall(chinese_pattern, text)
         english_matches = re.findall(english_pattern, text)
 
-        # 过滤掉空格和数字
+        #  Filter out spaces and numbers
         chinese_words = [word for word in chinese_matches if word.isalpha()]
         english_words = [word for word in english_matches if word.isalpha()]
 
-        # 计算汉字和英文单词的数量
+        #  Counting chinese characters and english words
         chinese_count = len(chinese_words)
         english_count = len(english_words)
 
@@ -449,73 +449,73 @@ class StringUtils:
     @staticmethod
     def split_text(text: str, max_length: int) -> Generator:
         """
-        把文本拆分为固定字节长度的数组，优先按换行拆分，避免单词内拆分
+        Split text into fixed-byte-length arrays， Priority split by newline， Avoid intra-word splits
         """
         if not text:
             yield ''
-        # 分行
+        #  Subsidiary bank
         lines = re.split('\n', text)
         buf = ''
         for line in lines:
             if len(line.encode('utf-8')) > max_length:
-                # 超长行继续拆分
+                #  Ultra-long rows continue to split
                 blank = ""
                 if re.match(r'^[A-Za-z0-9.\s]+', line):
-                    # 英文行按空格拆分
+                    #  English lines split by space
                     parts = line.split()
                     blank = " "
                 else:
-                    # 中文行按字符拆分
+                    #  Chinese row split by character
                     parts = line
                 part = ''
                 for p in parts:
                     if len((part + p).encode('utf-8')) > max_length:
-                        # 超长则Yield
+                        #  Ultra-long term (i.e. long term)Yield
                         yield (buf + part).strip()
                         buf = ''
                         part = f"{blank}{p}"
                     else:
                         part = f"{part}{blank}{p}"
                 if part:
-                    # 将最后的部分追加到buf
+                    #  Append the last part tobuf
                     buf += part
             else:
                 if len((buf + "\n" + line).encode('utf-8')) > max_length:
-                    # buf超长则Yield
+                    # buf Ultra-long term (i.e. long term)Yield
                     yield buf.strip()
                     buf = line
                 else:
-                    # 短行直接追加到buf
+                    #  The short line is appended directly to thebuf
                     if buf:
                         buf = f"{buf}\n{line}"
                     else:
                         buf = line
         if buf:
-            # 处理文本末尾剩余部分
+            #  Processing of the remainder at the end of the text
             yield buf.strip()
 
     @staticmethod
     def get_keyword(content: str) \
             -> Tuple[Optional[MediaType], Optional[str], Optional[int], Optional[int], Optional[str], Optional[str]]:
         """
-        从搜索关键字中拆分中年份、季、集、类型
+        Split medium years from search keywords、 Classifier for seasonal crop yield or seasons of a tv series、 Classifier for sections of a tv series e.g. episode、 Typology
         """
         if not content:
             return None, None, None, None, None, None
 
-        # 去掉查询中的电影或电视剧关键字
-        mtype = MediaType.TV if re.search(r'^(电视剧|动漫|\s+电视剧|\s+动漫)', content) else None
-        content = re.sub(r'^(电影|电视剧|动漫|\s+电影|\s+电视剧|\s+动漫)', '', content).strip()
+        #  Remove movie or tv show keywords from the query
+        mtype = MediaType.TV if re.search(r'^( Dramas| Cartoons and comics|\s+ Dramas|\s+ Cartoons and comics)', content) else None
+        content = re.sub(r'^( Cinematic| Dramas| Cartoons and comics|\s+ Cinematic|\s+ Dramas|\s+ Cartoons and comics)', '', content).strip()
 
-        # 稍微切一下剧集吧
+        #  Let's cut the episode a little bit.
         season_num = None
         episode_num = None
-        season_re = re.search(r'第\s*([0-9一二三四五六七八九十]+)\s*季', content, re.IGNORECASE)
+        season_re = re.search(r' (prefix indicating ordinal number, e.g. first, number two etc)\s*([0-9 One, two, three, four, five, six, seven, eight, nine, ten.]+)\s* Classifier for seasonal crop yield or seasons of a tv series', content, re.IGNORECASE)
         if season_re:
             mtype = MediaType.TV
             season_num = int(cn2an.cn2an(season_re.group(1), mode='smart'))
 
-        episode_re = re.search(r'第\s*([0-9一二三四五六七八九十百零]+)\s*集', content, re.IGNORECASE)
+        episode_re = re.search(r' (prefix indicating ordinal number, e.g. first, number two etc)\s*([0-9 One, two, three, four, five, six, seven, eight, nine, ten, zero.]+)\s* Classifier for sections of a tv series e.g. episode', content, re.IGNORECASE)
         if episode_re:
             mtype = MediaType.TV
             episode_num = int(cn2an.cn2an(episode_re.group(1), mode='smart'))
@@ -526,7 +526,7 @@ class StringUtils:
         year = year_re.group(1) if year_re else None
 
         key_word = re.sub(
-            r'第\s*[0-9一二三四五六七八九十]+\s*季|第\s*[0-9一二三四五六七八九十百零]+\s*集|[\s(]+(\d{4})[\s)]*', '',
+            r' (prefix indicating ordinal number, e.g. first, number two etc)\s*[0-9 One, two, three, four, five, six, seven, eight, nine, ten.]+\s* Classifier for seasonal crop yield or seasons of a tv series| (prefix indicating ordinal number, e.g. first, number two etc)\s*[0-9 One, two, three, four, five, six, seven, eight, nine, ten, zero.]+\s* Classifier for sections of a tv series e.g. episode|[\s(]+(\d{4})[\s)]*', '',
             content, flags=re.IGNORECASE).strip()
         key_word = re.sub(r'\s+', ' ', key_word) if key_word else year
 
@@ -535,7 +535,7 @@ class StringUtils:
     @staticmethod
     def str_title(s: str) -> str:
         """
-        大写首字母兼容None
+        Capitalization of letters is compatibleNone
         """
         return s.title() if s else s
 
@@ -560,7 +560,7 @@ class StringUtils:
     @staticmethod
     def get_domain_address(address: str, prefix: bool = True) -> Tuple[Optional[str], Optional[int]]:
         """
-        从地址中获取域名和端口号
+        Get the domain name and port number from the address
         """
         if not address:
             return None, None
@@ -568,24 +568,24 @@ class StringUtils:
             address = "http://" + address
         parts = address.split(":")
         if len(parts) > 3:
-            # 处理不希望包含多个冒号的情况（除了协议后的冒号）
+            #  Handling unwanted inclusion of multiple colons（ Except for the colon after the agreement）
             return None, None
         domain = ":".join(parts[:-1])
-        # 检查是否包含端口号
+        #  Check to see if the port number is included
         try:
             port = int(parts[-1])
         except ValueError:
-            # 端口号不是整数，返回 None 表示无效
+            #  The port number is not an integer， Come (or go) back None  Indicate that sth is invalid
             return None, None
         return domain, port
 
     @staticmethod
     def str_series(array: List[int]) -> str:
         """
-        将季集列表转化为字符串简写
+        Converting a list of seasonal episodes to string shorthand
         """
 
-        # 确保数组按照升序排列
+        #  Ensure that arrays are sorted in ascending order
         array.sort()
 
         result = []
@@ -603,7 +603,7 @@ class StringUtils:
                 start = array[i]
                 end = array[i]
 
-        # 处理最后一个序列
+        #  Processing the last sequence
         if start == end:
             result.append(str(start))
         else:
@@ -614,13 +614,13 @@ class StringUtils:
     @staticmethod
     def format_ep(nums: List[int]) -> str:
         """
-        将剧集列表格式化为连续区间
+        Formatting episode lists as continuous intervals
         """
         if not nums:
             return ""
         if len(nums) == 1:
             return f"E{nums[0]:02d}"
-        # 将数组升序排序
+        #  Sort the array in ascending order
         nums.sort()
         formatted_ranges = []
         start = nums[0]
@@ -647,7 +647,7 @@ class StringUtils:
     @staticmethod
     def is_number(text: str) -> bool:
         """
-        判断字符是否为可以转换为整数或者浮点数
+        Determine whether a character can be converted to an integer or a floating point number.
         """
         if not text:
             return False

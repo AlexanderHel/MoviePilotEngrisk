@@ -6,13 +6,13 @@ from pydantic import BaseModel
 class DownloadHistory(BaseModel):
     # ID
     id: int
-    # 保存路程
+    #  Preservation of distance
     path: Optional[str] = None
-    # 类型：电影、电视剧
+    #  Typology： Cinematic、 Dramas
     type: Optional[str] = None
-    # 标题
+    #  Caption
     title: Optional[str] = None
-    # 年份
+    #  Particular year
     year: Optional[str] = None
     # TMDBID
     tmdbid: Optional[int] = None
@@ -20,29 +20,29 @@ class DownloadHistory(BaseModel):
     imdbid: Optional[str] = None
     # TVDBID
     tvdbid: Optional[int] = None
-    # 豆瓣ID
+    #  Douban, prc social networking websiteID
     doubanid: Optional[str] = None
-    # 季Sxx
+    #  Classifier for seasonal crop yield or seasons of a tv seriesSxx
     seasons: Optional[str] = None
-    # 集Exx
+    #  Classifier for sections of a tv series e.g. episodeExx
     episodes: Optional[str] = None
-    # 海报
+    #  Playbill
     image: Optional[str] = None
-    # 下载器Hash
+    #  DownloaderHash
     download_hash: Optional[str] = None
-    # 种子名称
+    #  Seed name
     torrent_name: Optional[str] = None
-    # 种子描述
+    #  Seed description
     torrent_description: Optional[str] = None
-    # 站点
+    #  Website
     torrent_site: Optional[str] = None
-    # 下载用户
+    #  Download users
     userid: Optional[str] = None
-    # 下载渠道
+    #  Download channels
     channel: Optional[str] = None
-    # 创建时间
+    #  Creation time
     date: Optional[str] = None
-    # 备注
+    #  Note
     note: Optional[str] = None
 
     class Config:
@@ -52,19 +52,19 @@ class DownloadHistory(BaseModel):
 class TransferHistory(BaseModel):
     # ID
     id: int
-    # 源目录
+    #  Source catalog
     src: Optional[str] = None
-    # 目的目录
+    #  Destination catalog
     dest: Optional[str] = None
-    # 转移模式link/copy/move/softlink
+    #  Transfer modelink/copy/move/softlink
     mode: Optional[str] = None
-    # 类型：电影、电视剧
+    #  Typology： Cinematic、 Dramas
     type: Optional[str] = None
-    # 二级分类
+    #  Secondary classification
     category: Optional[str] = None
-    # 标题
+    #  Caption
     title: Optional[str] = None
-    # 年份
+    #  Particular year
     year: Optional[str] = None
     # TMDBID
     tmdbid: Optional[int] = None
@@ -72,21 +72,21 @@ class TransferHistory(BaseModel):
     imdbid: Optional[str] = None
     # TVDBID
     tvdbid: Optional[int] = None
-    # 豆瓣ID
+    #  Douban, prc social networking websiteID
     doubanid: Optional[str] = None
-    # 季Sxx
+    #  Classifier for seasonal crop yield or seasons of a tv seriesSxx
     seasons: Optional[str] = None
-    # 集Exx
+    #  Classifier for sections of a tv series e.g. episodeExx
     episodes: Optional[str] = None
-    # 海报
+    #  Playbill
     image: Optional[str] = None
-    # 下载器Hash
+    #  DownloaderHash
     download_hash: Optional[str] = None
-    # 状态 1-成功，0-失败
+    #  State of affairs 1- Successes，0- Fail (e.g. experiments)
     status: bool = True
-    # 失败原因
+    #  Reasons for failure
     errmsg: Optional[str] = None
-    # 日期
+    #  Dates
     date: Optional[str] = None
 
     class Config:

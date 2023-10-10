@@ -12,40 +12,40 @@ from app.schemas import TransferInfo
 
 class TransferHistoryOper(DbOper):
     """
-    转移历史管理
+    Transfer of historical management
     """
 
     def get(self, historyid: int) -> TransferHistory:
         """
-        获取转移历史
-        :param historyid: 转移历史id
+        Getting the transfer history
+        :param historyid:  Transfer historyid
         """
         return TransferHistory.get(self._db, historyid)
 
     def get_by_title(self, title: str) -> List[TransferHistory]:
         """
-        按标题查询转移记录
-        :param title: 数据key
+        Search transfer records by title
+        :param title:  Digitalkey
         """
         return TransferHistory.list_by_title(self._db, title)
 
     def get_by_src(self, src: str) -> TransferHistory:
         """
-        按源查询转移记录
-        :param src: 数据key
+        Search transfer records by source
+        :param src:  Digitalkey
         """
         return TransferHistory.get_by_src(self._db, src)
 
     def list_by_hash(self, download_hash: str) -> List[TransferHistory]:
         """
-        按种子hash查询转移记录
-        :param download_hash: 种子hash
+        By seedhash Access to transfer records
+        :param download_hash:  Torrenthash
         """
         return TransferHistory.list_by_hash(self._db, download_hash)
 
     def add(self, **kwargs) -> TransferHistory:
         """
-        新增转移历史
+        Add transfer history
         """
         kwargs.update({
             "date": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
@@ -54,14 +54,14 @@ class TransferHistoryOper(DbOper):
 
     def statistic(self, days: int = 7) -> List[Any]:
         """
-        统计最近days天的下载历史数量
+        Statistical updatedays Days of download history
         """
         return TransferHistory.statistic(self._db, days)
 
     def get_by(self, title: str = None, year: str = None, mtype: str = None,
                season: str = None, episode: str = None, tmdbid: int = None, dest: str = None) -> List[TransferHistory]:
         """
-        按类型、标题、年份、季集查询转移记录
+        By type、 Caption、 Particular year、 Quarterly set query transfer record
         """
         return TransferHistory.list_by(db=self._db,
                                        mtype=mtype,
@@ -74,7 +74,7 @@ class TransferHistoryOper(DbOper):
 
     def get_by_type_tmdbid(self, mtype: str = None, tmdbid: int = None) -> TransferHistory:
         """
-        按类型、tmdb查询转移记录
+        By type、tmdb Access to transfer records
         """
         return TransferHistory.get_by_type_tmdbid(db=self._db,
                                                   mtype=mtype,
@@ -82,19 +82,19 @@ class TransferHistoryOper(DbOper):
 
     def delete(self, historyid):
         """
-        删除转移记录
+        Deletion of transfer records
         """
         TransferHistory.delete(self._db, historyid)
 
     def truncate(self):
         """
-        清空转移记录
+        Emptying the transfer record
         """
         TransferHistory.truncate(self._db)
 
     def add_force(self, **kwargs) -> TransferHistory:
         """
-        新增转移历史，相同源目录的记录会被删除
+        Add transfer history，相同源目录的记录会被删除
         """
         if kwargs.get("src"):
             transferhistory = TransferHistory.get_by_src(self._db, kwargs.get("src"))
@@ -107,7 +107,7 @@ class TransferHistoryOper(DbOper):
 
     def update_download_hash(self, historyid, download_hash):
         """
-        补充转移记录download_hash
+        Supplementary transfer recordsdownload_hash
         """
         TransferHistory.update_download_hash(self._db, historyid, download_hash)
 
@@ -115,7 +115,7 @@ class TransferHistoryOper(DbOper):
                     mediainfo: MediaInfo, transferinfo: TransferInfo,
                     download_hash: str = None):
         """
-        新增转移成功历史记录
+        Add transfer success history
         """
         self.add_force(
             src=str(src_path),
@@ -140,7 +140,7 @@ class TransferHistoryOper(DbOper):
     def add_fail(self, src_path: Path, mode: str, meta: MetaBase, mediainfo: MediaInfo = None,
                  transferinfo: TransferInfo = None, download_hash: str = None):
         """
-        新增转移失败历史记录
+        Added transfer failure history
         """
         if mediainfo and transferinfo:
             his = self.add_force(
@@ -160,7 +160,7 @@ class TransferHistoryOper(DbOper):
                 image=mediainfo.get_poster_image(),
                 download_hash=download_hash,
                 status=0,
-                errmsg=transferinfo.message or '未知错误',
+                errmsg=transferinfo.message or ' Unknown error',
                 files=json.dumps(transferinfo.file_list)
             )
         else:
@@ -173,6 +173,6 @@ class TransferHistoryOper(DbOper):
                 episodes=meta.episode,
                 download_hash=download_hash,
                 status=0,
-                errmsg="未识别到媒体信息"
+                errmsg=" No media messages recognized"
             )
         return his

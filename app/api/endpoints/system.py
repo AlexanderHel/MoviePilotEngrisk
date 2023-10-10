@@ -25,10 +25,10 @@ from version import APP_VERSION
 router = APIRouter()
 
 
-@router.get("/env", summary="查询系统环境变量", response_model=schemas.Response)
+@router.get("/env", summary=" Querying system environment variables", response_model=schemas.Response)
 def get_env_setting(_: schemas.TokenPayload = Depends(verify_token)):
     """
-    查询系统环境变量，包括当前版本号
+    Querying system environment variables， Include the current version number
     """
     info = settings.dict(
         exclude={"SECRET_KEY", "SUPERUSER_PASSWORD", "API_TOKEN"}
@@ -40,15 +40,15 @@ def get_env_setting(_: schemas.TokenPayload = Depends(verify_token)):
                             data=info)
 
 
-@router.get("/progress/{process_type}", summary="实时进度")
+@router.get("/progress/{process_type}", summary=" Real time progress")
 def get_progress(process_type: str, token: str):
     """
-    实时获取处理进度，返回格式为SSE
+    Real-time access to processing progress， The return format isSSE
     """
     if not token or not verify_token(token):
         raise HTTPException(
             status_code=403,
-            detail="认证失败！",
+            detail=" Authentication failure！",
         )
 
     progress = ProgressHelper()
@@ -62,36 +62,36 @@ def get_progress(process_type: str, token: str):
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
-@router.get("/setting/{key}", summary="查询系统设置", response_model=schemas.Response)
+@router.get("/setting/{key}", summary=" Query system settings", response_model=schemas.Response)
 def get_setting(key: str,
                 _: schemas.TokenPayload = Depends(verify_token)):
     """
-    查询系统设置
+    Query system settings
     """
     return schemas.Response(success=True, data={
         "value": SystemConfigOper().get(key)
     })
 
 
-@router.post("/setting/{key}", summary="更新系统设置", response_model=schemas.Response)
+@router.post("/setting/{key}", summary=" Update system settings", response_model=schemas.Response)
 def set_setting(key: str, value: Union[list, dict, str, int] = None,
                 _: schemas.TokenPayload = Depends(verify_token)):
     """
-    更新系统设置
+    Update system settings
     """
     SystemConfigOper().set(key, value)
     return schemas.Response(success=True)
 
 
-@router.get("/message", summary="实时消息")
+@router.get("/message", summary=" Real-time news")
 def get_message(token: str):
     """
-    实时获取系统消息，返回格式为SSE
+    Get system messages in real time， The return format isSSE
     """
     if not token or not verify_token(token):
         raise HTTPException(
             status_code=403,
-            detail="认证失败！",
+            detail=" Authentication failure！",
         )
 
     message = MessageHelper()
@@ -105,20 +105,20 @@ def get_message(token: str):
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
-@router.get("/logging", summary="实时日志")
+@router.get("/logging", summary=" Real-time logs")
 def get_logging(token: str):
     """
-    实时获取系统日志，返回格式为SSE
+    Real-time access to system logs， The return format isSSE
     """
     if not token or not verify_token(token):
         raise HTTPException(
             status_code=403,
-            detail="认证失败！",
+            detail=" Authentication failure！",
         )
 
     def log_generator():
         log_path = settings.LOG_PATH / 'moviepilot.log'
-        # 读取文件末尾50行，不使用tailer模块
+        #  Read the end of the file50 Classifier for objects in rows such as words， Non-usetailer Module (in software)
         with open(log_path, 'r', encoding='utf-8') as f:
             for line in f.readlines()[-50:]:
                 yield 'data: %s\n\n' % line
@@ -130,39 +130,39 @@ def get_logging(token: str):
     return StreamingResponse(log_generator(), media_type="text/event-stream")
 
 
-@router.get("/nettest", summary="测试网络连通性")
+@router.get("/nettest", summary=" Test network connectivity")
 def nettest(url: str,
             proxy: bool,
             _: schemas.TokenPayload = Depends(verify_token)):
     """
-    测试网络连通性
+    Test network connectivity
     """
-    # 记录开始的毫秒数
+    #  Number of milliseconds since the start of the record
     start_time = datetime.now()
     url = url.replace("{TMDBAPIKEY}", settings.TMDB_API_KEY)
     result = RequestUtils(proxies=settings.PROXY if proxy else None,
                           ua=settings.USER_AGENT).get_res(url)
-    # 计时结束的毫秒数
+    #  Number of milliseconds to time out
     end_time = datetime.now()
-    # 计算相关秒数
+    #  Calculate the number of relevant seconds
     if result and result.status_code == 200:
         return schemas.Response(success=True, data={
             "time": round((end_time - start_time).microseconds / 1000)
         })
     elif result:
-        return schemas.Response(success=False, message=f"错误码：{result.status_code}", data={
+        return schemas.Response(success=False, message=f" Error code：{result.status_code}", data={
             "time": round((end_time - start_time).microseconds / 1000)
         })
     else:
-        return schemas.Response(success=False, message="网络连接失败！")
+        return schemas.Response(success=False, message=" Network connection failure！")
 
 
-@router.get("/versions", summary="查询Github所有Release版本", response_model=schemas.Response)
+@router.get("/versions", summary=" Consult (a document etc)Github PossessRelease Releases", response_model=schemas.Response)
 def latest_version(_: schemas.TokenPayload = Depends(verify_token)):
     """
-    查询Github所有Release版本
+    Consult (a document etc)Github PossessRelease Releases
     """
-    version_res = RequestUtils().get_res(f"https://api.github.com/repos/jxxghp/MoviePilot/releases")
+    version_res = RequestUtils().get_res(f"https://api.github.com/repos/AlexanderHel/MoviePilotEngrisk/releases")
     if version_res:
         ver_json = version_res.json()
         if ver_json:
@@ -170,14 +170,14 @@ def latest_version(_: schemas.TokenPayload = Depends(verify_token)):
     return schemas.Response(success=False)
 
 
-@router.get("/ruletest", summary="优先级规则测试", response_model=schemas.Response)
+@router.get("/ruletest", summary=" Priority rule testing", response_model=schemas.Response)
 def ruletest(title: str,
              subtitle: str = None,
              ruletype: str = None,
              db: Session = Depends(get_db),
              _: schemas.TokenPayload = Depends(verify_token)):
     """
-    过滤规则测试，规则类型 1-订阅，2-洗版，3-搜索
+    Filter rule testing， Type of rule 1- Subscribe to，2- Typesetting，3- Look for sth.
     """
     torrent = schemas.TorrentInfo(
         title=title,
@@ -190,38 +190,38 @@ def ruletest(title: str,
     else:
         rule_string = SystemConfigOper().get(SystemConfigKey.SubscribeFilterRules)
     if not rule_string:
-        return schemas.Response(success=False, message="优先级规则未设置！")
+        return schemas.Response(success=False, message=" Priority rules not set！")
 
-    # 过滤
+    #  Filtration
     result = SearchChain(db).filter_torrents(rule_string=rule_string,
                                              torrent_list=[torrent])
     if not result:
-        return schemas.Response(success=False, message="不符合优先级规则！")
+        return schemas.Response(success=False, message=" Failure to comply with priority rules！")
     return schemas.Response(success=True, data={
         "priority": 100 - result[0].pri_order + 1
     })
 
 
-@router.get("/restart", summary="重启系统", response_model=schemas.Response)
+@router.get("/restart", summary=" Reboot", response_model=schemas.Response)
 def restart_system(_: schemas.TokenPayload = Depends(verify_token)):
     """
-    重启系统
+    Reboot
     """
     if not SystemUtils.can_restart():
-        return schemas.Response(success=False, message="当前运行环境不支持重启操作！")
-    # 执行重启
+        return schemas.Response(success=False, message=" The current operating environment does not support reboot operations！")
+    #  Perform a reboot
     ret, msg = SystemUtils.restart()
     return schemas.Response(success=ret, message=msg)
 
 
-@router.get("/runscheduler", summary="运行服务", response_model=schemas.Response)
+@router.get("/runscheduler", summary=" Operational services", response_model=schemas.Response)
 def execute_command(jobid: str,
                     _: schemas.TokenPayload = Depends(verify_token)):
     """
-    执行命令
+    Execute a command
     """
     if not jobid:
-        return schemas.Response(success=False, message="命令不能为空！")
+        return schemas.Response(success=False, message=" The command cannot be empty！")
     if jobid == "subscribe_search":
         Scheduler().start(jobid, state = 'R')
     else:

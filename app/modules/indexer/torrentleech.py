@@ -26,7 +26,7 @@ class TorrentLeech:
     def search(self, keyword: str, page: int = 0) -> Tuple[bool, List[dict]]:
 
         if StringUtils.is_chinese(keyword):
-            # 不支持中文
+            #  No chinese support
             return True, []
 
         if keyword:
@@ -61,10 +61,10 @@ class TorrentLeech:
                 }
                 torrents.append(torrent)
         elif res is not None:
-            logger.warn(f"{self._indexer.get('name')} 搜索失败，错误码：{res.status_code}")
+            logger.warn(f"{self._indexer.get('name')}  Search failure， Error code：{res.status_code}")
             return True, []
         else:
-            logger.warn(f"{self._indexer.get('name')} 搜索失败，无法连接 {self._indexer.get('domain')}")
+            logger.warn(f"{self._indexer.get('name')}  Search failure， Connectionless {self._indexer.get('domain')}")
             return True, []
 
         return False, torrents

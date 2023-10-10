@@ -13,28 +13,28 @@ from app.utils.http import RequestUtils
 
 
 class ChineseSubFinder(_PluginBase):
-    # 插件名称
+    #  Plug-in name
     plugin_name = "ChineseSubFinder"
-    # 插件描述
-    plugin_desc = "整理入库时通知ChineseSubFinder下载字幕。"
-    # 插件图标
+    #  Plugin description
+    plugin_desc = " Notify me when you're ready to organize your inventoryChineseSubFinder Download subtitles。"
+    #  Plug-in icons
     plugin_icon = "chinesesubfinder.png"
-    # 主题色
+    #  Theme color
     plugin_color = "#83BE39"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "jxxghp"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/jxxghp"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "chinesesubfinder_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 5
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 1
 
-    # 私有属性
+    #  Private property
     _save_tmp_path = None
     _enabled = False
     _host = None
@@ -82,7 +82,7 @@ class ChineseSubFinder(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'enabled',
-                                            'label': '启用插件',
+                                            'label': ' Enabling plug-ins',
                                         }
                                     }
                                 ]
@@ -103,7 +103,7 @@ class ChineseSubFinder(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'host',
-                                            'label': '服务器'
+                                            'label': ' Server (computer)'
                                         }
                                     }
                                 ]
@@ -119,7 +119,7 @@ class ChineseSubFinder(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'api_key',
-                                            'label': 'API密钥'
+                                            'label': 'API Keys'
                                         }
                                     }
                                 ]
@@ -140,7 +140,7 @@ class ChineseSubFinder(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'local_path',
-                                            'label': '本地路径'
+                                            'label': ' Local path'
                                         }
                                     }
                                 ]
@@ -156,7 +156,7 @@ class ChineseSubFinder(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'remote_path',
-                                            'label': '远端路径'
+                                            'label': ' Remote path'
                                         }
                                     }
                                 ]
@@ -185,39 +185,39 @@ class ChineseSubFinder(_PluginBase):
     @eventmanager.register(EventType.TransferComplete)
     def download(self, event: Event):
         """
-        调用ChineseSubFinder下载字幕
+        Call (programming)ChineseSubFinder Download subtitles
         """
         if not self._enabled or not self._host or not self._api_key:
             return
         item = event.event_data
         if not item:
             return
-        # 请求地址
+        #  Request address
         req_url = "%sapi/v1/add-job" % self._host
 
-        # 媒体信息
+        #  Media information
         item_media: MediaInfo = item.get("mediainfo")
-        # 转移信息
+        #  Transfer information
         item_transfer: TransferInfo = item.get("transferinfo")
-        # 类型
+        #  Typology
         item_type = item_media.type
-        # 目的路径
+        #  Destination path
         item_dest: Path = item_transfer.target_path
-        # 是否蓝光原盘
+        #  Whether or not the original blu-ray disc
         item_bluray = item_transfer.is_bluray
-        # 文件清单
+        #  List of documents
         item_file_list = item_transfer.file_list_new
 
         if item_bluray:
-            # 蓝光原盘虚拟个文件
+            #  Blu-ray disc virtualization files
             item_file_list = ["%s.mp4" % item_dest / item_dest.name]
 
         for file_path in item_file_list:
-            # 路径替换
+            #  Path replacement
             if self._local_path and self._remote_path and file_path.startswith(self._local_path):
                 file_path = file_path.replace(self._local_path, self._remote_path).replace('\\', '/')
 
-            # 调用CSF下载字幕
+            #  Call (programming)CSF Download subtitles
             self.__request_csf(req_url=req_url,
                                file_path=file_path,
                                item_type=0 if item_type == MediaType.MOVIE.value else 1,
@@ -225,8 +225,8 @@ class ChineseSubFinder(_PluginBase):
 
     @lru_cache(maxsize=128)
     def __request_csf(self, req_url, file_path, item_type, item_bluray):
-        # 一个名称只建一个任务
-        logger.info("通知ChineseSubFinder下载字幕: %s" % file_path)
+        #  Create only one task with one name
+        logger.info(" NotificationsChineseSubFinder Download subtitles: %s" % file_path)
         params = {
             "video_type": item_type,
             "physical_video_file_full_path": file_path,
@@ -239,18 +239,18 @@ class ChineseSubFinder(_PluginBase):
                 "Authorization": "Bearer %s" % self._api_key
             }).post(req_url, json=params)
             if not res or res.status_code != 200:
-                logger.error("调用ChineseSubFinder API失败！")
+                logger.error(" Call (programming)ChineseSubFinder API Fail (e.g. experiments)！")
             else:
-                # 如果文件目录没有识别的nfo元数据， 此接口会返回控制符，推测是ChineseSubFinder的原因
-                # emby refresh元数据时异步的
+                #  If the file directory is not recognized by thenfo Metadata，  This interface returns the controller， PresumablyChineseSubFinder Underlying causes
+                # emby refresh Asynchronous when metadata
                 if res.text:
                     job_id = res.json().get("job_id")
                     message = res.json().get("message")
                     if not job_id:
-                        logger.warn("ChineseSubFinder下载字幕出错：%s" % message)
+                        logger.warn("ChineseSubFinder Error downloading subtitles：%s" % message)
                     else:
-                        logger.info("ChineseSubFinder任务添加成功：%s" % job_id)
+                        logger.info("ChineseSubFinder Task added successfully：%s" % job_id)
                 else:
-                    logger.error("%s 目录缺失nfo元数据" % file_path)
+                    logger.error("%s  Missing catalognfo Metadata" % file_path)
         except Exception as e:
-            logger.error("连接ChineseSubFinder出错：" + str(e))
+            logger.error(" GroutChineseSubFinder Make a mistake：" + str(e))

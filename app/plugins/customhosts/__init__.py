@@ -11,51 +11,51 @@ from app.utils.system import SystemUtils
 
 
 class CustomHosts(_PluginBase):
-    # 插件名称
-    plugin_name = "自定义Hosts"
-    # 插件描述
-    plugin_desc = "修改系统hosts文件，加速网络访问。"
-    # 插件图标
+    #  Plug-in name
+    plugin_name = " CustomizableHosts"
+    #  Plugin description
+    plugin_desc = " Modify the systemhosts File， Accelerated network access。"
+    #  Plug-in icons
     plugin_icon = "hosts.png"
-    # 主题色
+    #  Theme color
     plugin_color = "#02C4E0"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "thsrite"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/thsrite"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "customhosts_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 10
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 1
 
-    # 私有属性
+    #  Private property
     _hosts = []
     _enabled = False
 
     def init_plugin(self, config: dict = None):
-        # 读取配置
+        #  Read configuration
         if config:
             self._enabled = config.get("enabled")
             self._hosts = config.get("hosts")
             if isinstance(self._hosts, str):
                 self._hosts = str(self._hosts).split('\n')
             if self._enabled and self._hosts:
-                # 排除空的host
+                #  Freehost
                 new_hosts = []
                 for host in self._hosts:
                     if host and host != '\n':
                         new_hosts.append(host.replace("\n", "") + "\n")
                 self._hosts = new_hosts
 
-                # 添加到系统
+                #  Add to system
                 error_flag, error_hosts = self.__add_hosts_to_system(self._hosts)
                 self._enabled = self._enabled and not error_flag
 
-                # 更新错误Hosts
+                #  Update errorHosts
                 self.update_config({
                     "hosts": ''.join(self._hosts),
                     "err_hosts": error_hosts,
@@ -74,7 +74,7 @@ class CustomHosts(_PluginBase):
 
     def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
         """
-        拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
+        Assembly plugin configuration page， Two pieces of data need to be returned：1、 Page configuration；2、 Data structure
         """
         return [
                    {
@@ -94,7 +94,7 @@ class CustomHosts(_PluginBase):
                                                'component': 'VSwitch',
                                                'props': {
                                                    'model': 'enabled',
-                                                   'label': '启用插件',
+                                                   'label': ' Enabling plug-ins',
                                                }
                                            }
                                        ]
@@ -114,9 +114,9 @@ class CustomHosts(_PluginBase):
                                                'component': 'VTextarea',
                                                'props': {
                                                    'model': 'hosts',
-                                                   'label': '自定义hosts',
+                                                   'label': ' Customizablehosts',
                                                    'rows': 10,
-                                                   'placeholder': '每行一个配置，格式为：ip host1 host2 ...'
+                                                   'placeholder': ' One configuration per line， Format：ip host1 host2 ...'
                                                }
                                            }
                                        ]
@@ -137,9 +137,9 @@ class CustomHosts(_PluginBase):
                                                'props': {
                                                    'model': 'err_hosts',
                                                    'readonly': True,
-                                                   'label': '错误hosts',
+                                                   'label': ' Incorrecthosts',
                                                    'rows': 2,
-                                                   'placeholder': '错误的hosts配置会展示在此处，请修改上方hosts重新提交（错误的hosts不会写入系统hosts文件）'
+                                                   'placeholder': ' Craphosts The configuration is displayed here， Please modify the abovehosts Resubmission（ Craphosts Does not write to the systemhosts File）'
                                                }
                                            }
                                        ]
@@ -160,32 +160,32 @@ class CustomHosts(_PluginBase):
     @staticmethod
     def __read_system_hosts():
         """
-        读取系统hosts对象
+        Retrieval systemhosts Boyfriend
         """
-        # 获取本机hosts路径
+        #  Get localhosts Trails
         if SystemUtils.is_windows():
             hosts_path = r"c:\windows\system32\drivers\etc\hosts"
         else:
             hosts_path = '/etc/hosts'
-        # 读取系统hosts
+        #  Retrieval systemhosts
         return Hosts(path=hosts_path)
 
     def __add_hosts_to_system(self, hosts):
         """
-        添加hosts到系统
+        Increasehosts To the system
         """
-        # 系统hosts对象
+        #  Systemshosts Boyfriend
         system_hosts = self.__read_system_hosts()
-        # 过滤掉插件添加的hosts
+        #  Filter out plugin-addedhosts
         orgin_entries = []
         for entry in system_hosts.entries:
             if entry.entry_type == "comment" and entry.comment == "# CustomHostsPlugin":
                 break
             orgin_entries.append(entry)
         system_hosts.entries = orgin_entries
-        # 新的有效hosts
+        #  New effectivehosts
         new_entrys = []
-        # 新的错误的hosts
+        #  New and wronghosts
         err_hosts = []
         err_flag = False
         for host in hosts:
@@ -199,36 +199,36 @@ class CustomHosts(_PluginBase):
                 new_entrys.append(host_entry)
             except Exception as err:
                 err_hosts.append(host + "\n")
-                logger.error(f"[HOST] 格式转换错误：{str(err)}")
-                # 推送实时消息
-                self.systemmessage.put(f"[HOST] 格式转换错误：{str(err)}")
+                logger.error(f"[HOST]  Format conversion error：{str(err)}")
+                #  Push real-time messages
+                self.systemmessage.put(f"[HOST]  Format conversion error：{str(err)}")
 
-        # 写入系统hosts
+        #  Write systemhosts
         if new_entrys:
             try:
-                # 添加分隔标识
+                #  Add separation marker
                 system_hosts.add([HostsEntry(entry_type='comment', comment="# CustomHostsPlugin")])
-                # 添加新的Hosts
+                #  Add newHosts
                 system_hosts.add(new_entrys)
                 system_hosts.write()
-                logger.info("更新系统hosts文件成功")
+                logger.info(" Updating the systemhosts Documentation success")
             except Exception as err:
                 err_flag = True
-                logger.error(f"更新系统hosts文件失败：{str(err) or '请检查权限'}")
-                # 推送实时消息
-                self.systemmessage.put(f"更新系统hosts文件失败：{str(err) or '请检查权限'}")
+                logger.error(f" Updating the systemhosts File failure：{str(err) or ' Please check the permissions'}")
+                #  Push real-time messages
+                self.systemmessage.put(f" Updating the systemhosts File failure：{str(err) or ' Please check the permissions'}")
         return err_flag, err_hosts
 
     def stop_service(self):
         """
-        退出插件
+        Exit plugin
         """
         pass
 
     @eventmanager.register(EventType.PluginReload)
     def reload(self, event):
         """
-        响应插件重载事件
+        Responding to plugin reload events
         """
         plugin_id = event.event_data.get("plugin_id")
         if not plugin_id:

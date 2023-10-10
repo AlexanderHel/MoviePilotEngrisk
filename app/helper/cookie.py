@@ -13,7 +13,7 @@ from app.utils.string import StringUtils
 
 
 class CookieHelper:
-    # 站点登录界面元素XPATH
+    #  Site login interface elementsXPATH
     _SITE_LOGIN_XPATH = {
         "username": [
             '//input[@name="username"]',
@@ -30,7 +30,7 @@ class CookieHelper:
             '//input[@name="imagestring"]',
             '//input[@name="captcha"]',
             '//input[@id="form_item_captcha"]',
-            '//input[@placeholder="驗證碼"]'
+            '//input[@placeholder=" Verification code"]'
         ],
         "captcha_img": [
             '//img[@alt="captcha"]/@src',
@@ -44,7 +44,7 @@ class CookieHelper:
             '//button[@type="submit"]',
             '//button[@lay-filter="login"]',
             '//button[@lay-filter="formLogin"]',
-            '//input[@type="button"][@value="登录"]'
+            '//input[@type="button"][@value=" Log in"]'
         ],
         "error": [
             "//table[@class='main']//td[@class='text']/text()"
@@ -58,7 +58,7 @@ class CookieHelper:
     @staticmethod
     def parse_cookies(cookies: list) -> str:
         """
-        将浏览器返回的cookies转化为字符串
+        Returns the browser'scookies Convert to string
         """
         if not cookies:
             return ""
@@ -73,24 +73,24 @@ class CookieHelper:
                            password: str,
                            proxies: dict = None) -> Tuple[Optional[str], Optional[str], str]:
         """
-        获取站点cookie和ua
-        :param url: 站点地址
-        :param username: 用户名
-        :param password: 密码
-        :param proxies: 代理
+        Get sitecookie Cap (a poem)ua
+        :param url:  Site address
+        :param username:  User id
+        :param password:  Cryptographic
+        :param proxies:  Act on behalf of sb. in a responsible position
         :return: cookie、ua、message
         """
 
         def __page_handler(page: Page) -> Tuple[Optional[str], Optional[str], str]:
             """
-            页面处理
-            :return: Cookie和UA
+            Page processing
+            :return: Cookie Cap (a poem)UA
             """
-            # 登录页面代码
+            #  Login page code
             html_text = page.content()
             if not html_text:
-                return None, None, "获取源码失败"
-            # 查找用户名输入框
+                return None, None, " Failed to get source code"
+            #  Find user name input box
             html = etree.HTML(html_text)
             username_xpath = None
             for xpath in self._SITE_LOGIN_XPATH.get("username"):
@@ -98,22 +98,22 @@ class CookieHelper:
                     username_xpath = xpath
                     break
             if not username_xpath:
-                return None, None, "未找到用户名输入框"
-            # 查找密码输入框
+                return None, None, " User name input box not found"
+            #  Find password input box
             password_xpath = None
             for xpath in self._SITE_LOGIN_XPATH.get("password"):
                 if html.xpath(xpath):
                     password_xpath = xpath
                     break
             if not password_xpath:
-                return None, None, "未找到密码输入框"
-            # 查找验证码输入框
+                return None, None, " Password input box not found"
+            #  Find captcha input box
             captcha_xpath = None
             for xpath in self._SITE_LOGIN_XPATH.get("captcha"):
                 if html.xpath(xpath):
                     captcha_xpath = xpath
                     break
-            # 查找验证码图片
+            #  Find captcha images
             captcha_img_url = None
             if captcha_xpath:
                 for xpath in self._SITE_LOGIN_XPATH.get("captcha_img"):
@@ -121,71 +121,71 @@ class CookieHelper:
                         captcha_img_url = html.xpath(xpath)[0]
                         break
                 if not captcha_img_url:
-                    return None, None, "未找到验证码图片"
-            # 查找登录按钮
+                    return None, None, " Captcha image not found"
+            #  Find login button
             submit_xpath = None
             for xpath in self._SITE_LOGIN_XPATH.get("submit"):
                 if html.xpath(xpath):
                     submit_xpath = xpath
                     break
             if not submit_xpath:
-                return None, None, "未找到登录按钮"
-            # 点击登录按钮
+                return None, None, " Login button not found"
+            #  Click on the login button
             try:
-                # 等待登录按钮准备好
+                #  Wait for the login button to be ready
                 page.wait_for_selector(submit_xpath)
-                # 输入用户名
+                #  Enter user name
                 page.fill(username_xpath, username)
-                # 输入密码
+                #  Enter a password
                 page.fill(password_xpath, password)
-                # 识别验证码
+                #  Captcha recognition
                 if captcha_xpath and captcha_img_url:
                     captcha_element = page.query_selector(captcha_xpath)
                     if captcha_element.is_visible():
-                        # 验证码图片地址
+                        #  Captcha image address
                         code_url = self.__get_captcha_url(url, captcha_img_url)
-                        # 获取当前的cookie和ua
+                        #  Get the currentcookie Cap (a poem)ua
                         cookie = self.parse_cookies(page.context.cookies())
                         ua = page.evaluate("() => window.navigator.userAgent")
-                        # 自动OCR识别验证码
+                        #  AutomationOCR Captcha recognition
                         captcha = self.__get_captcha_text(cookie=cookie, ua=ua, code_url=code_url)
                         if captcha:
-                            logger.info("验证码地址为：%s，识别结果：%s" % (code_url, captcha))
+                            logger.info(" The captcha address is：%s， Identification results：%s" % (code_url, captcha))
                         else:
-                            return None, None, "验证码识别失败"
-                        # 输入验证码
+                            return None, None, " Captcha recognition failure"
+                        #  Enter the verification code
                         captcha_element.fill(captcha)
                     else:
-                        # 不可见元素不处理
+                        #  Invisible elements are not processed
                         pass
-                # 点击登录按钮
+                #  Click on the login button
                 page.click(submit_xpath)
                 page.wait_for_load_state("networkidle", timeout=30 * 1000)
             except Exception as e:
-                logger.error(f"仿真登录失败：{e}")
-                return None, None, f"仿真登录失败：{e}"
-            # 登录后的源码
+                logger.error(f" Emulation login failure：{e}")
+                return None, None, f" Emulation login failure：{e}"
+            #  Source code after login
             html_text = page.content()
             if not html_text:
-                return None, None, "获取网页源码失败"
+                return None, None, " Failed to get web page source code"
             if SiteUtils.is_logged_in(html_text):
                 return self.parse_cookies(page.context.cookies()), \
                     page.evaluate("() => window.navigator.userAgent"), ""
             else:
-                # 读取错误信息
+                #  Read error message
                 error_xpath = None
                 for xpath in self._SITE_LOGIN_XPATH.get("error"):
                     if html.xpath(xpath):
                         error_xpath = xpath
                         break
                 if not error_xpath:
-                    return None, None, "登录失败"
+                    return None, None, " Login failure"
                 else:
                     error_msg = html.xpath(error_xpath)[0]
                     return None, None, error_msg
 
         if not url or not username or not password:
-            return None, None, "参数错误"
+            return None, None, " Parameter error"
 
         return PlaywrightHelper().action(url=url,
                                          callback=__page_handler,
@@ -194,7 +194,7 @@ class CookieHelper:
     @staticmethod
     def __get_captcha_text(cookie: str, ua: str, code_url: str) -> str:
         """
-        识别验证码图片的内容
+        Recognize the content of captcha images
         """
         if not code_url:
             return ""
@@ -211,7 +211,7 @@ class CookieHelper:
     @staticmethod
     def __get_captcha_url(siteurl: str, imageurl: str) -> str:
         """
-        获取验证码图片的URL
+        Get captcha image ofURL
         """
         if not siteurl or not imageurl:
             return ""

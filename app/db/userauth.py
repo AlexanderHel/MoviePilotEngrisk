@@ -13,7 +13,7 @@ def get_current_user(
 ) -> User:
     user = User.get(db, rid=token_data.sub)
     if not user:
-        raise HTTPException(status_code=403, detail="用户不存在")
+        raise HTTPException(status_code=403, detail=" The user does not exist")
     return user
 
 
@@ -21,7 +21,7 @@ def get_current_active_user(
         current_user: User = Depends(get_current_user),
 ) -> User:
     if not current_user.is_active:
-        raise HTTPException(status_code=403, detail="用户未激活")
+        raise HTTPException(status_code=403, detail=" User inactivation")
     return current_user
 
 
@@ -30,6 +30,6 @@ def get_current_active_superuser(
 ) -> User:
     if not current_user.is_superuser:
         raise HTTPException(
-            status_code=400, detail="用户权限不足"
+            status_code=400, detail=" Insufficient user rights"
         )
     return current_user

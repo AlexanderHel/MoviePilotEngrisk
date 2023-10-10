@@ -32,31 +32,31 @@ from app.utils.string import StringUtils
 
 
 class PersonMeta(_PluginBase):
-    # 插件名称
-    plugin_name = "演职人员刮削"
-    # 插件描述
-    plugin_desc = "刮削演职人员图片以及中文名称。"
-    # 插件图标
+    #  Plug-in name
+    plugin_name = " Performer scraping"
+    #  Plugin description
+    plugin_desc = " Pictures of scraping staff and their chinese names。"
+    #  Plug-in icons
     plugin_icon = "actor.png"
-    # 主题色
+    #  Theme color
     plugin_color = "#E66E72"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "jxxghp"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/jxxghp"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "personmeta_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 24
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 1
 
-    # 退出事件
+    #  Logout event
     _event = threading.Event()
 
-    # 私有属性
+    #  Private property
     _scheduler = None
     tmdbchain = None
     mschain = None
@@ -76,10 +76,10 @@ class PersonMeta(_PluginBase):
             self._delay = config.get("delay") or 0
             self._remove_nozh = config.get("remove_nozh") or False
 
-        # 停止现有任务
+        #  Discontinuation of existing mandates
         self.stop_service()
 
-        # 启动服务
+        #  Starting services
         if self._enabled or self._onlyonce:
             self._scheduler = BackgroundScheduler(timezone=settings.TZ)
             if self._cron or self._onlyonce:
@@ -87,30 +87,30 @@ class PersonMeta(_PluginBase):
                     try:
                         self._scheduler.add_job(func=self.scrap_library,
                                                 trigger=CronTrigger.from_crontab(self._cron),
-                                                name="演职人员刮削")
-                        logger.info(f"演职人员刮削服务启动，周期：{self._cron}")
+                                                name=" Performer scraping")
+                        logger.info(f" Performer scraping service launched， Cyclicality：{self._cron}")
                     except Exception as e:
-                        logger.error(f"演职人员刮削服务启动失败，错误信息：{str(e)}")
-                        self.systemmessage.put(f"演职人员刮削服务启动失败，错误信息：{str(e)}")
+                        logger.error(f" Performer scraping service startup failure， Error message：{str(e)}")
+                        self.systemmessage.put(f" Performer scraping service startup failure， Error message：{str(e)}")
                 if self._onlyonce:
                     self._scheduler.add_job(func=self.scrap_library, trigger='date',
                                             run_date=datetime.datetime.now(
                                                 tz=pytz.timezone(settings.TZ)) + datetime.timedelta(seconds=3)
                                             )
-                    logger.info(f"演职人员刮削服务启动，立即运行一次")
-                    # 关闭一次性开关
+                    logger.info(f" Performer scraping service launched， Run one immediately")
+                    #  Turn off the disposable switch
                     self._onlyonce = False
-                    # 保存配置
+                    #  Save configuration
                     self.__update_config()
 
             if self._scheduler.get_jobs():
-                # 启动服务
+                #  Starting services
                 self._scheduler.print_jobs()
                 self._scheduler.start()
 
     def __update_config(self):
         """
-        更新配置
+        Updating the configuration
         """
         self.update_config({
             "enabled": self._enabled,
@@ -132,7 +132,7 @@ class PersonMeta(_PluginBase):
 
     def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
         """
-        拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
+        Assembly plugin configuration page， Two pieces of data need to be returned：1、 Page configuration；2、 Data structure
         """
         return [
             {
@@ -152,7 +152,7 @@ class PersonMeta(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'enabled',
-                                            'label': '启用插件',
+                                            'label': ' Enabling plug-ins',
                                         }
                                     }
                                 ]
@@ -168,7 +168,7 @@ class PersonMeta(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'onlyonce',
-                                            'label': '立即运行一次',
+                                            'label': ' Run one immediately',
                                         }
                                     }
                                 ]
@@ -189,8 +189,8 @@ class PersonMeta(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'cron',
-                                            'label': '媒体库扫描周期',
-                                            'placeholder': '5位cron表达式'
+                                            'label': ' Media library scanning cycle',
+                                            'placeholder': '5 Classifier for honorific peoplecron Displayed formula'
                                         }
                                     }
                                 ]
@@ -206,7 +206,7 @@ class PersonMeta(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'delay',
-                                            'label': '入库延迟时间（秒）',
+                                            'label': ' Delays in warehousing（ Unit of angle or arc equivalent one sixtieth of a degree）',
                                             'placeholder': '30'
                                         }
                                     }
@@ -228,7 +228,7 @@ class PersonMeta(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'remove_nozh',
-                                            'label': '删除非中文演员',
+                                            'label': ' Deletion of non-chinese speaking actors',
                                         }
                                     }
                                 ]
@@ -251,44 +251,44 @@ class PersonMeta(_PluginBase):
     @eventmanager.register(EventType.TransferComplete)
     def scrap_rt(self, event: Event):
         """
-        根据事件实时刮削演员信息
+        Real-time scraping of actor information based on events
         """
         if not self._enabled:
             return
-        # 事件数据
+        #  Event data
         mediainfo: MediaInfo = event.event_data.get("mediainfo")
         meta: MetaBase = event.event_data.get("meta")
         if not mediainfo or not meta:
             return
-        # 延迟
+        #  Procrastinate
         if self._delay:
             time.sleep(int(self._delay))
-        # 查询媒体服务器中的条目
+        #  Querying entries in the media server
         existsinfo = self.chain.media_exists(mediainfo=mediainfo)
         if not existsinfo or not existsinfo.itemid:
-            logger.warn(f"演职人员刮削 {mediainfo.title_year} 在媒体库中不存在")
+            logger.warn(f" Performer scraping {mediainfo.title_year}  Doesn't exist in the media library")
             return
-        # 查询条目详情
+        #  Search for entry details
         iteminfo = self.mschain.iteminfo(server=existsinfo.server, item_id=existsinfo.itemid)
         if not iteminfo:
-            logger.warn(f"演职人员刮削 {mediainfo.title_year} 条目详情获取失败")
+            logger.warn(f" Performer scraping {mediainfo.title_year}  Failed to get entry details")
             return
-        # 刮削演职人员信息
+        #  Scraping cast and crew information
         self.__update_item(server=existsinfo.server, item=iteminfo,
                            mediainfo=mediainfo, season=meta.begin_season)
 
     def scrap_library(self):
         """
-        扫描整个媒体库，刮削演员信息
+        Scanning the entire media library， Scraping actor information
         """
-        # 所有媒体服务器
+        #  All media servers
         if not settings.MEDIASERVER:
             return
         for server in settings.MEDIASERVER.split(","):
-            # 扫描所有媒体库
-            logger.info(f"开始刮削服务器 {server} 的演员信息 ...")
+            #  Scan all media libraries
+            logger.info(f" Start scraping servers {server}  Cast information ...")
             for library in self.mschain.librarys(server):
-                logger.info(f"开始刮削媒体库 {library.name} 的演员信息 ...")
+                logger.info(f" Start scraping the media library {library.name}  Cast information ...")
                 for item in self.mschain.items(server, library.id):
                     if not item:
                         continue
@@ -298,21 +298,21 @@ class PersonMeta(_PluginBase):
                             and "Movie" not in item.item_type:
                         continue
                     if self._event.is_set():
-                        logger.info(f"演职人员刮削服务停止")
+                        logger.info(f" Discontinuation of cast shaving services")
                         return
-                    # 处理条目
-                    logger.info(f"开始刮削 {item.title} 的演员信息 ...")
+                    #  Processing of entries
+                    logger.info(f" Start scraping {item.title}  Cast information ...")
                     self.__update_item(server=server, item=item)
-                    logger.info(f"{item.title} 的演员信息刮削完成")
-                logger.info(f"媒体库 {library.name} 的演员信息刮削完成")
-            logger.info(f"服务器 {server} 的演员信息刮削完成")
+                    logger.info(f"{item.title}  The actor's information is scraped to completion")
+                logger.info(f" Media library {library.name}  The actor's information is scraped to completion")
+            logger.info(f" Server (computer) {server}  The actor's information is scraped to completion")
 
     def __update_peoples(self, server: str, itemid: str, iteminfo: dict, douban_actors):
-        # 处理媒体项中的人物信息
+        #  Handling character information in media items
         """
         "People": [
             {
-              "Name": "丹尼尔·克雷格",
+              "Name": " Daniel (name)· Craig (name)",
               "Id": "33625",
               "Role": "James Bond",
               "Type": "Actor",
@@ -321,10 +321,10 @@ class PersonMeta(_PluginBase):
         ]
         """
         peoples = []
-        # 更新当前媒体项人物
+        #  Updating current media item characters
         for people in iteminfo["People"] or []:
             if self._event.is_set():
-                logger.info(f"演职人员刮削服务停止")
+                logger.info(f" Discontinuation of cast shaving services")
                 return
             if not people.get("Name"):
                 continue
@@ -338,7 +338,7 @@ class PersonMeta(_PluginBase):
                 peoples.append(info)
             elif not self._remove_nozh:
                 peoples.append(people)
-        # 保存媒体项信息
+        #  Saving media item information
         if peoples:
             iteminfo["People"] = peoples
             self.set_iteminfo(server=server, itemid=itemid, iteminfo=iteminfo)
@@ -346,11 +346,11 @@ class PersonMeta(_PluginBase):
     def __update_item(self, server: str, item: MediaServerItem,
                       mediainfo: MediaInfo = None, season: int = None):
         """
-        更新媒体服务器中的条目
+        Updating entries in the media server
         """
 
         def __need_trans_actor(_item):
-            # 是否需要处理人物信息
+            #  Whether character information needs to be processed
             _peoples = [x for x in _item.get("People", []) if
                         (x.get("Name") and not StringUtils.is_chinese(x.get("Name")))
                         or (x.get("Role") and not StringUtils.is_chinese(x.get("Role")))]
@@ -358,83 +358,83 @@ class PersonMeta(_PluginBase):
                 return True
             return False
 
-        # 识别媒体信息
+        #  Identify media messages
         if not mediainfo:
             if not item.tmdbid:
-                logger.warn(f"{item.title} 未找到tmdbid，无法识别媒体信息")
+                logger.warn(f"{item.title}  Not foundtmdbid， Unable to recognize media messages")
                 return
             mtype = MediaType.TV if item.item_type in ['Series', 'show'] else MediaType.MOVIE
             mediainfo = self.chain.recognize_media(mtype=mtype, tmdbid=item.tmdbid)
             if not mediainfo:
-                logger.warn(f"{item.title} 未识别到媒体信息")
+                logger.warn(f"{item.title}  No media messages recognized")
                 return
 
-        # 获取媒体项
+        #  Get media items
         iteminfo = self.get_iteminfo(server=server, itemid=item.item_id)
         if not iteminfo:
-            logger.warn(f"{item.title} 未找到媒体项")
+            logger.warn(f"{item.title}  No media items found")
             return
 
         if __need_trans_actor(iteminfo):
-            # 获取豆瓣演员信息
-            logger.info(f"开始获取 {item.title} 的豆瓣演员信息 ...")
+            #  Get douban cast information
+            logger.info(f" Start acquiring {item.title}  Douban cast information ...")
             douban_actors = self.__get_douban_actors(mediainfo=mediainfo, season=season)
             self.__update_peoples(server=server, itemid=item.item_id, iteminfo=iteminfo, douban_actors=douban_actors)
         else:
-            logger.info(f"{item.title} 的人物信息已是中文，无需更新")
+            logger.info(f"{item.title}  The character information is already in chinese， No need to update")
 
-        # 处理季和集人物
+        #  Dealing with season and set characters
         if iteminfo.get("Type") and "Series" in iteminfo["Type"]:
-            # 获取季媒体项
+            #  Access to seasonal media items
             seasons = self.get_items(server=server, parentid=item.item_id, mtype="Season")
             if not seasons:
-                logger.warn(f"{item.title} 未找到季媒体项")
+                logger.warn(f"{item.title}  Seasonal media items not found")
                 return
             for season in seasons["Items"]:
-                # 获取豆瓣演员信息
+                #  Get douban cast information
                 season_actors = self.__get_douban_actors(mediainfo=mediainfo, season=season.get("IndexNumber"))
-                # 如果是Jellyfin，更新季的人物，Emby/Plex季没有人物
+                #  If it isJellyfin， Characters of the renewal season，Emby/Plex There are no characters in the season.
                 if server == "jellyfin":
                     seasoninfo = self.get_iteminfo(server=server, itemid=season.get("Id"))
                     if not seasoninfo:
-                        logger.warn(f"{item.title} 未找到季媒体项：{season.get('Id')}")
+                        logger.warn(f"{item.title}  Seasonal media items not found：{season.get('Id')}")
                         continue
 
                     if __need_trans_actor(seasoninfo):
-                        # 更新季媒体项人物
+                        #  Renewal season media item characters
                         self.__update_peoples(server=server, itemid=season.get("Id"), iteminfo=seasoninfo,
                                               douban_actors=season_actors)
-                        logger.info(f"季 {seasoninfo.get('Id')} 的人物信息更新完成")
+                        logger.info(f" Classifier for seasonal crop yield or seasons of a tv series {seasoninfo.get('Id')}  The update of the character information is completed")
                     else:
-                        logger.info(f"季 {seasoninfo.get('Id')} 的人物信息已是中文，无需更新")
-                # 获取集媒体项
+                        logger.info(f" Classifier for seasonal crop yield or seasons of a tv series {seasoninfo.get('Id')}  The character information is already in chinese， No need to update")
+                #  Access to media sets
                 episodes = self.get_items(server=server, parentid=season.get("Id"), mtype="Episode")
                 if not episodes:
-                    logger.warn(f"{item.title} 未找到集媒体项")
+                    logger.warn(f"{item.title}  No media sets found")
                     continue
-                # 更新集媒体项人物
+                #  Updated set of media items characters
                 for episode in episodes["Items"]:
-                    # 获取集媒体项详情
+                    #  Access to media sets详情
                     episodeinfo = self.get_iteminfo(server=server, itemid=episode.get("Id"))
                     if not episodeinfo:
-                        logger.warn(f"{item.title} 未找到集媒体项：{episode.get('Id')}")
+                        logger.warn(f"{item.title}  No media sets found：{episode.get('Id')}")
                         continue
                     if __need_trans_actor(episodeinfo):
-                        # 更新集媒体项人物
+                        #  Updated set of media items characters
                         self.__update_peoples(server=server, itemid=episode.get("Id"), iteminfo=episodeinfo,
                                               douban_actors=season_actors)
-                        logger.info(f"集 {episodeinfo.get('Id')} 的人物信息更新完成")
+                        logger.info(f" Classifier for sections of a tv series e.g. episode {episodeinfo.get('Id')}  The update of the character information is completed")
                     else:
-                        logger.info(f"集 {episodeinfo.get('Id')} 的人物信息已是中文，无需更新")
+                        logger.info(f" Classifier for sections of a tv series e.g. episode {episodeinfo.get('Id')}  The character information is already in chinese， No need to update")
 
     def __update_people(self, server: str, people: dict, douban_actors: list = None) -> Optional[dict]:
         """
-        更新人物信息，返回替换后的人物信息
+        Update character information， Returns the replaced character information
         """
 
         def __get_peopleid(p: dict) -> Tuple[Optional[str], Optional[str]]:
             """
-            获取人物的TMDBID、IMDBID
+            Get the character'sTMDBID、IMDBID
             """
             if not p.get("ProviderIds"):
                 return None, None
@@ -449,59 +449,59 @@ class PersonMeta(_PluginBase):
                 peopleimdbid = p["ProviderIds"]["imdb"]
             return peopletmdbid, peopleimdbid
 
-        # 返回的人物信息
+        #  Returned character information
         ret_people = copy.deepcopy(people)
 
         try:
-            # 查询媒体库人物详情
+            #  Find out more about the people in the media library
             personinfo = self.get_iteminfo(server=server, itemid=people.get("Id"))
             if not personinfo:
-                logger.warn(f"未找到人物 {people.get('Name')} 的信息")
+                logger.warn(f" Characters not found {people.get('Name')}  Such information")
                 return None
 
-            # 是否更新标志
+            #  Whether to update the flag
             updated_name = False
             updated_overview = False
             update_character = False
             profile_path = None
 
-            # 从TMDB信息中更新人物信息
+            #  Through (a gap)TMDB Update character information in the message
             person_tmdbid, person_imdbid = __get_peopleid(personinfo)
             if person_tmdbid:
                 person_tmdbinfo = self.tmdbchain.person_detail(int(person_tmdbid))
                 if person_tmdbinfo:
                     cn_name = self.__get_chinese_name(person_tmdbinfo)
                     if cn_name:
-                        # 更新中文名
-                        logger.info(f"{people.get('Name')} 从TMDB获取到中文名：{cn_name}")
+                        #  Update chinese name
+                        logger.info(f"{people.get('Name')}  Through (a gap)TMDB Get the chinese name：{cn_name}")
                         personinfo["Name"] = cn_name
                         ret_people["Name"] = cn_name
                         updated_name = True
-                        # 更新中文描述
+                        #  Updated chinese description
                         biography = person_tmdbinfo.get("biography")
                         if biography and StringUtils.is_chinese(biography):
-                            logger.info(f"{people.get('Name')} 从TMDB获取到中文描述")
+                            logger.info(f"{people.get('Name')}  Through (a gap)TMDB Get the chinese description")
                             personinfo["Overview"] = biography
                             updated_overview = True
-                        # 图片
+                        #  Photograph
                         profile_path = person_tmdbinfo.get('profile_path')
                         if profile_path:
-                            logger.info(f"{people.get('Name')} 从TMDB获取到图片：{profile_path}")
+                            logger.info(f"{people.get('Name')}  Through (a gap)TMDB Get the image：{profile_path}")
                             profile_path = f"https://{settings.TMDB_IMAGE_DOMAIN}/t/p/original{profile_path}"
 
-            # 从豆瓣信息中更新人物信息
+            #  Updating character information from doujinshi
             """
             {
-              "name": "丹尼尔·克雷格",
+              "name": " Daniel (name)· Craig (name)",
               "roles": [
-                "演员",
-                "制片人",
-                "配音"
+                " Actor or actress",
+                " Moviemaker",
+                " Dubbing (filmmaking)"
               ],
-              "title": "丹尼尔·克雷格（同名）英国,英格兰,柴郡,切斯特影视演员",
+              "title": " Daniel (name)· Craig (name)（ Self-titled (album)） United kingdom of great britain and northern ireland, England, Cheshire (english county), Chester's movie and tv actors",
               "url": "https://movie.douban.com/celebrity/1025175/",
               "user": null,
-              "character": "饰 詹姆斯·邦德 James Bond 007",
+              "character": " Impersonate  James (name)· Bond (name) James Bond 007",
               "uri": "douban://douban.com/celebrity/1025175?subject_id=27230907",
               "avatar": {
                 "large": "https://qnmob3.doubanio.com/view/celebrity/raw/public/p42588.jpg?imageView2/2/q/80/w/600/h/3000/format/webp",
@@ -516,48 +516,48 @@ class PersonMeta(_PluginBase):
             if douban_actors and (not updated_name
                                   or not updated_overview
                                   or not update_character):
-                # 从豆瓣演员中匹配中文名称、角色和简介
+                #  Matching chinese names from douban actors、 Roles and profiles
                 for douban_actor in douban_actors:
                     if douban_actor.get("latin_name") == people.get("Name") \
                             or douban_actor.get("name") == people.get("Name"):
-                        # 名称
+                        #  Name (of a thing)
                         if not updated_name:
-                            logger.info(f"{people.get('Name')} 从豆瓣中获取到中文名：{douban_actor.get('name')}")
+                            logger.info(f"{people.get('Name')}  Get the chinese name from douban：{douban_actor.get('name')}")
                             personinfo["Name"] = douban_actor.get("name")
                             ret_people["Name"] = douban_actor.get("name")
                             updated_name = True
-                        # 描述
+                        #  Descriptive
                         if not updated_overview:
                             if douban_actor.get("title"):
-                                logger.info(f"{people.get('Name')} 从豆瓣中获取到中文描述：{douban_actor.get('title')}")
+                                logger.info(f"{people.get('Name')}  Get the chinese description from douban：{douban_actor.get('title')}")
                                 personinfo["Overview"] = douban_actor.get("title")
                                 updated_overview = True
-                        # 饰演角色
+                        #  Role
                         if not update_character:
                             if douban_actor.get("character"):
-                                # "饰 詹姆斯·邦德 James Bond 007"
-                                character = re.sub(r"饰\s+", "",
+                                # " Impersonate  James (name)· Bond (name) James Bond 007"
+                                character = re.sub(r" Impersonate\s+", "",
                                                    douban_actor.get("character"))
-                                character = re.sub("演员", "",
+                                character = re.sub(" Actor or actress", "",
                                                    character)
                                 if character:
-                                    logger.info(f"{people.get('Name')} 从豆瓣中获取到饰演角色：{character}")
+                                    logger.info(f"{people.get('Name')}  Getting to play a character from douban：{character}")
                                     ret_people["Role"] = character
                                     update_character = True
-                        # 图片
+                        #  Photograph
                         if not profile_path:
                             avatar = douban_actor.get("avatar") or {}
                             if avatar.get("large"):
-                                logger.info(f"{people.get('Name')} 从豆瓣中获取到图片：{avatar.get('large')}")
+                                logger.info(f"{people.get('Name')}  Getting images from douban：{avatar.get('large')}")
                                 profile_path = avatar.get("large")
                         break
 
-            # 更新人物图片
+            #  Update character pictures
             if profile_path:
-                logger.info(f"更新人物 {people.get('Name')} 的图片：{profile_path}")
+                logger.info(f" Update a character {people.get('Name')}  Pictures：{profile_path}")
                 self.set_item_image(server=server, itemid=people.get("Id"), imageurl=profile_path)
 
-            # 锁定人物信息
+            #  Locked character information
             if updated_name:
                 if "Name" not in personinfo["LockedFields"]:
                     personinfo["LockedFields"].append("Name")
@@ -565,46 +565,46 @@ class PersonMeta(_PluginBase):
                 if "Overview" not in personinfo["LockedFields"]:
                     personinfo["LockedFields"].append("Overview")
 
-            # 更新人物信息
+            #  Update character information
             if updated_name or updated_overview or update_character:
-                logger.info(f"更新人物 {people.get('Name')} 的信息：{personinfo}")
+                logger.info(f" Update a character {people.get('Name')}  Such information：{personinfo}")
                 ret = self.set_iteminfo(server=server, itemid=people.get("Id"), iteminfo=personinfo)
                 if ret:
                     return ret_people
             else:
-                logger.info(f"人物 {people.get('Name')} 未找到中文数据")
+                logger.info(f" Character (in a play, novel etc) {people.get('Name')}  No chinese data found")
         except Exception as err:
-            logger.error(f"更新人物信息失败：{err}")
+            logger.error(f" Failed to update character information：{err}")
         return None
 
     def __get_douban_actors(self, mediainfo: MediaInfo, season: int = None) -> List[dict]:
         """
-        获取豆瓣演员信息
+        Get douban cast information
         """
-        # 随机休眠1-5秒
+        #  Random hibernation1-5 Unit of angle or arc equivalent one sixtieth of a degree
         time.sleep(1 + int(time.time()) % 5)
-        # 匹配豆瓣信息
+        #  Match douban information
         doubaninfo = self.chain.match_doubaninfo(name=mediainfo.title,
                                                  mtype=mediainfo.type.value,
                                                  year=mediainfo.year,
                                                  season=season)
-        # 豆瓣演员
+        #  Douban actor
         if doubaninfo:
             doubanitem = self.chain.douban_info(doubaninfo.get("id")) or {}
             return (doubanitem.get("actors") or []) + (doubanitem.get("directors") or [])
         else:
-            logger.warn(f"未找到豆瓣信息：{mediainfo.title_year}")
+            logger.warn(f" No doujin information found：{mediainfo.title_year}")
         return []
 
     @staticmethod
     def get_iteminfo(server: str, itemid: str) -> dict:
         """
-        获得媒体项详情
+        Obtain media item details
         """
 
         def __get_emby_iteminfo() -> dict:
             """
-            获得Emby媒体项详情
+            AttainmentEmby Media item details
             """
             try:
                 url = f'[HOST]emby/Users/[USER]/Items/{itemid}?' \
@@ -613,12 +613,12 @@ class PersonMeta(_PluginBase):
                 if res:
                     return res.json()
             except Exception as err:
-                logger.error(f"获取Emby媒体项详情失败：{err}")
+                logger.error(f" GainEmby Media item details failed：{err}")
             return {}
 
         def __get_jellyfin_iteminfo() -> dict:
             """
-            获得Jellyfin媒体项详情
+            AttainmentJellyfin Media item details
             """
             try:
                 url = f'[HOST]Users/[USER]/Items/{itemid}?Fields=ChannelMappingInfo&api_key=[APIKEY]'
@@ -629,12 +629,12 @@ class PersonMeta(_PluginBase):
                         result['FileName'] = Path(result['Path']).name
                     return result
             except Exception as err:
-                logger.error(f"获取Jellyfin媒体项详情失败：{err}")
+                logger.error(f" GainJellyfin Media item details failed：{err}")
             return {}
 
         def __get_plex_iteminfo() -> dict:
             """
-            获得Plex媒体项详情
+            AttainmentPlex Media item details
             """
             iteminfo = {}
             try:
@@ -663,7 +663,7 @@ class PersonMeta(_PluginBase):
                 iteminfo['CommunityRating'] = plexitem.audienceRating
                 return iteminfo
             except Exception as err:
-                logger.error(f"获取Plex媒体项详情失败：{err}")
+                logger.error(f" GainPlex Media item details failed：{err}")
             return {}
 
         if server == "emby":
@@ -676,13 +676,13 @@ class PersonMeta(_PluginBase):
     @staticmethod
     def get_items(server: str, parentid: str, mtype: str = None) -> dict:
         """
-        获得媒体的所有子媒体项
+        Get all submedia items of the media
         """
         pass
 
         def __get_emby_items() -> dict:
             """
-            获得Emby媒体的所有子媒体项
+            AttainmentEmby All sub-media items of the media
             """
             try:
                 if parentid:
@@ -693,12 +693,12 @@ class PersonMeta(_PluginBase):
                 if res:
                     return res.json()
             except Exception as err:
-                logger.error(f"获取Emby媒体的所有子媒体项失败：{err}")
+                logger.error(f" GainEmby All submedia items of the media failed：{err}")
             return {}
 
         def __get_jellyfin_items() -> dict:
             """
-            获得Jellyfin媒体的所有子媒体项
+            AttainmentJellyfin All sub-media items of the media
             """
             try:
                 if parentid:
@@ -709,12 +709,12 @@ class PersonMeta(_PluginBase):
                 if res:
                     return res.json()
             except Exception as err:
-                logger.error(f"获取Jellyfin媒体的所有子媒体项失败：{err}")
+                logger.error(f" GainJellyfin All submedia items of the media failed：{err}")
             return {}
 
         def __get_plex_items(t: str) -> dict:
             """
-            获得Plex媒体的所有子媒体项
+            AttainmentPlex All sub-media items of the media
             """
             items = {}
             try:
@@ -775,7 +775,7 @@ class PersonMeta(_PluginBase):
                         items['Items'].append(item)
                 return items
             except Exception as err:
-                logger.error(f"获取Plex媒体的所有子媒体项失败：{err}")
+                logger.error(f" GainPlex All submedia items of the media failed：{err}")
             return {}
 
         if server == "emby":
@@ -788,12 +788,12 @@ class PersonMeta(_PluginBase):
     @staticmethod
     def set_iteminfo(server: str, itemid: str, iteminfo: dict):
         """
-        更新媒体项详情
+        Update media item details
         """
 
         def __set_emby_iteminfo():
             """
-            更新Emby媒体项详情
+            UpdateEmby Media item details
             """
             try:
                 res = Emby().post_data(
@@ -806,15 +806,15 @@ class PersonMeta(_PluginBase):
                 if res and res.status_code in [200, 204]:
                     return True
                 else:
-                    logger.error(f"更新Emby媒体项详情失败，错误码：{res.status_code}")
+                    logger.error(f"UpdateEmby Media item details失败，错误码：{res.status_code}")
                     return False
             except Exception as err:
-                logger.error(f"更新Emby媒体项详情失败：{err}")
+                logger.error(f"UpdateEmby Media item details失败：{err}")
             return False
 
         def __set_jellyfin_iteminfo():
             """
-            更新Jellyfin媒体项详情
+            UpdateJellyfin Media item details
             """
             try:
                 res = Jellyfin().post_data(
@@ -827,15 +827,15 @@ class PersonMeta(_PluginBase):
                 if res and res.status_code in [200, 204]:
                     return True
                 else:
-                    logger.error(f"更新Jellyfin媒体项详情失败，错误码：{res.status_code}")
+                    logger.error(f"UpdateJellyfin Media item details失败，错误码：{res.status_code}")
                     return False
             except Exception as err:
-                logger.error(f"更新Jellyfin媒体项详情失败：{err}")
+                logger.error(f"UpdateJellyfin Media item details失败：{err}")
             return False
 
         def __set_plex_iteminfo():
             """
-            更新Plex媒体项详情
+            UpdatePlex Media item details
             """
             try:
                 plexitem = Plex().get_plex().library.fetchItem(ekey=itemid)
@@ -848,7 +848,7 @@ class PersonMeta(_PluginBase):
                 plexitem.editTitle(iteminfo['Name']).editSummary(iteminfo['Overview']).reload()
                 return True
             except Exception as err:
-                logger.error(f"更新Plex媒体项详情失败：{err}")
+                logger.error(f"UpdatePlex Media item details失败：{err}")
             return False
 
         if server == "emby":
@@ -862,12 +862,12 @@ class PersonMeta(_PluginBase):
     @retry(RequestException, logger=logger)
     def set_item_image(server: str, itemid: str, imageurl: str):
         """
-        更新媒体项图片
+        Update media item images
         """
 
         def __download_image():
             """
-            下载图片
+            Download images
             """
             try:
                 if "doubanio.com" in imageurl:
@@ -879,14 +879,14 @@ class PersonMeta(_PluginBase):
                 if r:
                     return base64.b64encode(r.content).decode()
                 else:
-                    logger.info(f"{imageurl} 图片下载失败，请检查网络连通性")
+                    logger.info(f"{imageurl}  Image download failed， Please check network connectivity")
             except Exception as err:
-                logger.error(f"下载图片失败：{err}")
+                logger.error(f"Download images失败：{err}")
             return None
 
         def __set_emby_item_image(_base64: str):
             """
-            更新Emby媒体项图片
+            UpdateEmby Pictures of media items
             """
             try:
                 url = f'[HOST]emby/Items/{itemid}/Images/Primary?api_key=[APIKEY]'
@@ -900,16 +900,16 @@ class PersonMeta(_PluginBase):
                 if res and res.status_code in [200, 204]:
                     return True
                 else:
-                    logger.error(f"更新Emby媒体项图片失败，错误码：{res.status_code}")
+                    logger.error(f"UpdateEmby Pictures of media items失败，错误码：{res.status_code}")
                     return False
             except Exception as result:
-                logger.error(f"更新Emby媒体项图片失败：{result}")
+                logger.error(f"UpdateEmby Pictures of media items失败：{result}")
             return False
 
         def __set_jellyfin_item_image():
             """
-            更新Jellyfin媒体项图片
-            # FIXME 改为预下载图片
+            UpdateJellyfin Pictures of media items
+            # FIXME 改为预Download images
             """
             try:
                 url = f'[HOST]Items/{itemid}/RemoteImages/Download?' \
@@ -918,27 +918,27 @@ class PersonMeta(_PluginBase):
                 if res and res.status_code in [200, 204]:
                     return True
                 else:
-                    logger.error(f"更新Jellyfin媒体项图片失败，错误码：{res.status_code}")
+                    logger.error(f"UpdateJellyfin Pictures of media items失败，错误码：{res.status_code}")
                     return False
             except Exception as err:
-                logger.error(f"更新Jellyfin媒体项图片失败：{err}")
+                logger.error(f"UpdateJellyfin Pictures of media items失败：{err}")
             return False
 
         def __set_plex_item_image():
             """
-            更新Plex媒体项图片
-            # FIXME 改为预下载图片
+            UpdatePlex Pictures of media items
+            # FIXME 改为预Download images
             """
             try:
                 plexitem = Plex().get_plex().library.fetchItem(ekey=itemid)
                 plexitem.uploadPoster(url=imageurl)
                 return True
             except Exception as err:
-                logger.error(f"更新Plex媒体项图片失败：{err}")
+                logger.error(f"UpdatePlex Pictures of media items失败：{err}")
             return False
 
         if server == "emby":
-            # 下载图片获取base64
+            # Download images获取base64
             image_base64 = __download_image()
             if image_base64:
                 return __set_emby_item_image(image_base64)
@@ -951,22 +951,22 @@ class PersonMeta(_PluginBase):
     @staticmethod
     def __get_chinese_name(personinfo: dict) -> str:
         """
-        获取TMDB别名中的中文名
+        GainTMDB Chinese names in aliases
         """
         try:
             also_known_as = personinfo.get("also_known_as") or []
             if also_known_as:
                 for name in also_known_as:
                     if name and StringUtils.is_chinese(name):
-                        # 使用cn2an将繁体转化为简体
+                        #  Utilizationcn2an Convert traditional chinese to simplified chinese
                         return zhconv.convert(name, "zh-hans")
         except Exception as err:
-            logger.error(f"获取人物中文名失败：{err}")
+            logger.error(f" Failed to get character's chinese name：{err}")
         return ""
 
     def stop_service(self):
         """
-        停止服务
+        Discontinuation of services
         """
         try:
             if self._scheduler:

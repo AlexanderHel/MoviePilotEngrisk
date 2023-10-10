@@ -21,16 +21,16 @@ router = APIRouter()
 
 def start_message_chain(db: Session, body: Any, form: Any, args: Any):
     """
-    启动链式任务
+    Starting chained tasks
     """
     MessageChain(db).process(body=body, form=form, args=args)
 
 
-@router.post("/", summary="接收用户消息", response_model=schemas.Response)
+@router.post("/", summary=" Receive user messages", response_model=schemas.Response)
 async def user_message(background_tasks: BackgroundTasks, request: Request,
                        db: Session = Depends(get_db)):
     """
-    用户消息响应
+    User message response
     """
     body = await request.body()
     form = await request.form()
@@ -39,37 +39,37 @@ async def user_message(background_tasks: BackgroundTasks, request: Request,
     return schemas.Response(success=True)
 
 
-@router.get("/", summary="微信验证")
+@router.get("/", summary=" Wechat verification")
 def wechat_verify(echostr: str, msg_signature: str,
                   timestamp: Union[str, int], nonce: str) -> Any:
     """
-    用户消息响应
+    User message response
     """
-    logger.info(f"收到微信验证请求: {echostr}")
+    logger.info(f" Received wechat authentication request: {echostr}")
     try:
         wxcpt = WXBizMsgCrypt(sToken=settings.WECHAT_TOKEN,
                               sEncodingAESKey=settings.WECHAT_ENCODING_AESKEY,
                               sReceiveId=settings.WECHAT_CORPID)
     except Exception as err:
-        logger.error(f"微信请求验证失败: {err}")
+        logger.error(f" Wechat request verification failed: {err}")
         return str(err)
     ret, sEchoStr = wxcpt.VerifyURL(sMsgSignature=msg_signature,
                                     sTimeStamp=timestamp,
                                     sNonce=nonce,
                                     sEchoStr=echostr)
     if ret != 0:
-        logger.error("微信请求验证失败 VerifyURL ret: %s" % str(ret))
-    # 验证URL成功，将sEchoStr返回给企业号
+        logger.error(" Wechat request verification failed VerifyURL ret: %s" % str(ret))
+    #  Validate (a theory)URL Successes， Commander-in-chief (military)sEchoStr Return to enterprise
     return PlainTextResponse(sEchoStr)
 
 
-@router.get("/switchs", summary="查询通知消息渠道开关", response_model=List[NotificationSwitch])
+@router.get("/switchs", summary=" Query notification message channel switch", response_model=List[NotificationSwitch])
 def read_switchs(_: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    查询通知消息渠道开关
+    Query notification message channel switch
     """
     return_list = []
-    # 读取数据库
+    #  Read database
     switchs = SystemConfigOper().get(SystemConfigKey.NotificationChannels)
     if not switchs:
         for noti in NotificationType:
@@ -82,16 +82,16 @@ def read_switchs(_: schemas.TokenPayload = Depends(verify_token)) -> Any:
     return return_list
 
 
-@router.post("/switchs", summary="设置通知消息渠道开关", response_model=schemas.Response)
+@router.post("/switchs", summary=" Setting the notification message channel switch", response_model=schemas.Response)
 def set_switchs(switchs: List[NotificationSwitch],
                 _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    查询通知消息渠道开关
+    Query notification message channel switch
     """
     switch_list = []
     for switch in switchs:
         switch_list.append(switch.dict())
-    # 存入数据库
+    #  Deposit
     SystemConfigOper().set(SystemConfigKey.NotificationChannels, switch_list)
 
     return schemas.Response(success=True)

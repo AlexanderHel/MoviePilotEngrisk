@@ -23,7 +23,7 @@ from app.utils.system import SystemUtils
 
 class CommandChian(ChainBase):
     """
-    插件处理链
+    Plug-in processing chain
     """
 
     def process(self, *args, **kwargs):
@@ -32,119 +32,119 @@ class CommandChian(ChainBase):
 
 class Command(metaclass=Singleton):
     """
-    全局命令管理，消费事件
+    Global command management， Consumer incident
     """
-    # 内建命令
+    #  Built-in command
     _commands = {}
 
-    # 退出事件
+    #  Logout event
     _event = Event()
 
     def __init__(self):
-        # 数据库连接
+        #  Database connection
         self._db = SessionFactory()
-        # 事件管理器
+        #  Event manager
         self.eventmanager = EventManager()
-        # 插件管理器
+        #  Plug-in manager
         self.pluginmanager = PluginManager()
-        # 处理链
+        #  Process chain
         self.chain = CommandChian(self._db)
-        # 定时服务管理
+        #  Scheduled service management
         self.scheduler = Scheduler()
-        # 内置命令
+        #  Built-in command
         self._commands = {
             "/cookiecloud": {
                 "id": "cookiecloud",
                 "type": "scheduler",
-                "description": "同步站点",
-                "category": "站点"
+                "description": " Synchronization site",
+                "category": " Website"
             },
             "/sites": {
                 "func": SiteChain(self._db).remote_list,
-                "description": "查询站点",
-                "category": "站点",
+                "description": " Search site",
+                "category": " Website",
                 "data": {}
             },
             "/site_cookie": {
                 "func": SiteChain(self._db).remote_cookie,
-                "description": "更新站点Cookie",
+                "description": " Updating the siteCookie",
                 "data": {}
             },
             "/site_enable": {
                 "func": SiteChain(self._db).remote_enable,
-                "description": "启用站点",
+                "description": " Enabling site",
                 "data": {}
             },
             "/site_disable": {
                 "func": SiteChain(self._db).remote_disable,
-                "description": "禁用站点",
+                "description": " Disable site",
                 "data": {}
             },
             "/mediaserver_sync": {
                 "id": "mediaserver_sync",
                 "type": "scheduler",
-                "description": "同步媒体服务器",
-                "category": "管理"
+                "description": " Synchronous media server",
+                "category": " Managerial"
             },
             "/subscribes": {
                 "func": SubscribeChain(self._db).remote_list,
-                "description": "查询订阅",
-                "category": "订阅",
+                "description": " Inquiry subscription",
+                "category": " Subscribe to",
                 "data": {}
             },
             "/subscribe_refresh": {
                 "id": "subscribe_refresh",
                 "type": "scheduler",
-                "description": "刷新订阅",
-                "category": "订阅"
+                "description": " Refresh subscription",
+                "category": " Subscribe to"
             },
             "/subscribe_search": {
                 "id": "subscribe_search",
                 "type": "scheduler",
-                "description": "搜索订阅",
-                "category": "订阅"
+                "description": " Search subscriptions",
+                "category": " Subscribe to"
             },
             "/subscribe_delete": {
                 "func": SubscribeChain(self._db).remote_delete,
-                "description": "删除订阅",
+                "description": " Delete subscription",
                 "data": {}
             },
             "/subscribe_tmdb": {
                 "id": "subscribe_tmdb",
                 "type": "scheduler",
-                "description": "订阅元数据更新"
+                "description": " Subscribe to metadata updates"
             },
             "/downloading": {
                 "func": DownloadChain(self._db).remote_downloading,
-                "description": "正在下载",
-                "category": "管理",
+                "description": " Downloading",
+                "category": " Managerial",
                 "data": {}
             },
             "/transfer": {
                 "id": "transfer",
                 "type": "scheduler",
-                "description": "下载文件整理",
-                "category": "管理"
+                "description": " Download file organization",
+                "category": " Managerial"
             },
             "/redo": {
                 "func": TransferChain(self._db).remote_transfer,
-                "description": "手动整理",
+                "description": " Manual collation",
                 "data": {}
             },
             "/clear_cache": {
                 "func": SystemChain(self._db).remote_clear_cache,
-                "description": "清理缓存",
-                "category": "管理",
+                "description": " Clearing the cache",
+                "category": " Managerial",
                 "data": {}
             },
             "/restart": {
                 "func": SystemUtils.restart,
-                "description": "重启系统",
-                "category": "管理",
+                "description": " Reboot",
+                "category": " Managerial",
                 "data": {}
             }
         }
-        # 汇总插件命令
+        #  Aggregate plug-in commands
         plugin_commands = self.pluginmanager.get_plugin_commands()
         for command in plugin_commands:
             self.register(
@@ -157,21 +157,21 @@ class Command(metaclass=Singleton):
                     'data': command.get('data')
                 }
             )
-        # 广播注册命令菜单
+        #  Broadcast registration command menu
         self.chain.register_commands(commands=self.get_commands())
-        # 消息处理线程
+        #  Message processing thread
         self._thread = Thread(target=self.__run)
-        # 启动事件处理线程
+        #  Starting an event processing thread
         self._thread.start()
 
     def __run(self):
         """
-        事件处理线程
+        Event processing thread
         """
         while not self._event.is_set():
             event, handlers = self.eventmanager.get_event()
             if event:
-                logger.info(f"处理事件：{event.event_type} - {handlers}")
+                logger.info(f" Handling of incidents：{event.event_type} - {handlers}")
                 for handler in handlers:
                     try:
                         names = handler.__qualname__.split(".")
@@ -180,61 +180,61 @@ class Command(metaclass=Singleton):
                         else:
                             self.pluginmanager.run_plugin_method(names[0], names[1], event)
                     except Exception as e:
-                        logger.error(f"事件处理出错：{str(e)} - {traceback.format_exc()}")
+                        logger.error(f" Event handling error：{str(e)} - {traceback.format_exc()}")
 
     def __run_command(self, command: Dict[str, any],
                       data_str: str = "",
                       channel: MessageChannel = None, userid: Union[str, int] = None):
         """
-        运行定时服务
+        Running the timing service
         """
         if command.get("type") == "scheduler":
-            # 定时服务
+            #  Time service
             if userid:
                 self.chain.post_message(
                     Notification(
                         channel=channel,
-                        title=f"开始执行 {command.get('description')} ...",
+                        title=f" Commence {command.get('description')} ...",
                         userid=userid
                     )
                 )
 
-            # 执行定时任务
+            #  Perform timed tasks
             self.scheduler.start(job_id=command.get("id"))
 
             if userid:
                 self.chain.post_message(
                     Notification(
                         channel=channel,
-                        title=f"{command.get('description')} 执行完成",
+                        title=f"{command.get('description')}  Implementation completed",
                         userid=userid
                     )
                 )
         else:
-            # 命令
+            #  Command
             cmd_data = command['data'] if command.get('data') else {}
             args_num = ObjectUtils.arguments(command['func'])
             if args_num > 0:
                 if cmd_data:
-                    # 有内置参数直接使用内置参数
+                    #  Use the built-in parameters directly if they are available
                     data = cmd_data.get("data") or {}
                     data['channel'] = channel
                     data['user'] = userid
                     cmd_data['data'] = data
                     command['func'](**cmd_data)
                 elif args_num == 2:
-                    # 没有输入参数，只输入渠道和用户ID
+                    #  No input parameters， Enter only channels and usersID
                     command['func'](channel, userid)
                 elif args_num > 2:
-                    # 多个输入参数：用户输入、用户ID
+                    #  Multiple input parameters： User input、 SubscribersID
                     command['func'](data_str, channel, userid)
             else:
-                # 没有参数
+                #  No parameters
                 command['func']()
 
     def stop(self):
         """
-        停止事件处理线程
+        停止Event processing thread
         """
         self._event.set()
         self._thread.join()
@@ -243,14 +243,14 @@ class Command(metaclass=Singleton):
 
     def get_commands(self):
         """
-        获取命令列表
+        Getting a list of commands
         """
         return self._commands
 
     def register(self, cmd: str, func: Any, data: dict = None,
                  desc: str = None, category: str = None) -> None:
         """
-        注册命令
+        Registration command
         """
         self._commands[cmd] = {
             "func": func,
@@ -261,55 +261,55 @@ class Command(metaclass=Singleton):
 
     def get(self, cmd: str) -> Any:
         """
-        获取命令
+        Get command
         """
         return self._commands.get(cmd, {})
 
     def execute(self, cmd: str, data_str: str = "",
                 channel: MessageChannel = None, userid: Union[str, int] = None) -> None:
         """
-        执行命令
+        Execute a command
         """
         command = self.get(cmd)
         if command:
             try:
                 if userid:
-                    logger.info(f"用户 {userid} 开始执行：{command.get('description')} ...")
+                    logger.info(f" Subscribers {userid}  Commence：{command.get('description')} ...")
                 else:
-                    logger.info(f"开始执行：{command.get('description')} ...")
+                    logger.info(f" Commence：{command.get('description')} ...")
 
-                # 执行命令
+                # Execute a command
                 self.__run_command(command, data_str=data_str,
                                    channel=channel, userid=userid)
 
                 if userid:
-                    logger.info(f"用户 {userid} {command.get('description')} 执行完成")
+                    logger.info(f" Subscribers {userid} {command.get('description')}  Implementation completed")
                 else:
-                    logger.info(f"{command.get('description')} 执行完成")
+                    logger.info(f"{command.get('description')}  Implementation completed")
             except Exception as err:
-                logger.error(f"执行命令 {cmd} 出错：{str(err)}")
+                logger.error(f"Execute a command {cmd} 出错：{str(err)}")
                 traceback.print_exc()
 
     @staticmethod
     def send_plugin_event(etype: EventType, data: dict) -> None:
         """
-        发送插件命令
+        Send plugin command
         """
         EventManager().send_event(etype, data)
 
     @eventmanager.register(EventType.CommandExcute)
     def command_event(self, event: ManagerEvent) -> None:
         """
-        注册命令执行事件
+        Registration command执行事件
         event_data: {
             "cmd": "/xxx args"
         }
         """
-        # 命令参数
+        #  Command参数
         event_str = event.event_data.get('cmd')
-        # 消息渠道
+        #  News channel
         event_channel = event.event_data.get('channel')
-        # 消息用户
+        #  Message user
         event_user = event.event_data.get('user')
         if event_str:
             cmd = event_str.split()[0]

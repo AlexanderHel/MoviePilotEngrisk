@@ -7,10 +7,10 @@ from app.utils.singleton import Singleton
 
 class ReleaseGroupsMatcher(metaclass=Singleton):
     """
-    识别制作组、字幕组
+    Identify the production team、 Subtitling team
     """
     __release_groups: str = None
-    # 内置组
+    #  Built-in group
     RELEASE_GROUPS: dict = {
         "0ff": ['FF(?:(?:A|WE)B|CD|E(?:DU|B)|TV)'],
         "1pt": [],
@@ -71,7 +71,7 @@ class ReleaseGroupsMatcher(metaclass=Singleton):
         "ultrahd": [],
         "others": ['B(?:MDru|eyondHD|TN)', 'C(?:fandora|trlhd|MRG)', 'DON', 'EVO', 'FLUX', 'HONE(?:|yG)',
                    'N(?:oGroup|T(?:b|G))', 'PandaMoon', 'SMURF', 'T(?:EPES|aengoo|rollHD )'],
-        "anime": ['ANi', 'HYSUB', 'KTXP', 'LoliHouse', 'MCE', 'Nekomoe kissaten', '(?:Lilith|NC)-Raws', '织梦字幕组']
+        "anime": ['ANi', 'HYSUB', 'KTXP', 'LoliHouse', 'MCE', 'Nekomoe kissaten', '(?:Lilith|NC)-Raws', ' Weaving dreams subtitle group']
     }
 
     def __init__(self):
@@ -84,14 +84,14 @@ class ReleaseGroupsMatcher(metaclass=Singleton):
 
     def match(self, title: str = None, groups: str = None):
         """
-        :param title: 资源标题或文件名
-        :param groups: 制作组/字幕组
-        :return: 匹配结果
+        :param title:  Resource title or file name
+        :param groups:  Production team/ Subtitling team
+        :return:  Matching results
         """
         if not title:
             return ""
         if not groups:
-            # 自定义组
+            #  Custom groups
             custom_release_groups = self.systemconfig.get(SystemConfigKey.CustomReleaseGroups)
             if custom_release_groups:
                 custom_release_groups_str = '|'.join(custom_release_groups)
@@ -100,7 +100,7 @@ class ReleaseGroupsMatcher(metaclass=Singleton):
                 groups = self.__release_groups
         title = f"{title} "
         groups_re = re.compile(r"(?<=[-@\[￡【&])(?:%s)(?=[@.\s\]\[】&])" % groups, re.I)
-        # 处理一个制作组识别多次的情况，保留顺序
+        #  Dealing with a production group identifying multiple times， Order of reservations
         unique_groups = []
         for item in re.findall(groups_re, title):
             if item not in unique_groups:

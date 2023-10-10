@@ -52,7 +52,7 @@ class IptSiteUserInfo(ISiteUserInfo):
         if user_levels_text:
             self.user_level = user_levels_text[0].strip()
 
-        # 加入日期
+        #  Date of accession
         join_at_text = html.xpath('//tr/th[text()="Join date"]/following-sibling::td[1]/text()')
         if join_at_text:
             self.join_at = StringUtils.unify_datetime_str(join_at_text[0].split(' (')[0])

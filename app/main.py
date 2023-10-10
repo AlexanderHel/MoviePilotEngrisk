@@ -20,7 +20,7 @@ from app.utils.system import SystemUtils
 App = FastAPI(title=settings.PROJECT_NAME,
               openapi_url=f"{settings.API_V1_STR}/openapi.json")
 
-# 跨域
+#  Cross-domain
 App.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_HOSTS,
@@ -29,20 +29,20 @@ App.add_middleware(
     allow_headers=["*"],
 )
 
-# uvicorn服务
+# uvicorn Service
 Server = uvicorn.Server(Config(App, host=settings.HOST, port=settings.PORT,
                                reload=settings.DEV, workers=multiprocessing.cpu_count()))
 
 
 def init_routers():
     """
-    初始化路由
+    Initializing routes
     """
     from app.api.apiv1 import api_router
     from app.api.servarr import arr_router
-    # API路由
+    # API Routing (in computer networks)
     App.include_router(api_router, prefix=settings.API_V1_STR)
-    # Radarr、Sonarr路由
+    # Radarr、Sonarr Routing (in computer networks)
     App.include_router(arr_router, prefix="/api/v3")
 
 
@@ -77,17 +77,17 @@ def stop_frontend():
 @App.on_event("shutdown")
 def shutdown_server():
     """
-    服务关闭
+    Service shutdown
     """
-    # 停止模块
+    #  Stop module
     ModuleManager().stop()
-    # 停止插件
+    #  Stop plugins
     PluginManager().stop()
-    # 停止事件消费
+    #  Stop event consumption
     Command().stop()
-    # 停止虚拟显示
+    #  Stop virtual display
     DisplayHelper().stop()
-    # 停止定时服务
+    #  Stop timing service
     Scheduler().stop()
     # 停止前端服务
     stop_frontend()
@@ -96,30 +96,30 @@ def shutdown_server():
 @App.on_event("startup")
 def start_module():
     """
-    启动模块
+    Starter module
     """
     # 虚拟显示
     DisplayHelper()
-    # 站点管理
+    #  Site management
     SitesHelper()
-    # 加载模块
+    #  Load modules
     ModuleManager()
-    # 加载插件
+    #  Loading plug-ins
     PluginManager()
-    # 启动定时服务
+    #  Start timing service
     Scheduler()
-    # 启动事件消费
+    #  Initiate event consumption
     Command()
-    # 初始化路由
+    # Initializing routes
     init_routers()
     # 启动前端服务
     start_frontend()
 
 
 if __name__ == '__main__':
-    # 初始化数据库
+    #  Initializing the database
     init_db()
-    # 更新数据库
+    #  Updating the database
     update_db()
-    # 启动服务
+    #  Starting services
     Server.run()

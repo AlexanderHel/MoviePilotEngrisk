@@ -10,11 +10,11 @@ class OcrHelper:
 
     def get_captcha_text(self, image_url=None, image_b64=None, cookie=None, ua=None):
         """
-        根据图片地址，获取验证码图片，并识别内容
-        :param image_url: 图片地址
-        :param image_b64: 图片base64，跳过图片地址下载
-        :param cookie: 下载图片使用的cookie
-        :param ua: 下载图片使用的ua
+        According to the image address， Get captcha image， And identify the content
+        :param image_url:  Image address
+        :param image_b64:  Photographbase64， Skip image address to download
+        :param cookie:  Download images used bycookie
+        :param ua:  Download images used byua
         """
         if image_url:
             ret = RequestUtils(ua=ua,

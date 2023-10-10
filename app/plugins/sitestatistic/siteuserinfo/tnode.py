@@ -27,8 +27,8 @@ class TNodeSiteUserInfo(ISiteUserInfo):
 
     def _parse_logged_in(self, html_text):
         """
-        判断是否登录成功, 通过判断是否存在用户信息
-        暂时跳过检测，待后续优化
+        Determine whether the login is successful or not,  By determining whether user information exists
+        Skip detection for now， To be subsequently optimized
         :param html_text:
         :return:
         """
@@ -63,7 +63,7 @@ class TNodeSiteUserInfo(ISiteUserInfo):
 
     def _parse_user_torrent_seeding_info(self, html_text: str, multi_page: bool = False) -> Optional[str]:
         """
-        解析用户做种信息
+        Parsing user seeding information
         """
         seeding_info = json.loads(html_text)
         if seeding_info.get("status") != 200:
@@ -84,7 +84,7 @@ class TNodeSiteUserInfo(ISiteUserInfo):
         self.seeding_size += page_seeding_size
         self.seeding_info.extend(page_seeding_info)
 
-        # 是否存在下页数据
+        #  Existence of next page data
         next_page = None
 
         return next_page
@@ -94,9 +94,9 @@ class TNodeSiteUserInfo(ISiteUserInfo):
 
     def _parse_message_content(self, html_text):
         """
-        系统信息 api/message/listSystem?page=1&size=20
-        收件箱信息 api/message/listInbox?page=1&size=20
-        管理员信息 api/message/listAdmin?page=1&size=20
+        System information api/message/listSystem?page=1&size=20
+        Inbox information api/message/listInbox?page=1&size=20
+        Administrator information api/message/listAdmin?page=1&size=20
         :param html_text:
         :return:
         """

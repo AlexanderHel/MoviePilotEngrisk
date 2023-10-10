@@ -34,11 +34,11 @@ class Slack:
                             ssl_check_enabled=False,
                             url_verification_enabled=False)
         except Exception as err:
-            logger.error(f"Slack初始化失败: {err}")
+            logger.error(f"Slack Initialization failure: {err}")
             return
         self._client = slack_app.client
 
-        # 注册消息响应
+        #  Registering a message response
         @slack_app.event("message")
         def slack_message(message):
             local_res = requests.post(self._ds_url, json=message, timeout=10)
@@ -52,7 +52,7 @@ class Slack:
 
         @slack_app.event("app_mention")
         def slack_mention(say, body):
-            say(f"收到，请稍等... <@{body.get('event', {}).get('user')}>")
+            say(f" Received， Please wait.... <@{body.get('event', {}).get('user')}>")
             local_res = requests.post(self._ds_url, json=body, timeout=10)
             logger.debug("message: %s processed, response is: %s" % (body, local_res.text))
 
@@ -68,55 +68,55 @@ class Slack:
             local_res = requests.post(self._ds_url, json=body, timeout=10)
             logger.debug("message: %s processed, response is: %s" % (body, local_res.text))
 
-        # 启动服务
+        #  Starting services
         try:
             self._service = SocketModeHandler(
                 slack_app,
                 settings.SLACK_APP_TOKEN
             )
             self._service.connect()
-            logger.info("Slack消息接收服务启动")
+            logger.info("Slack Message acceptance service startup")
         except Exception as err:
-            logger.error("Slack消息接收服务启动失败: %s" % str(err))
+            logger.error("Slack Failed to start the message receiving service: %s" % str(err))
 
     def stop(self):
         if self._service:
             try:
                 self._service.close()
-                logger.info("Slack消息接收服务已停止")
+                logger.info("Slack The message receiving service has been discontinued")
             except Exception as err:
-                logger.error("Slack消息接收服务停止失败: %s" % str(err))
+                logger.error("Slack Message receiving service stop failure: %s" % str(err))
 
     def send_msg(self, title: str, text: str = "", image: str = "", url: str = "", userid: str = ""):
         """
-        发送Telegram消息
-        :param title: 消息标题
-        :param text: 消息内容
-        :param image: 消息图片地址
-        :param url: 点击消息转转的URL
-        :param userid: 用户ID，如有则只发消息给该用户
-        :user_id: 发送消息的目标用户ID，为空则发给管理员
+        DispatchTelegram Messages
+        :param title:  Message title
+        :param text:  Message
+        :param image:  Message image address
+        :param url:  Click on the message spinningURL
+        :param userid:  SubscribersID， If so, send a message to that user only
+        :user_id:  The target user to whom the message is sentID， If empty, send to administrator
         """
         if not self._client:
-            return False, "消息客户端未就绪"
+            return False, " Message client not ready"
         if not title and not text:
-            return False, "标题和内容不能同时为空"
+            return False, " Title and content cannot be empty at the same time"
         try:
             if userid:
                 channel = userid
             else:
-                # 消息广播
+                #  Message broadcasting
                 channel = self.__find_public_channel()
-            # 消息文本
+            #  Message text
             message_text = ""
-            # 结构体
+            #  Constructor
             blocks = []
             if not image:
                 message_text = f"{title}\n{text or ''}"
             else:
-                # 消息图片
+                #  Message pictures
                 if image:
-                    # 拼装消息内容
+                    #  Assembly message content
                     blocks.append({"type": "section", "text": {
                         "type": "mrkdwn",
                         "text": f"*{title}*\n{text or ''}"
@@ -125,7 +125,7 @@ class Slack:
                         "image_url": f"{image}",
                         "alt_text": f"{title}"
                     }})
-                # 链接
+                #  Link (on a website)
                 if url:
                     blocks.append({
                         "type": "actions",
@@ -134,7 +134,7 @@ class Slack:
                                 "type": "button",
                                 "text": {
                                     "type": "plain_text",
-                                    "text": "查看详情",
+                                    "text": " View details",
                                     "emoji": True
                                 },
                                 "value": "click_me_url",
@@ -143,7 +143,7 @@ class Slack:
                             }
                         ]
                     })
-            # 发送
+            #  Dispatch
             result = self._client.chat_postMessage(
                 channel=channel,
                 text=message_text[:1000],
@@ -152,12 +152,12 @@ class Slack:
             )
             return True, result
         except Exception as msg_e:
-            logger.error(f"Slack消息发送失败: {msg_e}")
+            logger.error(f"Slack Failed to send message: {msg_e}")
             return False, str(msg_e)
 
     def send_meidas_msg(self, medias: List[MediaInfo], userid: str = "", title: str = "") -> Optional[bool]:
         """
-        发送列表类消息
+        Sending list class messages
         """
         if not self._client:
             return False
@@ -167,9 +167,9 @@ class Slack:
             if userid:
                 channel = userid
             else:
-                # 消息广播
+                #  Message broadcasting
                 channel = self.__find_public_channel()
-            # 消息主体
+            #  Message body
             title_section = {
                 "type": "section",
                 "text": {
@@ -178,7 +178,7 @@ class Slack:
                 }
             }
             blocks = [title_section]
-            # 列表
+            #  Listings
             if medias:
                 blocks.append({
                     "type": "divider"
@@ -188,12 +188,12 @@ class Slack:
                     if media.get_poster_image():
                         if media.vote_star:
                             text = f"{index}. *<{media.detail_link}|{media.title_year}>*" \
-                                   f"\n类型：{media.type.value}" \
+                                   f"\n Typology：{media.type.value}" \
                                    f"\n{media.vote_star}" \
                                    f"\n{media.get_overview_string(50)}"
                         else:
                             text = f"{index}. *<{media.detail_link}|{media.title_year}>*" \
-                                   f"\n类型：{media.type.value}" \
+                                   f"\n Typology：{media.type.value}" \
                                    f"\n{media.get_overview_string(50)}"
                         blocks.append(
                             {
@@ -217,7 +217,7 @@ class Slack:
                                         "type": "button",
                                         "text": {
                                             "type": "plain_text",
-                                            "text": "选择",
+                                            "text": " Option",
                                             "emoji": True
                                         },
                                         "value": f"{index}",
@@ -227,7 +227,7 @@ class Slack:
                             }
                         )
                         index += 1
-            # 发送
+            #  Dispatch
             result = self._client.chat_postMessage(
                 channel=channel,
                 text=title,
@@ -235,13 +235,13 @@ class Slack:
             )
             return True if result else False
         except Exception as msg_e:
-            logger.error(f"Slack消息发送失败: {msg_e}")
+            logger.error(f"Slack Failed to send message: {msg_e}")
             return False
 
     def send_torrents_msg(self, torrents: List[Context],
                           userid: str = "", title: str = "") -> Optional[bool]:
         """
-        发送列表消息
+        Send a list message
         """
         if not self._client:
             return None
@@ -250,9 +250,9 @@ class Slack:
             if userid:
                 channel = userid
             else:
-                # 消息广播
+                #  Message broadcasting
                 channel = self.__find_public_channel()
-            # 消息主体
+            #  Message body
             title_section = {
                 "type": "section",
                 "text": {
@@ -263,7 +263,7 @@ class Slack:
             blocks = [title_section, {
                 "type": "divider"
             }]
-            # 列表
+            #  Listings
             index = 1
             for context in torrents:
                 torrent = context.torrent_info
@@ -298,7 +298,7 @@ class Slack:
                                 "type": "button",
                                 "text": {
                                     "type": "plain_text",
-                                    "text": "选择",
+                                    "text": " Option",
                                     "emoji": True
                                 },
                                 "value": f"{index}",
@@ -308,7 +308,7 @@ class Slack:
                     }
                 )
                 index += 1
-            # 发送
+            #  Dispatch
             result = self._client.chat_postMessage(
                 channel=channel,
                 text=title,
@@ -316,12 +316,12 @@ class Slack:
             )
             return True if result else False
         except Exception as msg_e:
-            logger.error(f"Slack消息发送失败: {msg_e}")
+            logger.error(f"Slack Failed to send message: {msg_e}")
             return False
 
     def __find_public_channel(self):
         """
-        查找公共频道
+        Find a public channel
         """
         if not self._client:
             return ""
@@ -331,9 +331,9 @@ class Slack:
                 if conversation_id:
                     break
                 for channel in result["channels"]:
-                    if channel.get("name") == (settings.SLACK_CHANNEL or "全体"):
+                    if channel.get("name") == (settings.SLACK_CHANNEL or " Blanket"):
                         conversation_id = channel.get("id")
                         break
         except Exception as e:
-            logger.error(f"查找Slack公共频道失败: {e}")
+            logger.error(f" FindSlack Public channel failure: {e}")
         return conversation_id

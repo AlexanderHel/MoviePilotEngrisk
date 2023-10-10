@@ -9,17 +9,17 @@ from tests.test_transfer import TransferTest
 if __name__ == '__main__':
     suite = unittest.TestSuite()
 
-    # 测试过滤器
+    #  Test filter
     suite.addTest(FilterTest('test_filter'))
-    # 测试名称识别
+    #  Test name identification
     suite.addTest(MetaInfoTest('test_metainfo'))
-    # 测试媒体识别
+    #  Test media recognition
     suite.addTest(RecognizeTest('test_recognize'))
-    # 测试CookieCloud同步
+    #  Beta (software)CookieCloud Synchronization
     suite.addTest(CookieCloudTest('test_cookiecloud'))
-    # 测试文件转移
+    #  Test file transfer
     suite.addTest(TransferTest('test_transfer'))
 
-    # 运行测试
+    #  Operational test
     runner = unittest.TextTestRunner()
     runner.run(suite)

@@ -12,5 +12,5 @@ class Token(BaseModel):
 
 
 class TokenPayload(BaseModel):
-    # 用户ID
+    #  SubscribersID
     sub: Optional[int] = None

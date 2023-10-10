@@ -31,7 +31,7 @@ lock = threading.Lock()
 
 class FileMonitorHandler(FileSystemEventHandler):
     """
-    目录监控响应类
+    Catalog monitor response class
     """
 
     def __init__(self, monpath: str, sync: Any, **kwargs):
@@ -40,37 +40,37 @@ class FileMonitorHandler(FileSystemEventHandler):
         self.sync = sync
 
     def on_created(self, event):
-        self.sync.event_handler(event=event, text="创建",
+        self.sync.event_handler(event=event, text=" Establish",
                                 mon_path=self._watch_path, event_path=event.src_path)
 
     def on_moved(self, event):
-        self.sync.event_handler(event=event, text="移动",
+        self.sync.event_handler(event=event, text=" Mobility",
                                 mon_path=self._watch_path, event_path=event.dest_path)
 
 
 class DirMonitor(_PluginBase):
-    # 插件名称
-    plugin_name = "目录监控"
-    # 插件描述
-    plugin_desc = "监控目录文件发生变化时实时整理到媒体库。"
-    # 插件图标
+    #  Plug-in name
+    plugin_name = " Catalog monitoring"
+    #  Plugin description
+    plugin_desc = " Monitor changes to directory files and organize them in the media library in real time.。"
+    #  Plug-in icons
     plugin_icon = "directory.png"
-    # 主题色
+    #  Theme color
     plugin_color = "#E0995E"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "jxxghp"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/jxxghp"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "dirmonitor_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 4
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 1
 
-    # 私有属性
+    #  Private property
     _scheduler = None
     transferhis = None
     downloadhis = None
@@ -79,18 +79,18 @@ class DirMonitor(_PluginBase):
     _observer = []
     _enabled = False
     _notify = False
-    # 模式 compatibility/fast
+    #  Paradigm compatibility/fast
     _mode = "fast"
-    # 转移方式
+    #  Migration pattern
     _transfer_type = settings.TRANSFER_TYPE
     _monitor_dirs = ""
     _exclude_keywords = ""
-    # 存储源目录与目的目录关系
+    #  Store source and destination directory relationships
     _dirconf: Dict[str, Path] = {}
-    # 存储源目录转移方式
+    #  Storage source catalog transfer method
     _transferconf: Dict[str, str] = {}
     _medias = {}
-    # 退出事件
+    #  Logout event
     _event = Event()
 
     def init_plugin(self, config: dict = None):
@@ -98,11 +98,11 @@ class DirMonitor(_PluginBase):
         self.downloadhis = DownloadHistoryOper(self.db)
         self.transferchian = TransferChain(self.db)
         self.tmdbchain = TmdbChain(self.db)
-        # 清空配置
+        #  Clear configuration
         self._dirconf = {}
         self._transferconf = {}
 
-        # 读取配置
+        #  Read configuration
         if config:
             self._enabled = config.get("enabled")
             self._notify = config.get("notify")
@@ -111,29 +111,29 @@ class DirMonitor(_PluginBase):
             self._monitor_dirs = config.get("monitor_dirs") or ""
             self._exclude_keywords = config.get("exclude_keywords") or ""
 
-        # 停止现有任务
+        #  Discontinuation of existing mandates
         self.stop_service()
 
         if self._enabled:
             self._scheduler = BackgroundScheduler(timezone=settings.TZ)
 
-            # 启动任务
+            #  Initiate tasks
             monitor_dirs = self._monitor_dirs.split("\n")
             if not monitor_dirs:
                 return
             for mon_path in monitor_dirs:
-                # 格式源目录:目的目录
+                #  Format source catalog: Destination catalog
                 if not mon_path:
                     continue
 
-                # 自定义转移方式
+                #  Customizing the transfer method
                 if mon_path.count("#") == 1:
                     self._transferconf[mon_path] = mon_path.split("#")[1]
                     mon_path = mon_path.split("#")[0]
                 else:
                     self._transferconf[mon_path] = self._transfer_type
 
-                # 存储目的目录
+                #  Storage destination directory
                 if SystemUtils.is_windows():
                     if mon_path.count(":") > 1:
                         paths = [mon_path.split(":")[0] + ":" + mon_path.split(":")[1],
@@ -149,11 +149,11 @@ class DirMonitor(_PluginBase):
                     target_path = Path(paths[1])
                     self._dirconf[mon_path] = target_path
 
-                # 检查媒体库目录是不是下载目录的子目录
+                #  Check that the media library directory is not a subdirectory of the download directory
                 try:
                     if target_path.is_relative_to(Path(mon_path)):
-                        logger.warn(f"{target_path} 是下载目录 {mon_path} 的子目录，无法监控")
-                        self.systemmessage.put(f"{target_path} 是下载目录 {mon_path} 的子目录，无法监控")
+                        logger.warn(f"{target_path}  Is the download directory {mon_path}  Subdirectories， Unmonitored")
+                        self.systemmessage.put(f"{target_path}  Is the download directory {mon_path}  Subdirectories， Unmonitored")
                         continue
                 except Exception as e:
                     logger.debug(str(e))
@@ -161,116 +161,116 @@ class DirMonitor(_PluginBase):
 
                 try:
                     if self._mode == "compatibility":
-                        # 兼容模式，目录同步性能降低且NAS不能休眠，但可以兼容挂载的远程共享目录如SMB
+                        #  Compatibility mode， Reduced directory synchronization performance andNAS Cannot hibernate， However, it is compatible with mounted remote shared directories such asSMB
                         observer = PollingObserver(timeout=10)
                     else:
-                        # 内部处理系统操作类型选择最优解
+                        #  Selection of the optimal solution for the type of operation of the internal processing system
                         observer = Observer(timeout=10)
                     self._observer.append(observer)
                     observer.schedule(FileMonitorHandler(mon_path, self), path=mon_path, recursive=True)
                     observer.daemon = True
                     observer.start()
-                    logger.info(f"{mon_path} 的目录监控服务启动")
+                    logger.info(f"{mon_path}  The catalog monitoring service starts")
                 except Exception as e:
                     err_msg = str(e)
                     if "inotify" in err_msg and "reached" in err_msg:
                         logger.warn(
-                            f"目录监控服务启动出现异常：{err_msg}，请在宿主机上（不是docker容器内）执行以下命令并重启："
+                            f" Abnormal startup of the catalog monitoring service：{err_msg}， On the host computer, please（ Faultdocker Container） Execute the following command and reboot："
                             + """
                                  echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
                                  echo fs.inotify.max_user_instances=524288 | sudo tee -a /etc/sysctl.conf
                                  sudo sysctl -p
                                  """)
                     else:
-                        logger.error(f"{mon_path} 启动目录监控失败：{err_msg}")
-                    self.systemmessage.put(f"{mon_path} 启动目录监控失败：{err_msg}")
+                        logger.error(f"{mon_path}  Failed to start directory monitoring：{err_msg}")
+                    self.systemmessage.put(f"{mon_path}  Failed to start directory monitoring：{err_msg}")
 
-            # 追加入库消息统一发送服务
+            #  Harmonized service for the delivery of additional inbound messages
             self._scheduler.add_job(self.send_msg, trigger='interval', seconds=15)
-            # 启动服务
+            #  Starting services
             self._scheduler.print_jobs()
             self._scheduler.start()
 
     def event_handler(self, event, mon_path: str, text: str, event_path: str):
         """
-        处理文件变化
-        :param event: 事件
-        :param mon_path: 监控目录
-        :param text: 事件描述
-        :param event_path: 事件文件路径
+        Processing of document changes
+        :param event:  Event
+        :param mon_path:  Monitor catalog
+        :param text:  Event description
+        :param event_path:  Event file path
         """
         if not event.is_directory:
-            # 文件发生变化
+            #  Changes in documentation
             file_path = Path(event_path)
             try:
                 if not file_path.exists():
                     return
 
-                logger.debug("文件%s：%s" % (text, event_path))
+                logger.debug(" File%s：%s" % (text, event_path))
 
-                # 全程加锁
+                #  Fully locked
                 with lock:
                     transfer_history = self.transferhis.get_by_src(event_path)
                     if transfer_history:
-                        logger.debug("文件已处理过：%s" % event_path)
+                        logger.debug(" Documentation has been processed：%s" % event_path)
                         return
 
-                    # 回收站及隐藏的文件不处理
+                    #  Recycle bin and hidden files not handled
                     if event_path.find('/@Recycle/') != -1 \
                             or event_path.find('/#recycle/') != -1 \
                             or event_path.find('/.') != -1 \
                             or event_path.find('/@eaDir') != -1:
-                        logger.debug(f"{event_path} 是回收站或隐藏的文件")
+                        logger.debug(f"{event_path}  It's the recycle bin or hidden files")
                         return
 
-                    # 命中过滤关键字不处理
+                    #  Hit filter keywords are not processed
                     if self._exclude_keywords:
                         for keyword in self._exclude_keywords.split("\n"):
                             if keyword and re.findall(keyword, event_path):
-                                logger.info(f"{event_path} 命中过滤关键字 {keyword}，不处理")
+                                logger.info(f"{event_path}  Hit filter keywords {keyword}， Not dealt with")
                                 return
 
-                    # 整理屏蔽词不处理
+                    #  Sorting out blocked words not dealt with
                     transfer_exclude_words = self.systemconfig.get(SystemConfigKey.TransferExcludeWords)
                     if transfer_exclude_words:
                         for keyword in transfer_exclude_words:
                             if not keyword:
                                 continue
                             if keyword and re.search(r"%s" % keyword, event_path, re.IGNORECASE):
-                                logger.info(f"{event_path} 命中整理屏蔽词 {keyword}，不处理")
+                                logger.info(f"{event_path}  Hit listener's blocking words (computing) {keyword}， Not dealt with")
                                 return
 
-                    # 不是媒体文件不处理
+                    #  Not media files are not processed
                     if file_path.suffix not in settings.RMT_MEDIAEXT:
-                        logger.debug(f"{event_path} 不是媒体文件")
+                        logger.debug(f"{event_path}  It's not a media file.")
                         return
 
-                    # 查询历史记录，已转移的不处理
+                    #  Query history， Transferred not processed
                     if self.transferhis.get_by_src(event_path):
-                        logger.info(f"{event_path} 已整理过")
+                        logger.info(f"{event_path}  Organized.")
                         return
 
-                    # 元数据
+                    #  Metadata
                     file_meta = MetaInfoPath(file_path)
                     if not file_meta.name:
-                        logger.error(f"{file_path.name} 无法识别有效信息")
+                        logger.error(f"{file_path.name}  Unable to recognize valid information")
                         return
 
-                    # 查询转移目的目录
+                    #  Query the transfer destination directory
                     target: Path = self._dirconf.get(mon_path)
-                    # 查询转移方式
+                    #  Enquire about the transfer method
                     transfer_type = self._transferconf.get(mon_path)
 
-                    # 识别媒体信息
+                    #  Identify media messages
                     mediainfo: MediaInfo = self.chain.recognize_media(meta=file_meta)
                     if not mediainfo:
-                        logger.warn(f'未识别到媒体信息，标题：{file_meta.name}')
+                        logger.warn(f' No media messages recognized， Caption：{file_meta.name}')
                         if self._notify:
                             self.chain.post_message(Notification(
                                 mtype=NotificationType.Manual,
-                                title=f"{file_path.name} 未识别到媒体信息，无法入库！"
+                                title=f"{file_path.name}  No media messages recognized， Out of stock！"
                             ))
-                        # 新增转移成功历史记录
+                        #  Add transfer success history
                         self.transferhis.add_fail(
                             src_path=file_path,
                             mode=transfer_type,
@@ -278,28 +278,28 @@ class DirMonitor(_PluginBase):
                         )
                         return
 
-                    # 如果未开启新增已入库媒体是否跟随TMDB信息变化则根据tmdbid查询之前的title
+                    #  If not enabled does the new inbound media follow theTMDB Information changes are then based ontmdbid Query the previoustitle
                     if not settings.SCRAP_FOLLOW_TMDB:
                         transfer_history = self.transferhis.get_by_type_tmdbid(tmdbid=mediainfo.tmdb_id,
                                                                                mtype=mediainfo.type.value)
                         if transfer_history:
                             mediainfo.title = transfer_history.title
-                    logger.info(f"{file_path.name} 识别为：{mediainfo.type.value} {mediainfo.title_year}")
+                    logger.info(f"{file_path.name}  Identify as：{mediainfo.type.value} {mediainfo.title_year}")
 
-                    # 更新媒体图片
+                    #  Updating media images
                     self.chain.obtain_images(mediainfo=mediainfo)
 
-                    # 获取集数据
+                    #  Get set data
                     if mediainfo.type == MediaType.TV:
                         episodes_info = self.tmdbchain.tmdb_episodes(tmdbid=mediainfo.tmdb_id,
                                                                      season=file_meta.begin_season or 1)
                     else:
                         episodes_info = None
 
-                    # 获取downloadhash
+                    #  Gaindownloadhash
                     download_hash = self.get_download_hash(src=str(file_path))
 
-                    # 转移
+                    #  Divert or distract (attention etc)
                     transferinfo: TransferInfo = self.chain.transfer(mediainfo=mediainfo,
                                                                      path=file_path,
                                                                      transfer_type=transfer_type,
@@ -308,12 +308,12 @@ class DirMonitor(_PluginBase):
                                                                      episodes_info=episodes_info)
 
                     if not transferinfo:
-                        logger.error("文件转移模块运行失败")
+                        logger.error(" Failure to run the file transfer module")
                         return
                     if not transferinfo.success:
-                        # 转移失败
-                        logger.warn(f"{file_path.name} 入库失败：{transferinfo.message}")
-                        # 新增转移失败历史记录
+                        #  Divert or distract (attention etc)失败
+                        logger.warn(f"{file_path.name}  Failure to stock：{transferinfo.message}")
+                        #  Added transfer failure history
                         self.transferhis.add_fail(
                             src_path=file_path,
                             mode=transfer_type,
@@ -324,13 +324,13 @@ class DirMonitor(_PluginBase):
                         )
                         if self._notify:
                             self.chain.post_message(Notification(
-                                title=f"{mediainfo.title_year}{file_meta.season_episode} 入库失败！",
-                                text=f"原因：{transferinfo.message or '未知'}",
+                                title=f"{mediainfo.title_year}{file_meta.season_episode}  Failure to stock！",
+                                text=f" Rationale：{transferinfo.message or ' Uncharted'}",
                                 image=mediainfo.get_message_image()
                             ))
                         return
 
-                    # 新增转移成功历史记录
+                    #  Add transfer success history
                     self.transferhis.add_success(
                         src_path=file_path,
                         mode=transfer_type,
@@ -340,7 +340,7 @@ class DirMonitor(_PluginBase):
                         transferinfo=transferinfo
                     )
 
-                    # 刮削单个文件
+                    #  Scraping of individual documents
                     if settings.SCRAP_METADATA:
                         self.chain.scrape_metadata(path=transferinfo.target_path,
                                                    mediainfo=mediainfo)
@@ -360,7 +360,7 @@ class DirMonitor(_PluginBase):
                         }
                     }
                     """
-                    # 发送消息汇总
+                    #  Send message summary
                     media_list = self._medias.get(mediainfo.title_year + " " + file_meta.season) or {}
                     if media_list:
                         media_files = media_list.get("files") or []
@@ -404,46 +404,46 @@ class DirMonitor(_PluginBase):
                         }
                     self._medias[mediainfo.title_year + " " + file_meta.season] = media_list
 
-                    # 汇总刷新媒体库
+                    #  Aggregate refresh media library
                     if settings.REFRESH_MEDIASERVER:
                         self.chain.refresh_mediaserver(mediainfo=mediainfo, file_path=transferinfo.target_path)
-                    # 广播事件
+                    #  Broadcasting incident
                     self.eventmanager.send_event(EventType.TransferComplete, {
                         'meta': file_meta,
                         'mediainfo': mediainfo,
                         'transferinfo': transferinfo
                     })
 
-                    # 移动模式删除空目录
+                    #  Remove empty directories in mobile mode
                     if transfer_type == "move":
                         for file_dir in file_path.parents:
                             if len(str(file_dir)) <= len(str(Path(mon_path))):
-                                # 重要，删除到监控目录为止
+                                #  Critical， Delete until you reach the monitoring directory
                                 break
                             files = SystemUtils.list_files(file_dir, settings.RMT_MEDIAEXT)
                             if not files:
-                                logger.warn(f"移动模式，删除空目录：{file_dir}")
+                                logger.warn(f" Mobile mode， Delete empty directories：{file_dir}")
                                 shutil.rmtree(file_dir, ignore_errors=True)
 
             except Exception as e:
-                logger.error("目录监控发生错误：%s - %s" % (str(e), traceback.format_exc()))
+                logger.error(" An error occurred in catalog monitoring：%s - %s" % (str(e), traceback.format_exc()))
 
     def send_msg(self):
         """
-        定时检查是否有媒体处理完，发送统一消息
+        Regularly check to see if any media has been processed， Send unified messages
         """
         if not self._medias or not self._medias.keys():
             return
 
-        # 遍历检查是否已刮削完，发送消息
+        #  Iterate to check if scraping is complete， Send a message
         for medis_title_year_season in list(self._medias.keys()):
             media_list = self._medias.get(medis_title_year_season)
-            logger.info(f"开始处理媒体 {medis_title_year_season} 消息")
+            logger.info(f" Start processing media {medis_title_year_season}  Messages")
 
             if not media_list:
                 continue
 
-            # 获取最后更新时间
+            #  Get last update time
             last_update_time = media_list.get("time")
             media_files = media_list.get("files")
             if not last_update_time or not media_files:
@@ -452,16 +452,16 @@ class DirMonitor(_PluginBase):
             transferinfo = media_files[0].get("transferinfo")
             file_meta = media_files[0].get("file_meta")
             mediainfo = media_files[0].get("mediainfo")
-            # 判断最后更新时间距现在是已超过5秒，超过则发送消息
+            #  Determine if the last update is more than5 Unit of angle or arc equivalent one sixtieth of a degree， If exceeded, a message is sent
             if (datetime.now() - last_update_time).total_seconds() > 5:
-                # 发送通知
+                #  Send notification
                 if self._notify:
 
-                    # 汇总处理文件总大小
+                    #  Aggregate total size of processed documents
                     total_size = 0
                     file_count = 0
 
-                    # 剧集汇总
+                    #  Episode summary
                     episodes = []
                     for file in media_files:
                         transferinfo = file.get("transferinfo")
@@ -473,27 +473,27 @@ class DirMonitor(_PluginBase):
                             episodes.append(file_meta.begin_episode)
 
                     transferinfo.total_size = total_size
-                    # 汇总处理文件数量
+                    #  Summary of the number of documents processed
                     transferinfo.file_count = file_count
 
-                    # 剧集季集信息 S01 E01-E04 || S01 E01、E02、E04
+                    #  Episode season information S01 E01-E04 || S01 E01、E02、E04
                     season_episode = None
-                    # 处理文件多，说明是剧集，显示季入库消息
+                    #  High number of documents processed， Description is episodic， Show seasonal inventory news
                     if mediainfo.type == MediaType.TV:
-                        # 季集文本
+                        #  Quarterly texts
                         season_episode = f"{file_meta.season} {StringUtils.format_ep(episodes)}"
-                    # 发送消息
+                    #  Send a message
                     self.transferchian.send_transfer_message(meta=file_meta,
                                                              mediainfo=mediainfo,
                                                              transferinfo=transferinfo,
                                                              season_episode=season_episode)
-                # 发送完消息，移出key
+                #  After sending the message， Move outkey
                 del self._medias[medis_title_year_season]
                 continue
 
     def get_download_hash(self, src: str):
         """
-        从表中获取download_hash，避免连接下载器
+        Get from tabledownload_hash， Avoid connecting to the downloader
         """
         downloadHis = self.downloadhis.get_file_by_fullpath(src)
         if downloadHis:
@@ -529,7 +529,7 @@ class DirMonitor(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'enabled',
-                                            'label': '启用插件',
+                                            'label': ' Enabling plug-ins',
                                         }
                                     }
                                 ]
@@ -545,7 +545,7 @@ class DirMonitor(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'notify',
-                                            'label': '发送通知',
+                                            'label': ' Send notification',
                                         }
                                     }
                                 ]
@@ -566,10 +566,10 @@ class DirMonitor(_PluginBase):
                                         'component': 'VSelect',
                                         'props': {
                                             'model': 'mode',
-                                            'label': '监控模式',
+                                            'label': ' Monitoring mode',
                                             'items': [
-                                                {'title': '兼容模式', 'value': 'compatibility'},
-                                                {'title': '性能模式', 'value': 'fast'}
+                                                {'title': ' Compatibility mode', 'value': 'compatibility'},
+                                                {'title': ' Performance mode', 'value': 'fast'}
                                             ]
                                         }
                                     }
@@ -586,12 +586,12 @@ class DirMonitor(_PluginBase):
                                         'component': 'VSelect',
                                         'props': {
                                             'model': 'transfer_type',
-                                            'label': '转移方式',
+                                            'label': ' Migration pattern',
                                             'items': [
-                                                {'title': '移动', 'value': 'move'},
-                                                {'title': '复制', 'value': 'copy'},
-                                                {'title': '硬链接', 'value': 'link'},
-                                                {'title': '软链接', 'value': 'softlink'}
+                                                {'title': ' Mobility', 'value': 'move'},
+                                                {'title': ' Make a copy of', 'value': 'copy'},
+                                                {'title': ' Hard link', 'value': 'link'},
+                                                {'title': ' Soft link (computing)', 'value': 'softlink'}
                                             ]
                                         }
                                     }
@@ -612,13 +612,13 @@ class DirMonitor(_PluginBase):
                                         'component': 'VTextarea',
                                         'props': {
                                             'model': 'monitor_dirs',
-                                            'label': '监控目录',
+                                            'label': ' Monitor catalog',
                                             'rows': 5,
-                                            'placeholder': '每一行一个目录，支持三种配置方式：\n'
-                                                           '监控目录\n'
+                                            'placeholder': ' One directory per line， Three configuration methods are supported：\n'
+                                                           ' Monitor catalog\n'
                                                            '监控目录#转移方式（move|copy|link|softlink）\n'
-                                                           '监控目录:转移目的目录（需同时在媒体库目录中配置该目的目录）\n'
-                                                           '监控目录:转移目的目录#转移方式（move|copy|link|softlink）'
+                                                           ' Monitor catalog: Transfer purpose catalog（ You must also configure the destination directory in the media library directory.）\n'
+                                                           ' Monitor catalog: Transfer purpose catalog# Migration pattern（move|copy|link|softlink）'
                                         }
                                     }
                                 ]
@@ -638,9 +638,9 @@ class DirMonitor(_PluginBase):
                                         'component': 'VTextarea',
                                         'props': {
                                             'model': 'exclude_keywords',
-                                            'label': '排除关键词',
+                                            'label': ' Exclude keywords',
                                             'rows': 2,
-                                            'placeholder': '每一行一个关键词'
+                                            'placeholder': ' One keyword per line'
                                         }
                                     }
                                 ]
@@ -663,7 +663,7 @@ class DirMonitor(_PluginBase):
 
     def stop_service(self):
         """
-        退出插件
+        Exit plugin
         """
         if self._observer:
             for observer in self._observer:

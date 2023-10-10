@@ -41,7 +41,7 @@ class FileListSiteUserInfo(ISiteUserInfo):
 
     def _parse_user_traffic_info(self, html_text: str):
         """
-        上传/下载/分享率 [做种数/魔力值]
+        Upload/ Downloading/ Sharing rate [ Determinant (math.)/ Magic power level]
         :param html_text:
         :return:
         """
@@ -75,10 +75,10 @@ class FileListSiteUserInfo(ISiteUserInfo):
 
     def _parse_user_torrent_seeding_info(self, html_text: str, multi_page: bool = False) -> Optional[str]:
         """
-        做种相关信息
+        Seeding information
         :param html_text:
-        :param multi_page: 是否多页数据
-        :return: 下页地址
+        :param multi_page:  Whether multiple pages of data
+        :return:  Next page address
         """
         html = etree.HTML(html_text)
         if not html:
@@ -106,7 +106,7 @@ class FileListSiteUserInfo(ISiteUserInfo):
         self.seeding_size += page_seeding_size
         self.seeding_info.extend(page_seeding_info)
 
-        # 是否存在下页数据
+        #  Existence of next page data
         next_page = None
 
         return next_page

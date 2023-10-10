@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker, Session, scoped_session
 
 from app.core.config import settings
 
-# 数据库引擎
+#  Database engine
 Engine = create_engine(f"sqlite:///{settings.CONFIG_PATH}/user.db",
                        pool_pre_ping=True,
                        echo=False,
@@ -13,16 +13,16 @@ Engine = create_engine(f"sqlite:///{settings.CONFIG_PATH}/user.db",
                        pool_timeout=180,
                        max_overflow=0,
                        connect_args={"timeout": 60})
-# 会话工厂
+#  Conversation factory
 SessionFactory = sessionmaker(autocommit=False, autoflush=False, bind=Engine)
 
-# 多线程全局使用的数据库会话
+#  Multi-threaded globally used database sessions
 ScopedSession = scoped_session(SessionFactory)
 
 
 def get_db():
     """
-    获取数据库会话
+    Getting a database session
     :return: Session
     """
     db = None

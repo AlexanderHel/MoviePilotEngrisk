@@ -6,7 +6,7 @@ from app.db.models import Base
 
 class PluginData(Base):
     """
-    插件数据表
+    Plug-in data sheet
     """
     id = Column(Integer, Sequence('id'), primary_key=True, index=True)
     plugin_id = Column(String, nullable=False, index=True)

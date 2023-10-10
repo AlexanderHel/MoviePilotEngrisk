@@ -17,7 +17,7 @@ from app.utils.site import SiteUtils
 SITE_BASE_ORDER = 1000
 
 
-# 站点框架
+#  Site framework
 class SiteSchema(Enum):
     DiscuzX = "Discuz!"
     Gazelle = "Gazelle"
@@ -34,9 +34,9 @@ class SiteSchema(Enum):
 
 
 class ISiteUserInfo(metaclass=ABCMeta):
-    # 站点模版
+    #  Site templates
     schema = SiteSchema.NexusPhp
-    # 站点解析时判断顺序，值越小越先解析
+    #  Order of judgment when parsing sites， The smaller the value, the first to parse
     order = SITE_BASE_ORDER
 
     def __init__(self, site_name: str,
@@ -48,22 +48,22 @@ class ISiteUserInfo(metaclass=ABCMeta):
                  emulate: bool = False,
                  proxy: bool = None):
         super().__init__()
-        # 站点信息
+        #  Site information
         self.site_name = None
         self.site_url = None
-        # 用户信息
+        #  User information
         self.username = None
         self.userid = None
-        # 未读消息
+        #  Unread message
         self.message_unread = 0
         self.message_unread_contents = []
 
-        # 流量信息
+        #  Traffic information
         self.upload = 0
         self.download = 0
         self.ratio = 0
 
-        # 种子信息
+        #  Seed information
         self.seeding = 0
         self.leeching = 0
         self.uploaded = 0
@@ -74,23 +74,23 @@ class ISiteUserInfo(metaclass=ABCMeta):
         self.uploaded_size = 0
         self.completed_size = 0
         self.incomplete_size = 0
-        # 做种人数, 种子大小
+        #  Number of vaccinations,  Seed size
         self.seeding_info = []
 
-        # 用户详细信息
+        #  User details
         self.user_level = None
         self.join_at = None
         self.bonus = 0.0
 
-        # 错误信息
+        #  Error message
         self.err_msg = None
-        # 内部数据
+        #  Internal data
         self._base_url = None
         self._site_cookie = None
         self._index_html = None
         self._addition_headers = None
 
-        # 站点页面
+        #  Site page
         self._brief_page = "index.php"
         self._user_detail_page = "userdetails.php?id="
         self._user_traffic_page = "index.php"
@@ -114,23 +114,23 @@ class ISiteUserInfo(metaclass=ABCMeta):
 
     def site_schema(self) -> SiteSchema:
         """
-        站点解析模型
-        :return: 站点解析模型
+        Site resolution model
+        :return: Site resolution model
         """
         return self.schema
 
     @classmethod
     def match(cls, html_text: str) -> bool:
         """
-        是否匹配当前解析模型
-        :param html_text: 站点首页html
-        :return: 是否匹配
+        Whether to match the current parsing model
+        :param html_text:  Site homehtml
+        :return:  Whether or not it matches
         """
         pass
 
     def parse(self):
         """
-        解析站点信息
+        Parsing site information
         :return:
         """
         if not self._parse_logged_in(self._index_html):
@@ -149,7 +149,7 @@ class ISiteUserInfo(metaclass=ABCMeta):
 
     def _pase_unread_msgs(self):
         """
-        解析所有未读消息标题和内容
+        Parses all unread message headers and content
         :return:
         """
         unread_msg_links = []
@@ -169,20 +169,20 @@ class ISiteUserInfo(metaclass=ABCMeta):
                 unread_msg_links.extend(msg_links)
 
         for msg_link in unread_msg_links:
-            logger.debug(f"{self.site_name} 信息链接 {msg_link}")
+            logger.debug(f"{self.site_name}  Information links {msg_link}")
             head, date, content = self._parse_message_content(self._get_page_content(urljoin(self._base_url, msg_link)))
-            logger.debug(f"{self.site_name} 标题 {head} 时间 {date} 内容 {content}")
+            logger.debug(f"{self.site_name}  Caption {head}  Timing {date}  Element {content}")
             self.message_unread_contents.append((head, date, content))
 
     def _parse_seeding_pages(self):
         if self._torrent_seeding_page:
-            # 第一页
+            #  First page
             next_page = self._parse_user_torrent_seeding_info(
                 self._get_page_content(urljoin(self._base_url, self._torrent_seeding_page),
                                        self._torrent_seeding_params,
                                        self._torrent_seeding_headers))
 
-            # 其他页处理
+            #  Other page processing
             while next_page:
                 next_page = self._parse_user_torrent_seeding_info(
                     self._get_page_content(urljoin(urljoin(self._base_url, self._torrent_seeding_page), next_page),
@@ -193,14 +193,14 @@ class ISiteUserInfo(metaclass=ABCMeta):
     @staticmethod
     def _prepare_html_text(html_text):
         """
-        处理掉HTML中的干扰部分
+        Dispose ofHTML Interference component in
         """
         return re.sub(r"#\d+", "", re.sub(r"\d+px", "", html_text))
 
     @abstractmethod
     def _parse_message_unread_links(self, html_text: str, msg_links: list) -> Optional[str]:
         """
-        获取未阅读消息链接
+        Get unread message link
         :param html_text:
         :return:
         """
@@ -208,9 +208,9 @@ class ISiteUserInfo(metaclass=ABCMeta):
 
     def _get_page_content(self, url: str, params: dict = None, headers: dict = None):
         """
-        :param url: 网页地址
-        :param params: post参数
-        :param headers: 额外的请求头
+        :param url:  Webaddress
+        :param params: post Parameters
+        :param headers:  Additional request headers
         :return:
         """
         req_headers = None
@@ -241,10 +241,10 @@ class ISiteUserInfo(metaclass=ABCMeta):
                                proxies=proxies,
                                headers=req_headers).get_res(url=url)
         if res is not None and res.status_code in (200, 500, 403):
-            # 如果cloudflare 有防护，尝试使用浏览器仿真
+            #  In the event thatcloudflare  Sheltered， Try using browser emulation
             if under_challenge(res.text):
                 logger.warn(
-                    f"{self.site_name} 检测到Cloudflare，请更新Cookie和UA")
+                    f"{self.site_name}  DetectedCloudflare， Please updateCookie Cap (a poem)UA")
                 return ""
             if re.search(r"charset=\"?utf-8\"?", res.text, re.IGNORECASE):
                 res.encoding = "utf-8"
@@ -257,7 +257,7 @@ class ISiteUserInfo(metaclass=ABCMeta):
     @abstractmethod
     def _parse_site_page(self, html_text: str):
         """
-        解析站点相关信息页面
+        Parsing site-related information pages
         :param html_text:
         :return:
         """
@@ -266,7 +266,7 @@ class ISiteUserInfo(metaclass=ABCMeta):
     @abstractmethod
     def _parse_user_base_info(self, html_text: str):
         """
-        解析用户基础信息
+        Parsing basic user information
         :param html_text:
         :return:
         """
@@ -274,21 +274,21 @@ class ISiteUserInfo(metaclass=ABCMeta):
 
     def _parse_logged_in(self, html_text):
         """
-        解析用户是否已经登陆
+        Parsing whether a user is logged in
         :param html_text:
         :return: True/False
         """
         logged_in = SiteUtils.is_logged_in(html_text)
         if not logged_in:
-            self.err_msg = "未检测到已登陆，请检查cookies是否过期"
-            logger.warn(f"{self.site_name} 未登录，跳过后续操作")
+            self.err_msg = " No login detected， Please checkcookies Is it expired?"
+            logger.warn(f"{self.site_name}  Not logged in， Skip subsequent operations")
 
         return logged_in
 
     @abstractmethod
     def _parse_user_traffic_info(self, html_text: str):
         """
-        解析用户的上传，下载，分享率等信息
+        Parsing user uploads， Downloading， Share rate and other information
         :param html_text:
         :return:
         """
@@ -297,18 +297,18 @@ class ISiteUserInfo(metaclass=ABCMeta):
     @abstractmethod
     def _parse_user_torrent_seeding_info(self, html_text: str, multi_page: bool = False) -> Optional[str]:
         """
-        解析用户的做种相关信息
+        Analyze the user's do kind of related information
         :param html_text:
-        :param multi_page: 是否多页数据
-        :return: 下页地址
+        :param multi_page:  Whether multiple pages of data
+        :return:  Next page address
         """
         pass
 
     @abstractmethod
     def _parse_user_detail_info(self, html_text: str):
         """
-        解析用户的详细信息
-        加入时间/等级/魔力值等
+        Parsing user details
+        Joining time/ Hierarchy/ Magic power level and so on
         :param html_text:
         :return:
         """
@@ -317,7 +317,7 @@ class ISiteUserInfo(metaclass=ABCMeta):
     @abstractmethod
     def _parse_message_content(self, html_text):
         """
-        解析短消息内容
+        Parsing the content of a short message
         :param html_text:
         :return:  head: message, date: time, content: message content
         """
@@ -325,7 +325,7 @@ class ISiteUserInfo(metaclass=ABCMeta):
 
     def to_dict(self):
         """
-        转化为字典
+        Convert to dictionary
         """
         attributes = [
             attr for attr in dir(self)

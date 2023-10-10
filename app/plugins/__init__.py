@@ -15,45 +15,45 @@ from app.schemas import Notification, NotificationType, MessageChannel
 
 class PluginChian(ChainBase):
     """
-    插件处理链
+    Plug-in processing chain
     """
     pass
 
 
 class _PluginBase(metaclass=ABCMeta):
     """
-    插件模块基类，通过继续该类实现插件功能
-    除内置属性外，还有以下方法可以扩展或调用：
-    - stop_service() 停止插件服务
-    - get_config() 获取配置信息
-    - update_config() 更新配置信息
-    - init_plugin() 生效配置信息
-    - get_data_path() 获取插件数据保存目录
+    Plugin module base class， Plug-in functionality is implemented by continuing the class
+    In addition to the built-in properties， There are also the following methods that can be extended or called：
+    - stop_service()  Stop plugin service
+    - get_config()  Getting configuration information
+    - update_config()  Updating configuration information
+    - init_plugin()  Effective configuration information
+    - get_data_path()  Get plugin data storage directory
     """
-    # 插件名称
+    #  Plug-in name
     plugin_name: str = ""
-    # 插件描述
+    #  Plugin description
     plugin_desc: str = ""
 
     def __init__(self):
-        # 数据库连接
+        #  Database connection
         self.db = SessionFactory()
-        # 插件数据
+        #  Plug-in data
         self.plugindata = PluginDataOper(self.db)
-        # 处理链
+        #  Process chain
         self.chain = PluginChian(self.db)
-        # 系统配置
+        #  System configuration
         self.systemconfig = SystemConfigOper()
-        # 系统消息
+        #  System message
         self.systemmessage = MessageHelper()
-        # 事件管理器
+        #  Event manager
         self.eventmanager = EventManager()
 
     @abstractmethod
     def init_plugin(self, config: dict = None):
         """
-        生效配置信息
-        :param config: 配置信息字典
+        Effective configuration information
+        :param config:  Configuration information dictionary
         """
         pass
 
@@ -61,12 +61,12 @@ class _PluginBase(metaclass=ABCMeta):
     @abstractmethod
     def get_command() -> List[Dict[str, Any]]:
         """
-        获取插件命令
+        Get plugin command
         [{
             "cmd": "/xx",
             "event": EventType.xx,
-            "desc": "名称",
-            "category": "分类，需要注册到Wechat时必须有分类",
+            "desc": " Name (of a thing)",
+            "category": " Categorization， Requires registration toWechat Must be categorized when",
             "data": {}
         }]
         """
@@ -75,13 +75,13 @@ class _PluginBase(metaclass=ABCMeta):
     @abstractmethod
     def get_api(self) -> List[Dict[str, Any]]:
         """
-        获取插件API
+        Get pluginsAPI
         [{
             "path": "/xx",
             "endpoint": self.xxx,
             "methods": ["GET", "POST"],
-            "summary": "API名称",
-            "description": "API说明"
+            "summary": "API Name (of a thing)",
+            "description": "API Clarification"
         }]
         """
         pass
@@ -89,36 +89,36 @@ class _PluginBase(metaclass=ABCMeta):
     @abstractmethod
     def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
         """
-        拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
+        Assembly plugin configuration page， Two pieces of data need to be returned：1、 Page configuration；2、 Data structure
         """
         pass
 
     @abstractmethod
     def get_page(self) -> List[dict]:
         """
-        拼装插件详情页面，需要返回页面配置，同时附带数据
+        Patchwork plug-in detail page， Need to return to page configuration， Also with data
         """
         pass
 
     @abstractmethod
     def get_state(self) -> bool:
         """
-        获取插件运行状态
+        Get plugin runtime status
         """
         pass
 
     @abstractmethod
     def stop_service(self):
         """
-        停止插件
+        Stop plugins
         """
         pass
 
     def update_config(self, config: dict, plugin_id: str = None) -> bool:
         """
-        更新配置信息
-        :param config: 配置信息字典
-        :param plugin_id: 插件ID
+        Updating configuration information
+        :param config:  Configuration information dictionary
+        :param plugin_id:  Plug-in (software component)ID
         """
         if not plugin_id:
             plugin_id = self.__class__.__name__
@@ -126,8 +126,8 @@ class _PluginBase(metaclass=ABCMeta):
 
     def get_config(self, plugin_id: str = None) -> Any:
         """
-        获取配置信息
-        :param plugin_id: 插件ID
+        Getting configuration information
+        :param plugin_id:  Plug-in (software component)ID
         """
         if not plugin_id:
             plugin_id = self.__class__.__name__
@@ -135,7 +135,7 @@ class _PluginBase(metaclass=ABCMeta):
 
     def get_data_path(self, plugin_id: str = None) -> Path:
         """
-        获取插件数据保存目录
+        Get plugin data storage directory
         """
         if not plugin_id:
             plugin_id = self.__class__.__name__
@@ -146,10 +146,10 @@ class _PluginBase(metaclass=ABCMeta):
 
     def save_data(self, key: str, value: Any, plugin_id: str = None) -> Base:
         """
-        保存插件数据
-        :param key: 数据key
-        :param value: 数据值
-        :param plugin_id: 插件ID
+        Saving plug-in data
+        :param key:  Digitalkey
+        :param value:  Data value
+        :param plugin_id:  Plug-in (software component)ID
         """
         if not plugin_id:
             plugin_id = self.__class__.__name__
@@ -157,8 +157,8 @@ class _PluginBase(metaclass=ABCMeta):
 
     def get_data(self, key: str, plugin_id: str = None) -> Any:
         """
-        获取插件数据
-        :param key: 数据key
+        Getting plugin data
+        :param key:  Digitalkey
         :param plugin_id: plugin_id
         """
         if not plugin_id:
@@ -167,8 +167,8 @@ class _PluginBase(metaclass=ABCMeta):
 
     def del_data(self, key: str, plugin_id: str = None) -> Any:
         """
-        删除插件数据
-        :param key: 数据key
+        Delete plug-in data
+        :param key:  Digitalkey
         :param plugin_id: plugin_id
         """
         if not plugin_id:
@@ -178,7 +178,7 @@ class _PluginBase(metaclass=ABCMeta):
     def post_message(self, channel: MessageChannel = None, mtype: NotificationType = None, title: str = None,
                      text: str = None, image: str = None, link: str = None, userid: str = None):
         """
-        发送消息
+        Send a message
         """
         self.chain.post_message(Notification(
             channel=channel, mtype=mtype, title=title, text=text,
@@ -187,7 +187,7 @@ class _PluginBase(metaclass=ABCMeta):
 
     def close(self):
         """
-        关闭数据库连接
+        Close the database connection
         """
         if self.db:
             self.db.close()

@@ -30,37 +30,37 @@ class QbittorrentModule(_ModuleBase):
 
     def scheduler_job(self) -> None:
         """
-        定时任务，每10分钟调用一次
+        Timed task， Each10 One call per minute
         """
-        # 定时重连
+        #  Scheduled reconnection
         if self.qbittorrent.is_inactive():
             self.qbittorrent.reconnect()
 
     def download(self, content: Union[Path, str], download_dir: Path, cookie: str,
                  episodes: Set[int] = None, category: str = None) -> Optional[Tuple[Optional[str], str]]:
         """
-        根据种子文件，选择并添加下载任务
-        :param content:  种子文件地址或者磁力链接
-        :param download_dir:  下载目录
+        Based on seed documents， Select and add a download task
+        :param content:   Seed file address or magnet link
+        :param download_dir:   Download catalog
         :param cookie:  cookie
-        :param episodes:  需要下载的集数
-        :param category:  分类
-        :return: 种子Hash，错误信息
+        :param episodes:   Number of episodes to download
+        :param category:   Categorization
+        :return:  TorrentHash， Error message
         """
         if not content:
             return
         if isinstance(content, Path) and not content.exists():
-            return None, f"种子文件不存在：{content}"
+            return None, f" Seed file does not exist：{content}"
 
-        # 生成随机Tag
+        #  Generate randomTag
         tag = StringUtils.generate_random_str(10)
         if settings.TORRENT_TAG:
             tags = [tag, settings.TORRENT_TAG]
         else:
             tags = [tag]
-        # 如果要选择文件则先暂停
+        #  Pause if you want to select a file
         is_paused = True if episodes else False
-        # 添加任务
+        #  Add tasks
         state = self.qbittorrent.add_torrent(
             content=content.read_bytes() if isinstance(content, Path) else content,
             download_dir=str(download_dir),
@@ -70,22 +70,22 @@ class QbittorrentModule(_ModuleBase):
             category=category
         )
         if not state:
-            return None, f"添加种子任务失败：{content}"
+            return None, f" Failed to add seed task：{content}"
         else:
-            # 获取种子Hash
+            #  Getting seedsHash
             torrent_hash = self.qbittorrent.get_torrent_id_by_tag(tags=tag)
             if not torrent_hash:
-                return None, f"获取种子Hash失败：{content}"
+                return None, f" Getting seedsHash Fail (e.g. experiments)：{content}"
             else:
                 if is_paused:
-                    # 种子文件
+                    #  Seed file
                     torrent_files = self.qbittorrent.get_files(torrent_hash)
                     if not torrent_files:
-                        return torrent_hash, "获取种子文件失败，下载任务可能在暂停状态"
+                        return torrent_hash, " Failed to get seed file， The download task may be in a suspended state"
 
-                    # 不需要的文件ID
+                    #  Unwanted documentsID
                     file_ids = []
-                    # 需要的集清单
+                    #  List of sets required
                     sucess_epidised = []
 
                     for torrent_file in torrent_files:
@@ -98,25 +98,25 @@ class QbittorrentModule(_ModuleBase):
                         else:
                             sucess_epidised = list(set(sucess_epidised).union(set(meta_info.episode_list)))
                     if sucess_epidised and file_ids:
-                        # 选择文件
+                        #  Select file
                         self.qbittorrent.set_files(torrent_hash=torrent_hash, file_ids=file_ids, priority=0)
-                    # 开始任务
+                    #  Commencement of mission
                     self.qbittorrent.start_torrents(torrent_hash)
-                    return torrent_hash, f"添加下载成功，已选择集数：{sucess_epidised}"
+                    return torrent_hash, f" Add download successfully， Selected episodes：{sucess_epidised}"
                 else:
-                    return torrent_hash, "添加下载成功"
+                    return torrent_hash, " Add download successfully"
 
     def list_torrents(self, status: TorrentStatus = None,
                       hashs: Union[list, str] = None) -> Optional[List[Union[TransferTorrent, DownloadingTorrent]]]:
         """
-        获取下载器种子列表
-        :param status:  种子状态
-        :param hashs:  种子Hash
-        :return: 下载器中符合状态的种子列表
+        Get downloader seed list
+        :param status:   Seed state
+        :param hashs:   TorrentHash
+        :return:  List of seeds in the downloader that match the status
         """
         ret_torrents = []
         if hashs:
-            # 按Hash获取
+            #  Check or refer toHash Gain
             torrents, _ = self.qbittorrent.get_torrents(ids=hashs, tags=settings.TORRENT_TAG)
             for torrent in torrents or []:
                 content_path = torrent.get("content_path")
@@ -131,13 +131,13 @@ class QbittorrentModule(_ModuleBase):
                     tags=torrent.get('tags')
                 ))
         elif status == TorrentStatus.TRANSFER:
-            # 获取已完成且未整理的
+            #  Get the completed and unorganized
             torrents = self.qbittorrent.get_completed_torrents(tags=settings.TORRENT_TAG)
             for torrent in torrents or []:
                 tags = torrent.get("tags") or []
-                if "已整理" in tags:
+                if " Collated" in tags:
                     continue
-                # 内容路径
+                #  Content path
                 content_path = torrent.get("content_path")
                 if content_path:
                     torrent_path = Path(content_path)
@@ -150,7 +150,7 @@ class QbittorrentModule(_ModuleBase):
                     tags=torrent.get('tags')
                 ))
         elif status == TorrentStatus.DOWNLOADING:
-            # 获取正在下载的任务
+            #  Get the task being downloaded
             torrents = self.qbittorrent.get_downloading_torrents(tags=settings.TORRENT_TAG)
             for torrent in torrents or []:
                 meta = MetaInfo(torrent.get('name'))
@@ -173,57 +173,57 @@ class QbittorrentModule(_ModuleBase):
     def transfer_completed(self, hashs: Union[str, list],
                            path: Path = None) -> None:
         """
-        转移完成后的处理
-        :param hashs:  种子Hash
-        :param path:  源目录
+        Disposal upon completion of the transfer
+        :param hashs:   TorrentHash
+        :param path:   Source catalog
         """
-        self.qbittorrent.set_torrents_tag(ids=hashs, tags=['已整理'])
-        # 移动模式删除种子
+        self.qbittorrent.set_torrents_tag(ids=hashs, tags=[' Collated'])
+        #  Remove seeds in mobile mode
         if settings.TRANSFER_TYPE == "move":
             if self.remove_torrents(hashs):
-                logger.info(f"移动模式删除种子成功：{hashs} ")
-            # 删除残留文件
+                logger.info(f" Mobile mode deletes seeds successfully：{hashs} ")
+            #  Delete residual files
             if path and path.exists():
                 files = SystemUtils.list_files(path, settings.RMT_MEDIAEXT)
                 if not files:
-                    logger.warn(f"删除残留文件夹：{path}")
+                    logger.warn(f" Delete residual folders：{path}")
                     shutil.rmtree(path, ignore_errors=True)
 
     def remove_torrents(self, hashs: Union[str, list]) -> bool:
         """
-        删除下载器种子
-        :param hashs:  种子Hash
+        Delete downloader seeds
+        :param hashs:   TorrentHash
         :return: bool
         """
         return self.qbittorrent.delete_torrents(delete_file=True, ids=hashs)
 
     def start_torrents(self, hashs: Union[list, str]) -> bool:
         """
-        开始下载
-        :param hashs:  种子Hash
+        Start download
+        :param hashs:   TorrentHash
         :return: bool
         """
         return self.qbittorrent.start_torrents(ids=hashs)
 
     def stop_torrents(self, hashs: Union[list, str]) -> bool:
         """
-        停止下载
-        :param hashs:  种子Hash
+        Stop downloading
+        :param hashs:   TorrentHash
         :return: bool
         """
         return self.qbittorrent.start_torrents(ids=hashs)
 
     def torrent_files(self, tid: str) -> Optional[TorrentFilesList]:
         """
-        获取种子文件列表
+        Get a list of seed files
         """
         return self.qbittorrent.get_files(tid=tid)
 
     def downloader_info(self) -> schemas.DownloaderInfo:
         """
-        下载器信息
+        Downloader information
         """
-        # 调用Qbittorrent API查询实时信息
+        #  Call (programming)Qbittorrent API Query real-time information
         info = self.qbittorrent.transfer_info()
         if not info:
             return schemas.DownloaderInfo()

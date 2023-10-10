@@ -4,17 +4,17 @@ from pydantic import BaseModel
 
 
 class FileItem(BaseModel):
-    # 类型 dir/file
+    #  Typology dir/file
     type: Optional[str] = None
-    # 文件路径
+    #  File path
     path: Optional[str] = None
-    # 文件名
+    #  Filename
     name: Optional[str] = None
-    # 文件名
+    #  Filename
     basename: Optional[str] = None
-    # 文件后缀
+    #  File suffix
     extension: Optional[str] = None
-    # 文件大小
+    #  File size
     size: Optional[int] = None
-    # 修改时间
+    #  Modify time
     modify_time: Optional[float] = None

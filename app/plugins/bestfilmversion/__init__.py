@@ -27,33 +27,33 @@ lock = RLock()
 
 
 class BestFilmVersion(_PluginBase):
-    # 插件名称
-    plugin_name = "收藏洗版"
-    # 插件描述
-    plugin_desc = "Jellyfin/Emby/Plex点击收藏电影后，自动订阅洗版。"
-    # 插件图标
+    #  Plug-in name
+    plugin_name = " Collection wash"
+    #  Plugin description
+    plugin_desc = "Jellyfin/Emby/Plex After clicking favorite movies， Automatic subscription washout。"
+    #  Plug-in icons
     plugin_icon = "like.jpg"
-    # 主题色
+    #  Theme color
     plugin_color = "#E4003F"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "2.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "wlj"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/developer-wlj"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "bestfilmversion_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 13
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 2
 
-    # 私有变量
+    #  Private variable
     _scheduler: Optional[BackgroundScheduler] = None
     _cache_path: Optional[Path] = None
     subscribechain = None
 
-    # 配置属性
+    #  Configuration properties
     _enabled: bool = False
     _cron: str = ""
     _notify: bool = False
@@ -64,10 +64,10 @@ class BestFilmVersion(_PluginBase):
         self._cache_path = settings.TEMP_PATH / "__best_film_version_cache__"
         self.subscribechain = SubscribeChain(self.db)
 
-        # 停止现有任务
+        #  Discontinuation of existing mandates
         self.stop_service()
 
-        # 配置
+        #  Configure
         if config:
             self._enabled = config.get("enabled")
             self._cron = config.get("cron")
@@ -82,13 +82,13 @@ class BestFilmVersion(_PluginBase):
                     try:
                         self._scheduler.add_job(func=self.sync,
                                                 trigger=CronTrigger.from_crontab(self._cron),
-                                                name="收藏洗版")
+                                                name=" Collection wash")
                     except Exception as err:
-                        logger.error(f"定时任务配置错误：{err}")
-                        # 推送实时消息
-                        self.systemmessage.put(f"执行周期配置错误：{err}")
+                        logger.error(f" Timed task configuration error：{err}")
+                        #  Push real-time messages
+                        self.systemmessage.put(f" Execution cycle misconfiguration：{err}")
                 else:
-                    self._scheduler.add_job(self.sync, "interval", minutes=30, name="收藏洗版")
+                    self._scheduler.add_job(self.sync, "interval", minutes=30, name=" Collection wash")
 
             if self._only_once:
                 self._only_once = False
@@ -101,8 +101,8 @@ class BestFilmVersion(_PluginBase):
                 })
                 self._scheduler.add_job(self.sync, 'date',
                                         run_date=datetime.now(tz=pytz.timezone(settings.TZ)) + timedelta(seconds=3),
-                                        name="立即运行收藏洗版")
-            # 启动任务
+                                        name=" Run now favorite washed version")
+            #  Initiate tasks
             if self._scheduler.get_jobs():
                 self._scheduler.print_jobs()
                 self._scheduler.start()
@@ -116,19 +116,19 @@ class BestFilmVersion(_PluginBase):
 
     def get_api(self) -> List[Dict[str, Any]]:
         """
-        获取插件API
+        Get pluginsAPI
         [{
             "path": "/xx",
             "endpoint": self.xxx,
             "methods": ["GET", "POST"],
-            "summary": "API说明"
+            "summary": "API Clarification"
         }]
         """
         pass
 
     def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
         """
-        拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
+        Assembly plugin configuration page， Two pieces of data need to be returned：1、 Page configuration；2、 Data structure
         """
         return [
             {
@@ -148,7 +148,7 @@ class BestFilmVersion(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'enabled',
-                                            'label': '启用插件',
+                                            'label': ' Enabling plug-ins',
                                         }
                                     }
                                 ]
@@ -164,7 +164,7 @@ class BestFilmVersion(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'notify',
-                                            'label': '发送通知',
+                                            'label': ' Send notification',
                                         }
                                     }
                                 ]
@@ -180,7 +180,7 @@ class BestFilmVersion(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'only_once',
-                                            'label': '立即运行一次',
+                                            'label': ' Run one immediately',
                                         }
                                     }
                                 ]
@@ -216,8 +216,8 @@ class BestFilmVersion(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'cron',
-                                            'label': '执行周期',
-                                            'placeholder': '5位cron表达式，留空自动'
+                                            'label': ' Implementation period',
+                                            'placeholder': '5 Classifier for honorific peoplecron Displayed formula， Leave blank spaces in writing'
                                         }
                                     }
                                 ]
@@ -236,10 +236,10 @@ class BestFilmVersion(_PluginBase):
                                     {
                                         'component': 'VAlert',
                                         'props': {
-                                            'text': '支持主动定时获取媒体库数据和Webhook实时触发两种方式，两者只能选其一，'
-                                                    'Webhook需要在媒体服务器设置发送Webhook报文。'
-                                                    'Plex使用主动获取时，建议执行周期设置大于1小时，'
-                                                    '收藏Api调用Plex官网接口，有频率限制。'
+                                            'text': ' Supports proactive timed acquisition of media library data andWebhook Real-time triggering in two ways， It's one or the other.，'
+                                                    'Webhook You need to set up the media server to sendWebhook Telegram。'
+                                                    'Plex When using active acquisition， It is recommended that the execution period be set greater than1 Hourly，'
+                                                    ' FavoriteApi Call (programming)Plex Official website interface， Frequency limited。'
                                         }
                                     }
                                 ]
@@ -258,23 +258,23 @@ class BestFilmVersion(_PluginBase):
 
     def get_page(self) -> List[dict]:
         """
-        拼装插件详情页面，需要返回页面配置，同时附带数据
+        Patchwork plug-in detail page， Need to return to page configuration， Also with data
         """
-        # 查询同步详情
+        #  Query synchronization details
         historys = self.get_data('history')
         if not historys:
             return [
                 {
                     'component': 'div',
-                    'text': '暂无数据',
+                    'text': ' No data available',
                     'props': {
                         'class': 'text-center',
                     }
                 }
             ]
-        # 数据按时间降序排序
+        #  Data is sorted in descending chronological order
         historys = sorted(historys, key=lambda x: x.get('time'), reverse=True)
-        # 拼装页面
+        #  Assembly page
         contents = []
         for history in historys:
             title = history.get("title")
@@ -332,14 +332,14 @@ class BestFilmVersion(_PluginBase):
                                             'props': {
                                                 'class': 'pa-0 px-2'
                                             },
-                                            'text': f'类型：{mtype}'
+                                            'text': f' Typology：{mtype}'
                                         },
                                         {
                                             'component': 'VCardText',
                                             'props': {
                                                 'class': 'pa-0 px-2'
                                             },
-                                            'text': f'时间：{time_str}'
+                                            'text': f' Timing：{time_str}'
                                         }
                                     ]
                                 }
@@ -361,7 +361,7 @@ class BestFilmVersion(_PluginBase):
 
     def stop_service(self):
         """
-        退出插件
+        Exit plugin
         """
         try:
             if self._scheduler:
@@ -370,28 +370,28 @@ class BestFilmVersion(_PluginBase):
                     self._scheduler.shutdown()
                 self._scheduler = None
         except Exception as e:
-            logger.error("退出插件失败：%s" % str(e))
+            logger.error("Exit plugin失败：%s" % str(e))
 
     def sync(self):
         """
-        通过流媒体管理工具收藏,自动洗版
+        Favorites via streaming management tool, Automatic plate washing
         """
-        # 获取锁
+        #  Acquisition lock
         _is_lock: bool = lock.acquire(timeout=60)
         if not _is_lock:
             return
         try:
-            # 读取缓存
+            #  Read cache
             caches = self._cache_path.read_text().split("\n") if self._cache_path.exists() else []
-            # 读取历史记录
+            #  Read history
             history = self.get_data('history') or []
 
-            # 媒体服务器类型，多个以,分隔
+            #  Media server type， Many of, Segregation
             if not settings.MEDIASERVER:
                 return
             media_servers = settings.MEDIASERVER.split(',')
 
-            # 读取收藏
+            #  Read favorites
             all_items = {}
             for media_server in media_servers:
                 if media_server == 'jellyfin':
@@ -404,50 +404,50 @@ class BestFilmVersion(_PluginBase):
             def function(y, x):
                 return y if (x['Name'] in [i['Name'] for i in y]) else (lambda z, u: (z.append(u), z))(y, x)[1]
 
-            # 处理所有结果
+            #  Process all results
             for server, all_item in all_items.items():
-                # all_item 根据电影名去重
+                # all_item  De-weighting based on movie titles
                 result = reduce(function, all_item, [])
                 for data in result:
-                    # 检查缓存
+                    #  Checking the cache
                     if data.get('Name') in caches:
                         continue
 
-                    # 获取详情
+                    #  Get details
                     if server == 'jellyfin':
                         item_info_resp = Jellyfin().get_iteminfo(itemid=data.get('Id'))
                     elif server == 'emby':
                         item_info_resp = Emby().get_iteminfo(itemid=data.get('Id'))
                     else:
                         item_info_resp = self.plex_get_iteminfo(itemid=data.get('Id'))
-                    logger.debug(f'BestFilmVersion插件 item打印 {item_info_resp}')
+                    logger.debug(f'BestFilmVersion Plug-in (software component) item Printable {item_info_resp}')
                     if not item_info_resp:
                         continue
 
-                    # 只接受Movie类型
+                    #  Accept onlyMovie Typology
                     if data.get('Type') != 'Movie':
                         continue
 
-                    # 获取tmdb_id
+                    #  Gaintmdb_id
                     tmdb_id = item_info_resp.tmdbid
                     if not tmdb_id:
                         continue
-                    # 识别媒体信息
+                    #  Identify media messages
                     mediainfo: MediaInfo = self.chain.recognize_media(tmdbid=tmdb_id, mtype=MediaType.MOVIE)
                     if not mediainfo:
-                        logger.warn(f'未识别到媒体信息，标题：{data.get("Name")}，tmdbid：{tmdb_id}')
+                        logger.warn(f' No media messages recognized， Caption：{data.get("Name")}，tmdbid：{tmdb_id}')
                         continue
-                    # 添加订阅
+                    #  Add subscription
                     self.subscribechain.add(mtype=MediaType.MOVIE,
                                             title=mediainfo.title,
                                             year=mediainfo.year,
                                             tmdbid=mediainfo.tmdb_id,
                                             best_version=True,
-                                            username="收藏洗版",
+                                            username=" Collection wash",
                                             exist_ok=True)
-                    # 加入缓存
+                    #  Add to cache
                     caches.append(data.get('Name'))
-                    # 存储历史记录
+                    #  Storing history
                     if mediainfo.tmdb_id not in [h.get("tmdbid") for h in history]:
                         history.append({
                             "title": mediainfo.title,
@@ -458,15 +458,15 @@ class BestFilmVersion(_PluginBase):
                             "tmdbid": mediainfo.tmdb_id,
                             "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         })
-            # 保存历史记录
+            #  Save history
             self.save_data('history', history)
-            # 保存缓存
+            #  Save cache
             self._cache_path.write_text("\n".join(caches))
         finally:
             lock.release()
 
     def jellyfin_get_items(self) -> List[dict]:
-        # 获取所有user
+        #  Get alluser
         users_url = "[HOST]Users?&apikey=[APIKEY]"
         users = self.get_users(Jellyfin().get_data(users_url))
         if not users:
@@ -474,7 +474,7 @@ class BestFilmVersion(_PluginBase):
             return []
         all_items = []
         for user in users:
-            # 根据加入日期 降序排序
+            #  Based on date of accession  Descending order
             url = "[HOST]Users/" + user + "/Items?SortBy=DateCreated%2CSortName" \
                                           "&SortOrder=Descending" \
                                           "&Filters=IsFavorite" \
@@ -492,14 +492,14 @@ class BestFilmVersion(_PluginBase):
         return all_items
 
     def emby_get_items(self) -> List[dict]:
-        # 获取所有user
+        #  Get alluser
         get_users_url = "[HOST]Users?&api_key=[APIKEY]"
         users = self.get_users(Emby().get_data(get_users_url))
         if not users:
             return []
         all_items = []
         for user in users:
-            # 根据加入日期 降序排序
+            #  Based on date of accession  Descending order
             url = "[HOST]emby/Users/" + user + "/Items?SortBy=DateCreated%2CSortName" \
                                                "&SortOrder=Descending" \
                                                "&Filters=IsFavorite" \
@@ -532,15 +532,15 @@ class BestFilmVersion(_PluginBase):
             if resp:
                 return [data['Id'] for data in resp.json()]
             else:
-                logger.error(f"BestFilmVersion/Users 未获取到返回数据")
+                logger.error(f"BestFilmVersion/Users  Return data not obtained")
                 return []
         except Exception as e:
-            logger.error(f"连接BestFilmVersion/Users 出错：" + str(e))
+            logger.error(f" GroutBestFilmVersion/Users  Make a mistake：" + str(e))
             return []
 
     @staticmethod
     def plex_get_watchlist() -> List[dict]:
-        # 根据加入日期 降序排序
+        #  Based on date of accession  Descending order
         url = f"https://metadata.provider.plex.tv/library/sections/watchlist/all?type=1&sort=addedAt%3Adesc" \
               f"&X-Plex-Container-Start=0&X-Plex-Container-Size=50" \
               f"&X-Plex-Token={settings.PLEX_TOKEN}"
@@ -549,15 +549,15 @@ class BestFilmVersion(_PluginBase):
             resp = RequestUtils().get_res(url=url)
             if resp:
                 dom = parseString(resp.text)
-                # 获取文档元素对象
+                #  Getting document element objects
                 elem = dom.documentElement
-                # 获取 指定元素
+                #  Gain  Specify element
                 eles = elem.getElementsByTagName('Video')
                 if not eles:
                     return []
                 for ele in eles:
                     data = {}
-                    # 获取标签中内容
+                    #  Getting content in tags
                     ele_id = ele.attributes['ratingKey'].nodeValue
                     ele_title = ele.attributes['title'].nodeValue
                     ele_type = ele.attributes['type'].nodeValue
@@ -568,10 +568,10 @@ class BestFilmVersion(_PluginBase):
                     res.append(data)
                 return res
             else:
-                logger.error(f"Plex/Watchlist 未获取到返回数据")
+                logger.error(f"Plex/Watchlist  Return data not obtained")
                 return []
         except Exception as e:
-            logger.error(f"连接Plex/Watchlist 出错：" + str(e))
+            logger.error(f" GroutPlex/Watchlist  Make a mistake：" + str(e))
             return []
 
     @staticmethod
@@ -598,10 +598,10 @@ class BestFilmVersion(_PluginBase):
                     return []
                 return {'ExternalUrls': ids}
             else:
-                logger.error(f"Plex/Items 未获取到返回数据")
+                logger.error(f"Plex/Items  Return data not obtained")
                 return []
         except Exception as e:
-            logger.error(f"连接Plex/Items 出错：" + str(e))
+            logger.error(f" GroutPlex/Items  Make a mistake：" + str(e))
             return []
 
     @eventmanager.register(EventType.WebhookMessage)
@@ -613,16 +613,16 @@ class BestFilmVersion(_PluginBase):
             return
 
         data: WebhookEventInfo = event.event_data
-        # 排除不是收藏调用
+        #  Exclusion is not a collection call
         if data.channel not in ['jellyfin', 'emby', 'plex']:
             return
         if data.channel in ['emby', 'plex'] and data.event != 'item.rate':
             return
         if data.channel == 'jellyfin' and data.save_reason != 'UpdateUserRating':
             return
-        logger.info(f'BestFilmVersion/webhook_message_action WebhookEventInfo打印：{data}')
+        logger.info(f'BestFilmVersion/webhook_message_action WebhookEventInfo Printable：{data}')
 
-        # 获取锁
+        #  Acquisition lock
         _is_lock: bool = lock.acquire(timeout=60)
         if not _is_lock:
             return
@@ -637,12 +637,12 @@ class BestFilmVersion(_PluginBase):
                     info = Emby().get_iteminfo(itemid=data.item_id)
                 elif data.channel == 'plex' and data.event == 'item.rate':
                     info = Plex().get_iteminfo(itemid=data.item_id)
-                logger.debug(f'BestFilmVersion/webhook_message_action item打印：{info}')
+                logger.debug(f'BestFilmVersion/webhook_message_action item Printable：{info}')
                 if not info:
                     return
                 if info.item_type not in ['Movie', 'MOV', 'movie']:
                     return
-                # 获取tmdb_id
+                #  Gaintmdb_id
                 tmdb_id = info.tmdbid
             else:
                 tmdb_id = data.tmdb_id
@@ -651,29 +651,29 @@ class BestFilmVersion(_PluginBase):
                     return
                 if data.item_type not in ['Movie', 'MOV', 'movie']:
                     return
-            # 识别媒体信息
+            #  Identify media messages
             mediainfo = self.chain.recognize_media(tmdbid=tmdb_id, mtype=MediaType.MOVIE)
             if not mediainfo:
-                logger.warn(f'未识别到媒体信息，标题：{data.item_name}，tmdbID：{tmdb_id}')
+                logger.warn(f' No media messages recognized， Caption：{data.item_name}，tmdbID：{tmdb_id}')
                 return
-            # 读取缓存
+            #  Read cache
             caches = self._cache_path.read_text().split("\n") if self._cache_path.exists() else []
-            # 检查缓存
+            #  Checking the cache
             if data.item_name in caches:
                 return
-            # 读取历史记录
+            #  Read history
             history = self.get_data('history') or []
-            # 添加订阅
+            #  Add subscription
             self.subscribechain.add(mtype=MediaType.MOVIE,
                                     title=mediainfo.title,
                                     year=mediainfo.year,
                                     tmdbid=mediainfo.tmdb_id,
                                     best_version=True,
-                                    username="收藏洗版",
+                                    username=" Collection wash",
                                     exist_ok=True)
-            # 加入缓存
+            #  Add to cache
             caches.append(data.item_name)
-            # 存储历史记录
+            #  Storing history
             if mediainfo.tmdb_id not in [h.get("tmdbid") for h in history]:
                 history.append({
                     "title": mediainfo.title,
@@ -684,9 +684,9 @@ class BestFilmVersion(_PluginBase):
                     "tmdbid": mediainfo.tmdb_id,
                     "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 })
-            # 保存历史记录
+            #  Save history
             self.save_data('history', history)
-            # 保存缓存
+            #  Save cache
             self._cache_path.write_text("\n".join(caches))
         finally:
             lock.release()

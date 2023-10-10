@@ -1,19 +1,19 @@
 #!/bin/bash
 
-# 使用 `envsubst` 将模板文件中的 ${NGINX_PORT} 替换为实际的环境变量值
+#  Utilization `envsubst`  Place the template file in the ${NGINX_PORT}  Replace with the actual environment variable values
 envsubst '${NGINX_PORT}${PORT}' < /etc/nginx/nginx.template.conf > /etc/nginx/nginx.conf
-# 自动更新
+#  Automatic update
 if [ "${MOVIEPILOT_AUTO_UPDATE}" = "true" ]; then
     cd /
     /usr/local/bin/mp_update
     cd /app
 else
-    echo "程序自动升级已关闭，如需自动升级请在创建容器时设置环境变量：MOVIEPILOT_AUTO_UPDATE=true"
+    echo " Automatic program upgrades are turned off， For automatic upgrades set the environment variable when creating the container：MOVIEPILOT_AUTO_UPDATE=true"
 fi
-# 更改 moviepilot userid 和 groupid
+#  Variation moviepilot userid  Cap (a poem) groupid
 groupmod -o -g ${PGID} moviepilot
 usermod -o -u ${PUID} moviepilot
-# 更改文件权限
+#  Changing file permissions
 chown -R moviepilot:moviepilot \
     ${HOME} \
     /app \
@@ -22,15 +22,15 @@ chown -R moviepilot:moviepilot \
     /var/lib/nginx \
     /var/log/nginx
 chown moviepilot:moviepilot /etc/hosts /tmp
-# 下载浏览器内核
+#  Download browser kernel
 gosu moviepilot:moviepilot playwright install chromium
-# 启动前端nginx服务
+#  Launch front endnginx Service
 nginx
-# 启动haproxy
+#  Activate (a plan)haproxy
 if [ -S "/var/run/docker.sock" ]; then
     haproxy -f /app/haproxy.cfg
 fi
-# 设置后端服务权限掩码
+#  Setting the backend service privilege mask
 umask ${UMASK}
-# 启动后端服务
+#  Start the back-end service
 exec dumb-init gosu moviepilot:moviepilot python3 app/main.py

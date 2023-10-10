@@ -15,40 +15,40 @@ from app.utils.http import RequestUtils
 
 
 class InvitesSignin(_PluginBase):
-    # 插件名称
-    plugin_name = "药丸签到"
-    # 插件描述
-    plugin_desc = "药丸论坛签到。"
-    # 插件图标
+    #  Plug-in name
+    plugin_name = " Pills to sign in"
+    #  Plugin description
+    plugin_desc = " Pill forum sign in。"
+    #  Plug-in icons
     plugin_icon = "invites.png"
-    # 主题色
+    #  Theme color
     plugin_color = "#FFFFFF"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "thsrite"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/thsrite"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "invitessignin"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 24
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 2
 
-    # 私有属性
+    #  Private property
     _enabled = False
-    # 任务执行间隔
+    #  Task execution interval
     _cron = None
     _cookie = None
     _onlyonce = False
     _notify = False
 
-    # 定时器
+    #  Timers
     _scheduler: Optional[BackgroundScheduler] = None
 
     def init_plugin(self, config: dict = None):
-        # 停止现有任务
+        #  Discontinuation of existing mandates
         self.stop_service()
 
         if config:
@@ -58,25 +58,25 @@ class InvitesSignin(_PluginBase):
             self._notify = config.get("notify")
             self._onlyonce = config.get("onlyonce")
 
-            # 加载模块
+            #  Load modules
         if self._enabled:
-            # 定时服务
+            #  Time service
             self._scheduler = BackgroundScheduler(timezone=settings.TZ)
 
             if self._cron:
                 try:
                     self._scheduler.add_job(func=self.__signin,
                                             trigger=CronTrigger.from_crontab(self._cron),
-                                            name="药丸签到")
+                                            name=" Pills to sign in")
                 except Exception as err:
-                    logger.error(f"定时任务配置错误：{err}")
+                    logger.error(f" Timed task configuration error：{err}")
 
             if self._onlyonce:
-                logger.info(f"药丸签到服务启动，立即运行一次")
+                logger.info(f" Pill check-in service launched， Run one immediately")
                 self._scheduler.add_job(func=self.__signin, trigger='date',
                                         run_date=datetime.now(tz=pytz.timezone(settings.TZ)) + timedelta(seconds=3),
-                                        name="药丸签到")
-                # 关闭一次性开关
+                                        name=" Pills to sign in")
+                #  Turn off the disposable switch
                 self._onlyonce = False
                 self.update_config({
                     "onlyonce": False,
@@ -86,39 +86,39 @@ class InvitesSignin(_PluginBase):
                     "notify": self._notify,
                 })
 
-            # 启动任务
+            #  Initiate tasks
             if self._scheduler.get_jobs():
                 self._scheduler.print_jobs()
                 self._scheduler.start()
 
     def __signin(self):
         """
-        药丸签到
+        Pills to sign in
         """
         res = RequestUtils(cookies=self._cookie).get_res(url="https://invites.fun")
         if not res or res.status_code != 200:
-            logger.error("请求药丸错误")
+            logger.error(" Request pill error")
             return
 
-        # 获取csrfToken
+        #  GaincsrfToken
         pattern = r'"csrfToken":"(.*?)"'
         csrfToken = re.findall(pattern, res.text)
         if not csrfToken:
-            logger.error("请求csrfToken失败")
+            logger.error(" RequestingcsrfToken Fail (e.g. experiments)")
             return
 
         csrfToken = csrfToken[0]
-        logger.info(f"获取csrfToken成功 {csrfToken}")
+        logger.info(f" GaincsrfToken Successes {csrfToken}")
 
-        # 获取userid
+        #  Gainuserid
         pattern = r'"userId":(\d+)'
         match = re.search(pattern, res.text)
 
         if match:
             userId = match.group(1)
-            logger.info(f"获取userid成功 {userId}")
+            logger.info(f" Gainuserid Successes {userId}")
         else:
-            logger.error("未找到userId")
+            logger.error(" Not founduserId")
             return
 
         headers = {
@@ -138,24 +138,24 @@ class InvitesSignin(_PluginBase):
             }
         }
 
-        # 开始签到
+        #  Start checking in.
         res = RequestUtils(headers=headers).post_res(url=f"https://invites.fun/api/users/{userId}", json=data)
 
         if not res or res.status_code != 200:
-            logger.error("药丸签到失败")
+            logger.error("Pills to sign in失败")
             return
 
         sign_dict = json.loads(res.text)
         money = sign_dict['data']['attributes']['money']
         totalContinuousCheckIn = sign_dict['data']['attributes']['totalContinuousCheckIn']
 
-        # 发送通知
+        #  Send notification
         if self._notify:
             self.post_message(
                 mtype=NotificationType.SiteMessage,
-                title="【药丸签到任务完成】",
-                text=f"累计签到 {totalContinuousCheckIn} \n"
-                     f"剩余药丸 {money}")
+                title="【Pills to sign in任务完成】",
+                text=f" Cumulative sign-in {totalContinuousCheckIn} \n"
+                     f" Surplus pills {money}")
 
     def get_state(self) -> bool:
         return self._enabled
@@ -169,7 +169,7 @@ class InvitesSignin(_PluginBase):
 
     def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
         """
-        拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
+        Assembly plugin configuration page， Two pieces of data need to be returned：1、 Page configuration；2、 Data structure
         """
         return [
                    {
@@ -189,7 +189,7 @@ class InvitesSignin(_PluginBase):
                                                'component': 'VSwitch',
                                                'props': {
                                                    'model': 'enabled',
-                                                   'label': '启用插件',
+                                                   'label': ' Enabling plug-ins',
                                                }
                                            }
                                        ]
@@ -205,7 +205,7 @@ class InvitesSignin(_PluginBase):
                                                'component': 'VSwitch',
                                                'props': {
                                                    'model': 'notify',
-                                                   'label': '开启通知',
+                                                   'label': ' Open notification',
                                                }
                                            }
                                        ]
@@ -221,7 +221,7 @@ class InvitesSignin(_PluginBase):
                                                'component': 'VSwitch',
                                                'props': {
                                                    'model': 'onlyonce',
-                                                   'label': '立即运行一次',
+                                                   'label': ' Run one immediately',
                                                }
                                            }
                                        ]
@@ -242,7 +242,7 @@ class InvitesSignin(_PluginBase):
                                                'component': 'VTextField',
                                                'props': {
                                                    'model': 'cron',
-                                                   'label': '签到周期'
+                                                   'label': ' Check-in period'
                                                }
                                            }
                                        ]
@@ -258,7 +258,7 @@ class InvitesSignin(_PluginBase):
                                                'component': 'VTextField',
                                                'props': {
                                                    'model': 'cookie',
-                                                   'label': '药丸cookie'
+                                                   'label': ' Boluscookie'
                                                }
                                            }
                                        ]
@@ -280,7 +280,7 @@ class InvitesSignin(_PluginBase):
 
     def stop_service(self):
         """
-        退出插件
+        Exit plugin
         """
         try:
             if self._scheduler:
@@ -289,4 +289,4 @@ class InvitesSignin(_PluginBase):
                     self._scheduler.shutdown()
                 self._scheduler = None
         except Exception as e:
-            logger.error("退出插件失败：%s" % str(e))
+            logger.error("Exit plugin失败：%s" % str(e))

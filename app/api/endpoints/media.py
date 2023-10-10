@@ -17,43 +17,43 @@ from app.schemas import MediaType
 router = APIRouter()
 
 
-@router.get("/recognize", summary="识别媒体信息（种子）", response_model=schemas.Context)
+@router.get("/recognize", summary=" Identify media messages（ Torrent）", response_model=schemas.Context)
 def recognize(title: str,
               subtitle: str = None,
               db: Session = Depends(get_db),
               _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    根据标题、副标题识别媒体信息
+    Based on the title、 Subtitle identifies the media message
     """
-    # 识别媒体信息
+    #  Identify media messages
     context = MediaChain(db).recognize_by_title(title=title, subtitle=subtitle)
     if context:
         return context.to_dict()
     return schemas.Context()
 
 
-@router.get("/recognize_file", summary="识别媒体信息（文件）", response_model=schemas.Context)
+@router.get("/recognize_file", summary=" Identify media messages（ File）", response_model=schemas.Context)
 def recognize(path: str,
               db: Session = Depends(get_db),
               _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    根据文件路径识别媒体信息
+    Identify media information based on file paths
     """
-    # 识别媒体信息
+    #  Identify media messages
     context = MediaChain(db).recognize_by_path(path)
     if context:
         return context.to_dict()
     return schemas.Context()
 
 
-@router.get("/search", summary="搜索媒体信息", response_model=List[schemas.MediaInfo])
+@router.get("/search", summary=" Search for media information", response_model=List[schemas.MediaInfo])
 def search_by_title(title: str,
                     page: int = 1,
                     count: int = 8,
                     db: Session = Depends(get_db),
                     _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    模糊搜索媒体信息列表
+    Fuzzy search media information list
     """
     _, medias = MediaChain(db).search(title=title)
     if medias:
@@ -61,7 +61,7 @@ def search_by_title(title: str,
     return []
 
 
-@router.get("/exists", summary="本地是否存在", response_model=schemas.Response)
+@router.get("/exists", summary=" Local availability", response_model=schemas.Response)
 def exists(title: str = None,
            year: int = None,
            mtype: str = None,
@@ -70,7 +70,7 @@ def exists(title: str = None,
            db: Session = Depends(get_db),
            _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    判断本地是否存在
+    Determine if local exists
     """
     meta = MetaInfo(title)
     if not season:
@@ -83,19 +83,19 @@ def exists(title: str = None,
     })
 
 
-@router.get("/{mediaid}", summary="查询媒体详情", response_model=schemas.MediaInfo)
+@router.get("/{mediaid}", summary=" Enquire about media details", response_model=schemas.MediaInfo)
 def tmdb_info(mediaid: str, type_name: str,
               db: Session = Depends(get_db),
               _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    根据媒体ID查询themoviedb或豆瓣媒体信息，type_name: 电影/电视剧
+    According to the mediaID Consult (a document etc)themoviedb Or douban media information，type_name:  Cinematic/ Dramas
     """
     mtype = MediaType(type_name)
     if mediaid.startswith("tmdb:"):
         result = TmdbChain(db).tmdb_info(int(mediaid[5:]), mtype)
         return MediaInfo(tmdb_info=result).to_dict()
     elif mediaid.startswith("douban:"):
-        # 查询豆瓣信息
+        #  Check douban information
         doubaninfo = DoubanChain(db).douban_info(doubanid=mediaid[7:])
         if not doubaninfo:
             return schemas.MediaInfo()
@@ -104,7 +104,7 @@ def tmdb_info(mediaid: str, type_name: str,
             # TMDB
             return result.media_info.to_dict()
         else:
-            # 豆瓣
+            #  Douban, prc social networking website
             return MediaInfo(douban_info=doubaninfo).to_dict()
     else:
         return schemas.MediaInfo()

@@ -5,7 +5,7 @@ from app.utils.singleton import Singleton
 
 class MessageHelper(metaclass=Singleton):
     """
-    消息队列管理器
+    Message queue manager
     """
     def __init__(self):
         self.queue = queue.Queue()

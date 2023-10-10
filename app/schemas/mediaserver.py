@@ -8,85 +8,85 @@ from app.schemas.types import MediaType
 
 class ExistMediaInfo(BaseModel):
     """
-    媒体服务器存在媒体信息
+    Media information exists on the media server
     """
-    # 类型 电影、电视剧
+    #  Typology  Cinematic、 Dramas
     type: Optional[MediaType]
-    # 季
+    #  Classifier for seasonal crop yield or seasons of a tv series
     seasons: Optional[Dict[int, list]] = {}
-    # 媒体服务器
+    #  Media server
     server: Optional[str] = None
-    # 媒体ID
+    #  Media, esp. news mediaID
     itemid: Optional[Union[str, int]] = None
 
 
 class NotExistMediaInfo(BaseModel):
     """
-    媒体服务器不存在媒体信息
+    No media information exists on the media server
     """
-    # 季
+    #  Classifier for seasonal crop yield or seasons of a tv series
     season: Optional[int] = None
-    # 剧集列表
+    #  Episode list
     episodes: Optional[list] = []
-    # 总集数
+    #  Total episodes
     total_episode: Optional[int] = 0
-    # 开始集
+    #  Initial set
     start_episode: Optional[int] = 0
 
 
 class RefreshMediaItem(BaseModel):
     """
-    媒体库刷新信息
+    Media library refresh information
     """
-    # 标题
+    #  Caption
     title: Optional[str] = None
-    # 年份
+    #  Particular year
     year: Optional[str] = None
-    # 类型
+    #  Typology
     type: Optional[MediaType] = None
-    # 类别
+    #  Form
     category: Optional[str] = None
-    # 目录
+    #  Catalogs
     target_path: Optional[Path] = None
 
 
 class MediaServerLibrary(BaseModel):
     """
-    媒体服务器媒体库信息
+    Media server media library information
     """
-    # 服务器
+    #  Server (computer)
     server: Optional[str] = None
     # ID
     id: Optional[Union[str, int]] = None
-    # 名称
+    #  Name (of a thing)
     name: Optional[str] = None
-    # 路径
+    #  Trails
     path: Optional[Union[str, list]] = None
-    # 类型
+    #  Typology
     type: Optional[str] = None
-    # 封面图
+    #  Cover art
     image: Optional[str] = None
 
 
 class MediaServerItem(BaseModel):
     """
-    媒体服务器媒体信息
+    Media server media information
     """
     # ID
     id: Optional[Union[str, int]] = None
-    # 服务器
+    #  Server (computer)
     server: Optional[str] = None
-    # 媒体库ID
+    #  Media libraryID
     library: Optional[Union[str, int]] = None
     # ID
     item_id: Optional[str] = None
-    # 类型
+    #  Typology
     item_type: Optional[str] = None
-    # 标题
+    #  Caption
     title: Optional[str] = None
-    # 原标题
+    #  Original title
     original_title: Optional[str] = None
-    # 年份
+    #  Particular year
     year: Optional[str] = None
     # TMDBID
     tmdbid: Optional[int] = None
@@ -94,13 +94,13 @@ class MediaServerItem(BaseModel):
     imdbid: Optional[str] = None
     # TVDBID
     tvdbid: Optional[str] = None
-    # 路径
+    #  Trails
     path: Optional[str] = None
-    # 季集
+    #  Classifier for seasonal crop yield or seasons of a tv series集
     seasoninfo: Optional[Dict[int, list]] = None
-    # 备注
+    #  Note
     note: Optional[str] = None
-    # 同步时间
+    #  Synchronous time
     lst_mod_date: Optional[str] = None
 
     class Config:
@@ -109,7 +109,7 @@ class MediaServerItem(BaseModel):
 
 class MediaServerSeasonInfo(BaseModel):
     """
-    媒体服务器媒体剧集信息
+    Media server media episode information
     """
     season: Optional[int] = None
     episodes: Optional[List[int]] = []
@@ -117,7 +117,7 @@ class MediaServerSeasonInfo(BaseModel):
 
 class WebhookEventInfo(BaseModel):
     """
-    Webhook事件信息
+    Webhook Event information
     """
     event: Optional[str] = None
     channel: Optional[str] = None

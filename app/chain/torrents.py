@@ -21,7 +21,7 @@ from app.utils.string import StringUtils
 
 class TorrentsChain(ChainBase, metaclass=Singleton):
     """
-    站点首页或RSS种子处理链，服务于订阅、刷流等
+    The home page of the site orRSS Seed treatment chain， Serving subscriptions、 Brush flow, etc.
     """
 
     _spider_file = "__torrents_cache__"
@@ -37,24 +37,24 @@ class TorrentsChain(ChainBase, metaclass=Singleton):
 
     def remote_refresh(self, channel: MessageChannel, userid: Union[str, int] = None):
         """
-        远程刷新订阅，发送消息
+        Remote refresh subscription， Send a message
         """
         self.post_message(Notification(channel=channel,
-                                       title=f"开始刷新种子 ...", userid=userid))
+                                       title=f" Start refreshing seeds ...", userid=userid))
         self.refresh()
         self.post_message(Notification(channel=channel,
-                                       title=f"种子刷新完成！", userid=userid))
+                                       title=f" Seed refresh complete！", userid=userid))
 
     def get_torrents(self, stype: str = None) -> Dict[str, List[Context]]:
         """
-        获取当前缓存的种子
-        :param stype: 强制指定缓存类型，spider:爬虫缓存，rss:rss缓存
+        Get the current cached seed
+        :param stype:  Forcing the cache type to be specified，spider: Crawler cache，rss:rss (computing) cache
         """
 
         if not stype:
             stype = settings.SUBSCRIBE_MODE
 
-        # 读取缓存
+        #  Read cache
         if stype == 'spider':
             return self.load_cache(self._spider_file) or {}
         else:
@@ -63,39 +63,39 @@ class TorrentsChain(ChainBase, metaclass=Singleton):
     @cached(cache=TTLCache(maxsize=128 if settings.BIG_MEMORY_MODE else 1, ttl=600))
     def browse(self, domain: str) -> List[TorrentInfo]:
         """
-        浏览站点首页内容，返回种子清单，TTL缓存10分钟
-        :param domain: 站点域名
+        Browse the content of the site's home page， Return to seed list，TTL (computing) cache10 Minutes
+        :param domain:  Site domain name
         """
-        logger.info(f'开始获取站点 {domain} 最新种子 ...')
+        logger.info(f' Start acquiring sites {domain}  Latest seeds ...')
         site = self.siteshelper.get_indexer(domain)
         if not site:
-            logger.error(f'站点 {domain} 不存在！')
+            logger.error(f' Website {domain}  Non-existent！')
             return []
         return self.refresh_torrents(site=site)
 
     @cached(cache=TTLCache(maxsize=128 if settings.BIG_MEMORY_MODE else 1, ttl=300))
     def rss(self, domain: str) -> List[TorrentInfo]:
         """
-        获取站点RSS内容，返回种子清单，TTL缓存5分钟
-        :param domain: 站点域名
+        Get siteRSS Element， Return to seed list，TTL (computing) cache5 Minutes
+        :param domain:  Site domain name
         """
-        logger.info(f'开始获取站点 {domain} RSS ...')
+        logger.info(f' Start acquiring sites {domain} RSS ...')
         site = self.siteshelper.get_indexer(domain)
         if not site:
-            logger.error(f'站点 {domain} 不存在！')
+            logger.error(f' Website {domain}  Non-existent！')
             return []
         if not site.get("rss"):
-            logger.error(f'站点 {domain} 未配置RSS地址！')
+            logger.error(f' Website {domain}  UnconfiguredRSS Address！')
             return []
         rss_items = self.rsshelper.parse(site.get("rss"), True if site.get("proxy") else False)
         if rss_items is None:
-            # rss过期，尝试保留原配置生成新的rss
+            # rss Expire (as in expiration date)， Try to keep the original configuration to generate a newrss
             self.__renew_rss_url(domain=domain, site=site)
             return []
         if not rss_items:
-            logger.error(f'站点 {domain} 未获取到RSS数据！')
+            logger.error(f' Website {domain}  Not availableRSS Digital！')
             return []
-        # 组装种子
+        #  Assembled seeds
         ret_torrents: List[TorrentInfo] = []
         for item in rss_items:
             if not item.get("title"):
@@ -119,94 +119,94 @@ class TorrentsChain(ChainBase, metaclass=Singleton):
 
     def refresh(self, stype: str = None, sites: List[int] = None) -> Dict[str, List[Context]]:
         """
-        刷新站点最新资源，识别并缓存起来
-        :param stype: 强制指定缓存类型，spider:爬虫缓存，rss:rss缓存
-        :param sites: 强制指定站点ID列表，为空则读取设置的订阅站点
+        Refresh the site with the latest resources， Recognize and cache it
+        :param stype:  Forcing the cache type to be specified，spider: Crawler cache，rss:rss (computing) cache
+        :param sites:  Mandatory site designationID Listings， Null reads the set subscription site
         """
-        # 刷新类型
+        #  Refresh type
         if not stype:
             stype = settings.SUBSCRIBE_MODE
 
-        # 刷新站点
+        #  Refresh site
         if not sites:
             sites = self.systemconfig.get(SystemConfigKey.RssSites) or []
 
-        # 读取缓存
+        #  Read cache
         torrents_cache = self.get_torrents()
 
-        # 所有站点索引
+        #  All sites index
         indexers = self.siteshelper.get_indexers()
-        # 遍历站点缓存资源
+        #  Traversing site cache resources
         for indexer in indexers:
-            # 未开启的站点不刷新
+            #  Sites not turned on do not refresh
             if sites and indexer.get("id") not in sites:
                 continue
             domain = StringUtils.get_url_domain(indexer.get("domain"))
             if stype == "spider":
-                # 刷新首页种子
+                #  Refresh home seeds
                 torrents: List[TorrentInfo] = self.browse(domain=domain)
             else:
-                # 刷新RSS种子
+                #  Refresh (computer window)RSS Torrent
                 torrents: List[TorrentInfo] = self.rss(domain=domain)
-            # 按pubdate降序排列
+            #  Check or refer topubdate Descending order
             torrents.sort(key=lambda x: x.pubdate or '', reverse=True)
-            # 取前N条
+            #  Choose an antecedentN Clause (of law or treaty)
             torrents = torrents[:settings.CACHE_CONF.get('refresh')]
             if torrents:
-                # 过滤出没有处理过的种子
+                #  Filtering out untreated seeds
                 torrents = [torrent for torrent in torrents
                             if f'{torrent.title}{torrent.description}'
                             not in [f'{t.torrent_info.title}{t.torrent_info.description}'
                                     for t in torrents_cache.get(domain) or []]]
                 if torrents:
-                    logger.info(f'{indexer.get("name")} 有 {len(torrents)} 个新种子')
+                    logger.info(f'{indexer.get("name")}  There are {len(torrents)}  New seed')
                 else:
-                    logger.info(f'{indexer.get("name")} 没有新种子')
+                    logger.info(f'{indexer.get("name")}  No new seeds.')
                     continue
                 for torrent in torrents:
-                    logger.info(f'处理资源：{torrent.title} ...')
-                    # 识别
+                    logger.info(f' Processing resources：{torrent.title} ...')
+                    #  Recognize
                     meta = MetaInfo(title=torrent.title, subtitle=torrent.description)
-                    # 识别媒体信息
+                    #  Recognize媒体信息
                     mediainfo: MediaInfo = self.recognize_media(meta=meta)
                     if not mediainfo:
-                        logger.warn(f'未识别到媒体信息，标题：{torrent.title}')
-                        # 存储空的媒体信息
+                        logger.warn(f' No media messages recognized， Caption：{torrent.title}')
+                        #  Storing empty media messages
                         mediainfo = MediaInfo()
-                    # 清理多余数据
+                    #  Cleaning up redundant data
                     mediainfo.clear()
-                    # 上下文
+                    #  (textual) context
                     context = Context(meta_info=meta, media_info=mediainfo, torrent_info=torrent)
-                    # 添加到缓存
+                    #  Add to cache
                     if not torrents_cache.get(domain):
                         torrents_cache[domain] = [context]
                     else:
                         torrents_cache[domain].append(context)
-                    # 如果超过了限制条数则移除掉前面的
+                    #  If the limit is exceeded, remove the preceding
                     if len(torrents_cache[domain]) > settings.CACHE_CONF.get('torrents'):
                         torrents_cache[domain] = torrents_cache[domain][-settings.CACHE_CONF.get('torrents'):]
-                # 回收资源
+                #  Recycling resources
                 del torrents
             else:
-                logger.info(f'{indexer.get("name")} 没有获取到种子')
+                logger.info(f'{indexer.get("name")}  No access to seeds')
 
-        # 保存缓存到本地
+        #  Save cache locally
         if stype == "spider":
             self.save_cache(torrents_cache, self._spider_file)
         else:
             self.save_cache(torrents_cache, self._rss_file)
 
-        # 返回
+        #  Come (or go) back
         return torrents_cache
 
     def __renew_rss_url(self, domain: str, site: dict):
         """
-        保留原配置生成新的rss地址
+        Keep the original configuration to generate a newrss Address
         """
         try:
-            # RSS链接过期
-            logger.error(f"站点 {domain} RSS链接已过期，正在尝试自动获取！")
-            # 自动生成rss地址
+            # RSS Expired links
+            logger.error(f" Website {domain} RSS Link has expired， Trying to get it automatically！")
+            #  Automatic generationrss Address
             rss_url, errmsg = self.rsshelper.get_rss_link(
                 url=site.get("url"),
                 cookie=site.get("cookie"),
@@ -214,21 +214,21 @@ class TorrentsChain(ChainBase, metaclass=Singleton):
                 proxy=True if site.get("proxy") else False
             )
             if rss_url:
-                # 获取新的日期的passkey
+                #  Get the new date of thepasskey
                 match = re.search(r'passkey=([a-zA-Z0-9]+)', rss_url)
                 if match:
                     new_passkey = match.group(1)
-                    # 获取过期rss除去passkey部分
+                    #  Get expiredrss Apart frompasskey Portion
                     new_rss = re.sub(r'&passkey=([a-zA-Z0-9]+)', f'&passkey={new_passkey}', site.get("rss"))
-                    logger.info(f"更新站点 {domain} RSS地址 ...")
+                    logger.info(f" Updating the site {domain} RSS Address ...")
                     self.siteoper.update_rss(domain=domain, rss=new_rss)
                 else:
-                    # 发送消息
+                    #  Send a message
                     self.post_message(
-                        Notification(mtype=NotificationType.SiteMessage, title=f"站点 {domain} RSS链接已过期"))
+                        Notification(mtype=NotificationType.SiteMessage, title=f" Website {domain} RSS Link has expired"))
             else:
                 self.post_message(
-                    Notification(mtype=NotificationType.SiteMessage, title=f"站点 {domain} RSS链接已过期"))
+                    Notification(mtype=NotificationType.SiteMessage, title=f" Website {domain} RSS Link has expired"))
         except Exception as e:
             print(str(e))
-            self.post_message(Notification(mtype=NotificationType.SiteMessage, title=f"站点 {domain} RSS链接已过期"))
+            self.post_message(Notification(mtype=NotificationType.SiteMessage, title=f" Website {domain} RSS Link has expired"))

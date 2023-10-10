@@ -29,11 +29,11 @@ class Plex(metaclass=Singleton):
                 self._libraries = self._plex.library.sections()
             except Exception as e:
                 self._plex = None
-                logger.error(f"Plex服务器连接失败：{str(e)}")
+                logger.error(f"Plex Server connection failure：{str(e)}")
 
     def is_inactive(self) -> bool:
         """
-        判断是否需要重连
+        Determine if reconnection is required
         """
         if not self._host or not self._token:
             return False
@@ -41,25 +41,25 @@ class Plex(metaclass=Singleton):
 
     def reconnect(self):
         """
-        重连
+        Reconnect
         """
         try:
             self._plex = PlexServer(self._host, self._token)
             self._libraries = self._plex.library.sections()
         except Exception as e:
             self._plex = None
-            logger.error(f"Plex服务器连接失败：{str(e)}")
+            logger.error(f"Plex Server connection failure：{str(e)}")
 
     def get_librarys(self) -> List[schemas.MediaServerLibrary]:
         """
-        获取媒体服务器所有媒体库列表
+        Get a list of all media libraries on the media server
         """
         if not self._plex:
             return []
         try:
             self._libraries = self._plex.library.sections()
         except Exception as err:
-            logger.error(f"获取媒体服务器所有媒体库列表出错：{str(err)}")
+            logger.error(f"Get a list of all media libraries on the media server出错：{str(err)}")
             return []
         libraries = []
         for library in self._libraries:
@@ -82,7 +82,7 @@ class Plex(metaclass=Singleton):
 
     def get_medias_count(self) -> schemas.Statistic:
         """
-        获得电影、电视剧、动漫媒体数量
+        Get the movie、 Dramas、 Number of anime and manga media
         :return: MovieCount SeriesCount SongCount
         """
         if not self._plex:
@@ -107,12 +107,12 @@ class Plex(metaclass=Singleton):
                    year: str = None,
                    tmdb_id: int = None) -> Optional[List[schemas.MediaServerItem]]:
         """
-        根据标题和年份，检查电影是否在Plex中存在，存在则返回列表
-        :param title: 标题
-        :param original_title: 原产地标题
-        :param year: 年份，为空则不过滤
+        By title and year， Check if the movie is onPlex Exist in， Returns the list if it exists
+        :param title:  Caption
+        :param original_title:  Title of origin
+        :param year:  Particular year， No filtering if empty
         :param tmdb_id: TMDB ID
-        :return: 含title、year属性的字典列表
+        :return:  Suck (keep in your mouth without chewing)title、year Dictionary list of attributes
         """
         if not self._plex:
             return None
@@ -121,7 +121,7 @@ class Plex(metaclass=Singleton):
             movies = self._plex.library.search(title=title,
                                                year=year,
                                                libtype="movie")
-            # 根据原标题再查一遍
+            #  Look it up again under the original title
             if original_title and str(original_title) != str(title):
                 movies.extend(self._plex.library.search(title=original_title,
                                                         year=year,
@@ -165,21 +165,21 @@ class Plex(metaclass=Singleton):
                         tmdb_id: int = None,
                         season: int = None) -> Tuple[Optional[str], Optional[Dict[int, list]]]:
         """
-        根据标题、年份、季查询电视剧所有集信息
-        :param item_id: 媒体ID
-        :param title: 标题
-        :param original_title: 原产地标题
-        :param year: 年份，可以为空，为空时不按年份过滤
+        Based on the title、 Particular year、 Quarterly search for all episodes of a tv series
+        :param item_id:  Media, esp. news mediaID
+        :param title:  Caption
+        :param original_title:  Title of origin
+        :param year:  Particular year， Can be null， No filtering by year if empty
         :param tmdb_id: TMDB ID
-        :param season: 季号，数字
-        :return: 所有集的列表
+        :param season:  Quarter， Digital (electronics etc)
+        :return:  List of all sets
         """
         if not self._plex:
             return None, {}
         if item_id:
             videos = self._plex.fetchItem(item_id)
         else:
-            # 根据标题和年份模糊搜索，该结果不够准确
+            #  Fuzzy search by title and year， This result is not accurate enough
             videos = self._plex.library.search(title=title,
                                                year=year,
                                                libtype="show")
@@ -209,10 +209,10 @@ class Plex(metaclass=Singleton):
 
     def get_remote_image_by_id(self, item_id: str, image_type: str) -> Optional[str]:
         """
-        根据ItemId从Plex查询图片地址
-        :param item_id: 在Emby中的ID
-        :param image_type: 图片的类型，Poster或者Backdrop等
-        :return: 图片对应在TMDB中的URL
+        According toItemId Through (a gap)Plex Check the address of the picture
+        :param item_id:  ExistEmby Hit the nail on the headID
+        :param image_type:  Types of pictures，Poster OrBackdrop Et al. (and other authors)
+        :return:  The image corresponds to an image in theTMDB Hit the nail on the headURL
         """
         if not self._plex:
             return None
@@ -227,12 +227,12 @@ class Plex(metaclass=Singleton):
                 if hasattr(image, 'key') and image.key.startswith('http'):
                     return image.key
         except Exception as e:
-            logger.error(f"获取封面出错：" + str(e))
+            logger.error(f" Error getting cover：" + str(e))
         return None
 
     def refresh_root_library(self) -> bool:
         """
-        通知Plex刷新整个媒体库
+        NotificationsPlex Refresh the entire media library
         """
         if not self._plex:
             return False
@@ -240,7 +240,7 @@ class Plex(metaclass=Singleton):
 
     def refresh_library_by_items(self, items: List[schemas.RefreshMediaItem]) -> bool:
         """
-        按路径刷新媒体库 item: target_path
+        Refresh media library by path item: target_path
         """
         if not self._plex:
             return False
@@ -248,27 +248,27 @@ class Plex(metaclass=Singleton):
         for item in items:
             file_path = item.target_path
             lib_key, path = self.__find_librarie(file_path, self._libraries)
-            # 如果存在同一剧集的多集,key(path)相同会合并
+            #  If there are multiple episodes of the same series,key(path) The same will be merged
             result_dict[path] = lib_key
         if "" in result_dict:
-            # 如果有匹配失败的,刷新整个库
+            #  If there is a failed match, Refresh the entire library
             self._plex.library.update()
         else:
-            # 否则一个一个刷新
+            #  Otherwise, refresh them one by one.
             for path, lib_key in result_dict.items():
-                logger.info(f"刷新媒体库：{lib_key} - {path}")
+                logger.info(f" Refresh media library：{lib_key} - {path}")
                 self._plex.query(f'/library/sections/{lib_key}/refresh?path={quote_plus(path)}')
 
     @staticmethod
     def __find_librarie(path: Path, libraries: List[Any]) -> Tuple[str, str]:
         """
-        判断这个path属于哪个媒体库
-        多个媒体库配置的目录不应有重复和嵌套,
+        Determine thispath Which media library to belong to
+        Multiple media library configurations should not have duplicate and nested directories,
         """
 
         def is_subpath(_path: Path, _parent: Path) -> bool:
             """
-            判断_path是否是_parent的子目录下
+            Judgements_path Is or isn't_parent Subdirectory of the
             """
             _path = _path.resolve()
             _parent = _parent.resolve()
@@ -284,12 +284,12 @@ class Plex(metaclass=Singleton):
                         if is_subpath(path, Path(location)):
                             return lib.key, str(path)
         except Exception as err:
-            logger.error(f"查找媒体库出错：{err}")
+            logger.error(f" Error finding media library：{err}")
         return "", ""
 
     def get_iteminfo(self, itemid: str) -> Optional[schemas.MediaServerItem]:
         """
-        获取单个项目详情
+        Get individual program details
         """
         if not self._plex:
             return None
@@ -313,7 +313,7 @@ class Plex(metaclass=Singleton):
                 path=path,
             )
         except Exception as err:
-            logger.error(f"获取项目详情出错：{err}")
+            logger.error(f" Error getting project details：{err}")
         return None
 
     @staticmethod
@@ -330,19 +330,19 @@ class Plex(metaclass=Singleton):
             for prefix, varname in guid_mapping.items():
                 if isinstance(guid, dict):
                     if guid['id'].startswith(prefix):
-                        # 找到匹配的ID
+                        #  Find a matchID
                         ids[varname] = guid['id'][len(prefix):]
                         break
                 else:
                     if guid.id.startswith(prefix):
-                        # 找到匹配的ID
+                        #  Find a matchID
                         ids[varname] = guid.id[len(prefix):]
                         break
         return ids
 
     def get_items(self, parent: str) -> Generator:
         """
-        获取媒体服务器所有媒体库列表
+        Get a list of all media libraries on the media server
         """
         if not parent:
             yield None
@@ -372,18 +372,18 @@ class Plex(metaclass=Singleton):
                         path=path,
                     )
         except Exception as err:
-            logger.error(f"获取媒体库列表出错：{err}")
+            logger.error(f" Error getting media library list：{err}")
         yield None
 
     def get_webhook_message(self, form: any) -> Optional[schemas.WebhookEventInfo]:
         """
-        解析Plex报文
-        eventItem  字段的含义
-        event      事件类型
-        item_type  媒体类型 TV,MOV
-        item_name  TV:琅琊榜 S1E6 剖心明志 虎口脱险
-                   MOV:猪猪侠大冒险(2001)
-        overview   剧情描述
+        AnalyzePlex Telegram
+        eventItem   Meaning of fields
+        event       Event type
+        item_type   Media type TV,MOV
+        item_name  TV: Mt langya in eastern shandong S1E6  Be completely honest and sincere  Escape from the tiger's mouth
+                   MOV: Porky pig adventure(2001)
+        overview    Description of the plot
         {
           "event": "media.scrobble",
           "user": false,
@@ -391,7 +391,7 @@ class Plex(metaclass=Singleton):
           "Account": {
             "id": 31646104,
             "thumb": "https://plex.tv/users/xx",
-            "title": "播放"
+            "title": " Playable"
           },
           "Server": {
             "title": "Media-Server",
@@ -417,10 +417,10 @@ class Plex(metaclass=Singleton):
             "titleSort": "World's Strongest Senior",
             "grandparentKey": "/library/metadata/40275",
             "parentKey": "/library/metadata/40291",
-            "librarySectionTitle": "动漫剧集",
+            "librarySectionTitle": " Anime & manga episodes",
             "librarySectionID": 7,
             "librarySectionKey": "/library/sections/7",
-            "grandparentTitle": "范马刃牙",
+            "grandparentTitle": " Lit. fanma's blade teeth (idiom); fig. a miracle cure for all ills",
             "parentTitle": "Combat Shadow Fighting Saga / Great Prison Battle Saga",
             "originalTitle": "Baki Hanma",
             "contentRating": "TV-MA",
@@ -487,12 +487,12 @@ class Plex(metaclass=Singleton):
         try:
             message = json.loads(payload)
         except Exception as e:
-            logger.debug(f"解析plex webhook出错：{str(e)}")
+            logger.debug(f" Analyzeplex webhook Make a mistake：{str(e)}")
             return None
         eventType = message.get('event')
         if not eventType:
             return None
-        logger.info(f"接收到plex webhook：{message}")
+        logger.info(f" Receiveplex webhook：{message}")
         eventItem = schemas.WebhookEventInfo(event=eventType, channel="plex")
         if message.get('Metadata'):
             if message.get('Metadata', {}).get('type') == 'episode':
@@ -525,14 +525,14 @@ class Plex(metaclass=Singleton):
         if message.get('Player'):
             eventItem.ip = message.get('Player').get('publicAddress')
             eventItem.client = message.get('Player').get('title')
-            # 这里给个空,防止拼消息的时候出现None
+            #  Give me a blank here., Prevents spelling messages withNone
             eventItem.device_name = ' '
         if message.get('Account'):
             eventItem.user_name = message.get("Account").get('title')
 
-        # 获取消息图片
+        #  Get message image
         if eventItem.item_id:
-            # 根据返回的item_id去调用媒体服务器获取
+            #  Based on the returneditem_id Go call the media server to get the
             eventItem.image_url = self.get_remote_image_by_id(item_id=eventItem.item_id,
                                                               image_type="Backdrop")
 
@@ -540,6 +540,6 @@ class Plex(metaclass=Singleton):
 
     def get_plex(self):
         """
-        获取plex对象，以便直接操作
+        Gainplex Boyfriend， Facilitate direct operation
         """
         return self._plex

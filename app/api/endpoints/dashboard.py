@@ -16,15 +16,15 @@ from app.utils.system import SystemUtils
 router = APIRouter()
 
 
-@router.get("/statistic", summary="媒体数量统计", response_model=schemas.Statistic)
+@router.get("/statistic", summary=" Statistics on the number of media", response_model=schemas.Statistic)
 def statistic(db: Session = Depends(get_db),
               _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    查询媒体数量统计信息
+    Querying statistics on the number of media outlets
     """
     media_statistics: Optional[List[schemas.Statistic]] = DashboardChain(db).media_statistic()
     if media_statistics:
-        # 汇总各媒体库统计信息
+        #  Summarize statistical information for each media library
         ret_statistic = schemas.Statistic()
         for media_statistic in media_statistics:
             ret_statistic.movie_count += media_statistic.movie_count
@@ -36,10 +36,10 @@ def statistic(db: Session = Depends(get_db),
         return schemas.Statistic()
 
 
-@router.get("/storage", summary="存储空间", response_model=schemas.Storage)
+@router.get("/storage", summary=" Storage space", response_model=schemas.Storage)
 def storage(_: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    查询存储空间信息
+    Querying storage space information
     """
     total_storage, free_storage = SystemUtils.space_usage(settings.LIBRARY_PATHS)
     return schemas.Storage(
@@ -48,19 +48,19 @@ def storage(_: schemas.TokenPayload = Depends(verify_token)) -> Any:
     )
 
 
-@router.get("/processes", summary="进程信息", response_model=List[schemas.ProcessInfo])
+@router.get("/processes", summary=" Process information", response_model=List[schemas.ProcessInfo])
 def processes(_: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    查询进程信息
+    Query process information
     """
     return SystemUtils.processes()
 
 
-@router.get("/downloader", summary="下载器信息", response_model=schemas.DownloaderInfo)
+@router.get("/downloader", summary=" Downloader information", response_model=schemas.DownloaderInfo)
 def downloader(db: Session = Depends(get_db),
                _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    查询下载器信息
+    Search for downloader information
     """
     transfer_info = DashboardChain(db).downloader_info()
     free_space = SystemUtils.free_space(Path(settings.DOWNLOAD_PATH))
@@ -76,35 +76,35 @@ def downloader(db: Session = Depends(get_db),
         return schemas.DownloaderInfo()
 
 
-@router.get("/schedule", summary="后台服务", response_model=List[schemas.ScheduleInfo])
+@router.get("/schedule", summary=" Back-office services", response_model=List[schemas.ScheduleInfo])
 def schedule(_: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    查询后台服务信息
+    Query back-office service information
     """
     return Scheduler().list()
 
 
-@router.get("/transfer", summary="文件整理统计", response_model=List[int])
+@router.get("/transfer", summary=" Documentation statistics", response_model=List[int])
 def transfer(days: int = 7, db: Session = Depends(get_db),
              _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    查询文件整理统计信息
+    Query document organization statistics
     """
     transfer_stat = TransferHistory.statistic(db, days)
     return [stat[1] for stat in transfer_stat]
 
 
-@router.get("/cpu", summary="获取当前CPU使用率", response_model=int)
+@router.get("/cpu", summary=" Get currentCPU Utilization rate", response_model=int)
 def cpu(_: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    获取当前CPU使用率
+    Get currentCPU Utilization rate
     """
     return SystemUtils.cpu_usage()
 
 
-@router.get("/memory", summary="获取当前内存使用量和使用率", response_model=List[int])
+@router.get("/memory", summary=" Get current memory usage and utilization", response_model=List[int])
 def memory(_: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    获取当前内存使用率
+    Get current memory utilization
     """
     return SystemUtils.memory_usage()

@@ -5,11 +5,11 @@ from typing import Any
 def retry(ExceptionToCheck: Any,
           tries: int = 3, delay: int = 3, backoff: int = 2, logger: Any = None):
     """
-    :param ExceptionToCheck: 需要捕获的异常
-    :param tries: 重试次数
-    :param delay: 延迟时间
-    :param backoff: 延迟倍数
-    :param logger: 日志对象
+    :param ExceptionToCheck:  Exceptions to be caught
+    :param tries:  Retries
+    :param delay:  Latency
+    :param backoff:  Latency factor
+    :param logger:  Log object
     """
 
     def deco_retry(f):
@@ -19,7 +19,7 @@ def retry(ExceptionToCheck: Any,
                 try:
                     return f(*args, **kwargs)
                 except ExceptionToCheck as e:
-                    msg = f"{str(e)}, {mdelay} 秒后重试 ..."
+                    msg = f"{str(e)}, {mdelay}  Retry after seconds ..."
                     if logger:
                         logger.warn(msg)
                     else:

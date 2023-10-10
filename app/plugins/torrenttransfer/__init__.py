@@ -20,33 +20,33 @@ from app.utils.string import StringUtils
 
 
 class TorrentTransfer(_PluginBase):
-    # 插件名称
-    plugin_name = "自动转移做种"
-    # 插件描述
-    plugin_desc = "定期转移下载器中的做种任务到另一个下载器。"
-    # 插件图标
+    #  Plug-in name
+    plugin_name = " Autotransfer seeding"
+    #  Plugin description
+    plugin_desc = " Regularly transfer seeding tasks from a downloader to another downloader。"
+    #  Plug-in icons
     plugin_icon = "torrenttransfer.jpg"
-    # 主题色
+    #  Theme color
     plugin_color = "#272636"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "jxxghp"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/jxxghp"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "torrenttransfer_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 18
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 2
 
-    # 私有属性
+    #  Private property
     _scheduler = None
     qb = None
     tr = None
     torrent = None
-    # 开关
+    #  Switchgear
     _enabled = False
     _cron = None
     _onlyonce = False
@@ -60,17 +60,17 @@ class TorrentTransfer(_PluginBase):
     _deletesource = False
     _fromtorrentpath = None
     _autostart = False
-    # 退出事件
+    #  Logout event
     _event = Event()
-    # 待检查种子清单
+    #  List of seeds to be checked
     _recheck_torrents = {}
     _is_recheck_running = False
-    # 任务标签
-    _torrent_tags = ["已整理", "转移做种"]
+    #  Mission label
+    _torrent_tags = [" Collated", " Master sth."]
 
     def init_plugin(self, config: dict = None):
         self.torrent = TorrentHelper()
-        # 读取配置
+        #  Read configuration
         if config:
             self._enabled = config.get("enabled")
             self._onlyonce = config.get("onlyonce")
@@ -86,38 +86,38 @@ class TorrentTransfer(_PluginBase):
             self._nopaths = config.get("nopaths")
             self._autostart = config.get("autostart")
 
-        # 停止现有任务
+        #  Discontinuation of existing mandates
         self.stop_service()
 
-        # 启动定时任务 & 立即运行一次
+        #  Starting a timed task &  Run one immediately
         if self.get_state() or self._onlyonce:
             self.qb = Qbittorrent()
             self.tr = Transmission()
-            # 检查配置
+            #  Check configuration
             if self._fromtorrentpath and not Path(self._fromtorrentpath).exists():
-                logger.error(f"源下载器种子文件保存路径不存在：{self._fromtorrentpath}")
-                self.systemmessage.put(f"源下载器种子文件保存路径不存在：{self._fromtorrentpath}")
+                logger.error(f" Source downloader seed file save path does not exist：{self._fromtorrentpath}")
+                self.systemmessage.put(f" Source downloader seed file save path does not exist：{self._fromtorrentpath}")
                 return
             if self._fromdownloader == self._todownloader:
-                logger.error(f"源下载器和目的下载器不能相同")
-                self.systemmessage.put(f"源下载器和目的下载器不能相同")
+                logger.error(f" Source and destination downloaders cannot be the same")
+                self.systemmessage.put(f" Source and destination downloaders cannot be the same")
                 return
             self._scheduler = BackgroundScheduler(timezone=settings.TZ)
             if self._cron:
-                logger.info(f"转移做种服务启动，周期：{self._cron}")
+                logger.info(f" Transfer seeding service launched， Cyclicality：{self._cron}")
                 try:
                     self._scheduler.add_job(self.transfer,
                                             CronTrigger.from_crontab(self._cron))
                 except Exception as e:
-                    logger.error(f"转移做种服务启动失败：{e}")
-                    self.systemmessage.put(f"转移做种服务启动失败：{e}")
+                    logger.error(f" Failure to start the transfer seeding service：{e}")
+                    self.systemmessage.put(f" Failure to start the transfer seeding service：{e}")
                     return
             if self._onlyonce:
-                logger.info(f"转移做种服务启动，立即运行一次")
+                logger.info(f" Transfer seeding service launched， Run one immediately")
                 self._scheduler.add_job(self.transfer, 'date',
                                         run_date=datetime.now(tz=pytz.timezone(settings.TZ)) + timedelta(
                                             seconds=3))
-                # 关闭一次性开关
+                #  Turn off the disposable switch
                 self._onlyonce = False
                 self.update_config({
                     "enabled": self._enabled,
@@ -136,9 +136,9 @@ class TorrentTransfer(_PluginBase):
                 })
             if self._scheduler.get_jobs():
                 if self._autostart:
-                    # 追加种子校验服务
+                    #  Additional seed verification services
                     self._scheduler.add_job(self.check_recheck, 'interval', minutes=3)
-                # 启动服务
+                #  Starting services
                 self._scheduler.print_jobs()
                 self._scheduler.start()
 
@@ -158,7 +158,7 @@ class TorrentTransfer(_PluginBase):
 
     def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
         """
-        拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
+        Assembly plugin configuration page， Two pieces of data need to be returned：1、 Page configuration；2、 Data structure
         """
         return [
             {
@@ -178,7 +178,7 @@ class TorrentTransfer(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'enabled',
-                                            'label': '启用插件',
+                                            'label': ' Enabling plug-ins',
                                         }
                                     }
                                 ]
@@ -194,7 +194,7 @@ class TorrentTransfer(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'notify',
-                                            'label': '发送通知',
+                                            'label': ' Send notification',
                                         }
                                     }
                                 ]
@@ -215,7 +215,7 @@ class TorrentTransfer(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'cron',
-                                            'label': '执行周期',
+                                            'label': ' Implementation period',
                                             'placeholder': '0 0 0 ? *'
                                         }
                                     }
@@ -232,7 +232,7 @@ class TorrentTransfer(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'nolabels',
-                                            'label': '不转移种子标签',
+                                            'label': ' No transfer of seed labels',
                                         }
                                     }
                                 ]
@@ -252,7 +252,7 @@ class TorrentTransfer(_PluginBase):
                                         'component': 'VSelect',
                                         'props': {
                                             'model': 'fromdownloader',
-                                            'label': '源下载器',
+                                            'label': ' Source downloader',
                                             'items': [
                                                 {'title': 'Qbittorrent', 'value': 'qbittorrent'},
                                                 {'title': 'Transmission', 'value': 'transmission'}
@@ -272,7 +272,7 @@ class TorrentTransfer(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'fromtorrentpath',
-                                            'label': '源下载器种子文件路径',
+                                            'label': ' Source downloader seed file path',
                                             'placeholder': 'BT_backup、torrents'
                                         }
                                     }
@@ -289,8 +289,8 @@ class TorrentTransfer(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'frompath',
-                                            'label': '源数据文件根路径',
-                                            'placeholder': '根路径，留空不进行路径转换'
+                                            'label': ' Source data file root path',
+                                            'placeholder': ' Root path， Leave blank for no path conversion'
                                         }
                                     }
                                 ]
@@ -310,7 +310,7 @@ class TorrentTransfer(_PluginBase):
                                         'component': 'VSelect',
                                         'props': {
                                             'model': 'todownloader',
-                                            'label': '目的下载器',
+                                            'label': ' Destination downloader',
                                             'items': [
                                                 {'title': 'Qbittorrent', 'value': 'qbittorrent'},
                                                 {'title': 'Transmission', 'value': 'transmission'}
@@ -329,8 +329,8 @@ class TorrentTransfer(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'topath',
-                                            'label': '目的数据文件根路径',
-                                            'placeholder': '根路径，留空不进行路径转换'
+                                            'label': ' Destination data file root path',
+                                            'placeholder': ' Root path， Leave blank for no path conversion'
                                         }
                                     }
                                 ]
@@ -350,9 +350,9 @@ class TorrentTransfer(_PluginBase):
                                         'component': 'VTextarea',
                                         'props': {
                                             'model': 'nopaths',
-                                            'label': '不转移数据文件目录',
+                                            'label': ' No transfer of data file directories',
                                             'rows': 3,
-                                            'placeholder': '每一行一个目录'
+                                            'placeholder': ' One directory per line'
                                         }
                                     }
                                 ]
@@ -373,7 +373,7 @@ class TorrentTransfer(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'autostart',
-                                            'label': '校验完成后自动开始',
+                                            'label': ' Automatically starts when calibration is complete',
                                         }
                                     }
                                 ]
@@ -389,7 +389,7 @@ class TorrentTransfer(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'deletesource',
-                                            'label': '删除源种子',
+                                            'label': ' Deletion of source seeds',
                                         }
                                     }
                                 ]
@@ -405,7 +405,7 @@ class TorrentTransfer(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'onlyonce',
-                                            'label': '立即运行一次',
+                                            'label': ' Run one immediately',
                                         }
                                     }
                                 ]
@@ -435,7 +435,7 @@ class TorrentTransfer(_PluginBase):
 
     def __get_downloader(self, dtype: str):
         """
-        根据类型返回下载器实例
+        Returns downloader instances by type
         """
         if dtype == "qbittorrent":
             return self.qb
@@ -447,219 +447,219 @@ class TorrentTransfer(_PluginBase):
     def __download(self, downloader: str, content: bytes,
                    save_path: str) -> Optional[str]:
         """
-        添加下载任务
+        Add download tasks
         """
         if downloader == "qbittorrent":
-            # 生成随机Tag
+            #  Generate randomTag
             tag = StringUtils.generate_random_str(10)
             state = self.qb.add_torrent(content=content,
                                         download_dir=save_path,
                                         is_paused=True,
-                                        tag=["已整理", "转移做种", tag])
+                                        tag=[" Collated", " Master sth.", tag])
             if not state:
                 return None
             else:
-                # 获取种子Hash
+                #  Getting seedsHash
                 torrent_hash = self.qb.get_torrent_id_by_tag(tags=tag)
                 if not torrent_hash:
-                    logger.error(f"{downloader} 获取种子Hash失败")
+                    logger.error(f"{downloader}  Getting seedsHash Fail (e.g. experiments)")
                     return None
             return torrent_hash
         elif downloader == "transmission":
-            # 添加任务
+            #  Add tasks
             torrent = self.tr.add_torrent(content=content,
                                           download_dir=save_path,
                                           is_paused=True,
-                                          labels=["已整理", "转移做种"])
+                                          labels=[" Collated", " Master sth."])
             if not torrent:
                 return None
             else:
                 return torrent.hashString
 
-        logger.error(f"不支持的下载器：{downloader}")
+        logger.error(f" Unsupported downloaders：{downloader}")
         return None
 
     def transfer(self):
         """
-        开始转移做种
+        Beginning of transfer for seeding
         """
-        logger.info("开始转移做种任务 ...")
+        logger.info("Beginning of transfer for seeding任务 ...")
 
-        # 源下载器
+        #  Source downloader
         downloader = self._fromdownloader
-        # 目的下载器
+        #  Destination downloader
         todownloader = self._todownloader
 
-        # 获取下载器中已完成的种子
+        #  Getting completed seeds in the downloader
         downloader_obj = self.__get_downloader(downloader)
         torrents = downloader_obj.get_completed_torrents()
         if torrents:
-            logger.info(f"下载器 {downloader} 已完成种子数：{len(torrents)}")
+            logger.info(f" Downloader {downloader}  Number of seeds completed：{len(torrents)}")
         else:
-            logger.info(f"下载器 {downloader} 没有已完成种子")
+            logger.info(f" Downloader {downloader}  No completed seeds")
             return
 
-        # 过滤种子，记录保存目录
+        #  Filtering seeds， Records retention catalog
         trans_torrents = []
         for torrent in torrents:
             if self._event.is_set():
-                logger.info(f"转移服务停止")
+                logger.info(f" Discontinuation of transfer services")
                 return
 
-            # 获取种子hash
+            #  Getting seedshash
             hash_str = self.__get_hash(torrent, downloader)
-            # 获取保存路径
+            #  Get save path
             save_path = self.__get_save_path(torrent, downloader)
 
             if self._nopaths and save_path:
-                # 过滤不需要转移的路径
+                #  Filtering paths that do not need to be transferred
                 nopath_skip = False
                 for nopath in self._nopaths.split('\n'):
                     if os.path.normpath(save_path).startswith(os.path.normpath(nopath)):
-                        logger.info(f"种子 {hash_str} 保存路径 {save_path} 不需要转移，跳过 ...")
+                        logger.info(f" Torrent {hash_str}  Save path {save_path}  No transfer required， Skip over ...")
                         nopath_skip = True
                         break
                 if nopath_skip:
                     continue
 
-            # 获取种子标签
+            #  Get seed label
             torrent_labels = self.__get_label(torrent, downloader)
             if torrent_labels and self._nolabels:
                 is_skip = False
                 for label in self._nolabels.split(','):
                     if label in torrent_labels:
-                        logger.info(f"种子 {hash_str} 含有不转移标签 {label}，跳过 ...")
+                        logger.info(f" Torrent {hash_str}  Contains non-transferable labels {label}， Skip over ...")
                         is_skip = True
                         break
                 if is_skip:
                     continue
 
-            # 添加转移数据
+            #  Add transfer data
             trans_torrents.append({
                 "hash": hash_str,
                 "save_path": save_path,
                 "torrent": torrent
             })
 
-        # 开始转移任务
+        #  Commencement of the transfer of tasks
         if trans_torrents:
-            logger.info(f"需要转移的种子数：{len(trans_torrents)}")
-            # 记数
+            logger.info(f" Number of seeds to be transferred：{len(trans_torrents)}")
+            #  Keep count of the number of people
             total = len(trans_torrents)
-            # 总成功数
+            #  Total number of successes
             success = 0
-            # 总失败数
+            #  Total number of failures
             fail = 0
-            # 跳过数
+            #  Skip count
             skip = 0
 
             for torrent_item in trans_torrents:
-                # 检查种子文件是否存在
+                #  Check if the seed file exists
                 torrent_file = Path(self._fromtorrentpath) / f"{torrent_item.get('hash')}.torrent"
                 if not torrent_file.exists():
-                    logger.error(f"种子文件不存在：{torrent_file}")
-                    # 失败计数
+                    logger.error(f" Seed file does not exist：{torrent_file}")
+                    #  Failure count
                     fail += 1
                     continue
 
-                # 查询hash值是否已经在目的下载器中
+                #  Consult (a document etc)hash Whether the value is already in the destination downloader
                 todownloader_obj = self.__get_downloader(todownloader)
                 torrent_info, _ = todownloader_obj.get_torrents(ids=[torrent_item.get('hash')])
                 if torrent_info:
-                    logger.info(f"{torrent_item.get('hash')} 已在目的下载器中，跳过 ...")
-                    # 跳过计数
+                    logger.info(f"{torrent_item.get('hash')}  Already in the destination downloader， Skip over ...")
+                    #  Skip count
                     skip += 1
                     continue
 
-                # 转换保存路径
+                #  Convert save path
                 download_dir = self.__convert_save_path(torrent_item.get('save_path'),
                                                         self._frompath,
                                                         self._topath)
                 if not download_dir:
-                    logger.error(f"转换保存路径失败：{torrent_item.get('save_path')}")
-                    # 失败计数
+                    logger.error(f" Failed to convert save path：{torrent_item.get('save_path')}")
+                    #  Failure count
                     fail += 1
                     continue
 
-                # 如果源下载器是QB检查是否有Tracker，没有的话额外获取
+                #  If the source downloader isQB Check for the presence ofTracker， Get extra if you don't have it
                 if downloader == "qbittorrent":
-                    # 读取种子内容、解析种子文件
+                    #  Read the contents of the seed、 Parsing seed files
                     content = torrent_file.read_bytes()
                     if not content:
-                        logger.warn(f"读取种子文件失败：{torrent_file}")
+                        logger.warn(f" Failed to read seed file：{torrent_file}")
                         fail += 1
                         continue
-                    # 读取trackers
+                    #  Retrievetrackers
                     try:
                         torrent_main = bdecode(content)
                         main_announce = torrent_main.get('announce')
                     except Exception as err:
-                        logger.warn(f"解析种子文件 {torrent_file} 失败：{err}")
+                        logger.warn(f" Parsing seed files {torrent_file}  Fail (e.g. experiments)：{err}")
                         fail += 1
                         continue
 
                     if not main_announce:
-                        logger.info(f"{torrent_item.get('hash')} 未发现tracker信息，尝试补充tracker信息...")
-                        # 读取fastresume文件
+                        logger.info(f"{torrent_item.get('hash')}  Not foundtracker Text， Trying to supplementtracker Text...")
+                        #  Retrievefastresume File
                         fastresume_file = Path(self._fromtorrentpath) / f"{torrent_item.get('hash')}.fastresume"
                         if not fastresume_file.exists():
-                            logger.warn(f"fastresume文件不存在：{fastresume_file}")
+                            logger.warn(f"fastresume File does not exist：{fastresume_file}")
                             fail += 1
                             continue
-                        # 尝试补充trackers
+                        #  Trying to supplementtrackers
                         try:
-                            # 解析fastresume文件
+                            #  Analyzefastresume File
                             fastresume = fastresume_file.read_bytes()
                             torrent_fastresume = bdecode(fastresume)
-                            # 读取trackers
+                            #  Retrievetrackers
                             fastresume_trackers = torrent_fastresume.get('trackers')
                             if isinstance(fastresume_trackers, list) \
                                     and len(fastresume_trackers) > 0 \
                                     and fastresume_trackers[0]:
-                                # 重新赋值
+                                #  Reassign
                                 torrent_main['announce'] = fastresume_trackers[0][0]
-                                # 替换种子文件路径
+                                #  Replace the seed file path
                                 torrent_file = settings.TEMP_PATH / f"{torrent_item.get('hash')}.torrent"
-                                # 编码并保存到临时文件
+                                #  Encoded and saved to a temporary file
                                 torrent_file.write_bytes(bencode(torrent_main))
                         except Exception as err:
-                            logger.error(f"解析fastresume文件 {fastresume_file} 出错：{err}")
+                            logger.error(f" Analyzefastresume File {fastresume_file}  Make a mistake：{err}")
                             fail += 1
                             continue
 
-                # 发送到另一个下载器中下载：默认暂停、传输下载路径、关闭自动管理模式
-                logger.info(f"添加转移做种任务到下载器 {todownloader}：{torrent_file}")
+                #  Send to another downloader to download： Default pause、 Transfer download path、 Disable automatic management mode
+                logger.info(f" Add transfer seeding tasks to the downloader {todownloader}：{torrent_file}")
                 download_id = self.__download(downloader=todownloader,
                                               content=torrent_file.read_bytes(),
                                               save_path=download_dir)
                 if not download_id:
-                    # 下载失败
+                    #  Failed to download
                     fail += 1
-                    logger.error(f"添加下载任务失败：{torrent_file}")
+                    logger.error(f"Add download tasks失败：{torrent_file}")
                     continue
                 else:
-                    # 下载成功
-                    logger.info(f"成功添加转移做种任务，种子文件：{torrent_file}")
+                    #  Download successfully
+                    logger.info(f" Successful addition of transfer seeding tasks， Seed file：{torrent_file}")
 
-                    # TR会自动校验，QB需要手动校验
+                    # TR It will be automatically calibrated，QB Manual calibration required
                     if todownloader == "qbittorrent":
-                        logger.info(f"qbittorrent 开始校验 {download_id} ...")
+                        logger.info(f"qbittorrent  Start calibration {download_id} ...")
                         todownloader_obj.recheck_torrents(ids=[download_id])
 
-                    # 追加校验任务
-                    logger.info(f"添加校验检查任务：{download_id} ...")
+                    #  Additional calibration tasks
+                    logger.info(f" Add a calibration check task：{download_id} ...")
                     if not self._recheck_torrents.get(todownloader):
                         self._recheck_torrents[todownloader] = []
                     self._recheck_torrents[todownloader].append(download_id)
 
-                    # 删除源种子，不能删除文件！
+                    #  Deletion of source seeds， Cannot delete files！
                     if self._deletesource:
-                        logger.info(f"删除源下载器任务（不含文件）：{torrent_item.get('hash')} ...")
+                        logger.info(f" Delete source downloader task（ No documents）：{torrent_item.get('hash')} ...")
                         downloader_obj.delete_torrents(delete_file=False, ids=[torrent_item.get('hash')])
 
-                    # 成功计数
+                    #  Success rate
                     success += 1
-                    # 插入转种记录
+                    #  Insertion of trans-species records
                     history_key = "%s-%s" % (self._fromdownloader, torrent_item.get('hash'))
                     self.save_data(key=history_key,
                                    value={
@@ -667,24 +667,24 @@ class TorrentTransfer(_PluginBase):
                                        "to_download_id": download_id,
                                        "delete_source": self._deletesource,
                                    })
-            # 触发校验任务
+            #  Trigger the calibration task
             if success > 0 and self._autostart:
                 self.check_recheck()
 
-            # 发送通知
+            #  Send notification
             if self._notify:
                 self.post_message(
                     mtype=NotificationType.SiteMessage,
-                    title="【转移做种任务执行完成】",
-                    text=f"总数：{total}，成功：{success}，失败：{fail}，跳过：{skip}"
+                    title="【 Transfer of seeding tasks completed】",
+                    text=f" Aggregate：{total}， Successes：{success}， Fail (e.g. experiments)：{fail}， Skip over：{skip}"
                 )
         else:
-            logger.info(f"没有需要转移的种子")
-        logger.info("转移做种任务执行完成")
+            logger.info(f" No seeds to be transferred")
+        logger.info(" Transfer of seeding tasks completed")
 
     def check_recheck(self):
         """
-        定时检查下载器中种子是否校验完成，校验完成且完整的自动开始辅种
+        Regularly check if the seeds in the downloader have been verified.， Automatic start of auxiliary seeding when calibration is complete and intact
         """
         if not self._recheck_torrents:
             return
@@ -693,46 +693,46 @@ class TorrentTransfer(_PluginBase):
         if self._is_recheck_running:
             return
 
-        # 校验下载器
+        #  Calibration downloader
         downloader = self._todownloader
 
-        # 需要检查的种子
+        #  Seeds to be checked
         recheck_torrents = self._recheck_torrents.get(downloader, [])
         if not recheck_torrents:
             return
 
-        logger.info(f"开始检查下载器 {downloader} 的校验任务 ...")
+        logger.info(f" Start checking the downloader {downloader}  Of the calibration task ...")
 
-        # 运行状态
+        #  Operational state
         self._is_recheck_running = True
 
-        # 获取任务
+        #  Obtaining mandates
         downloader_obj = self.__get_downloader(downloader)
         torrents, _ = downloader_obj.get_torrents(ids=recheck_torrents)
         if torrents:
-            # 可做种的种子
+            #  Seed that can be used for planting
             can_seeding_torrents = []
             for torrent in torrents:
-                # 获取种子hash
+                #  Getting seedshash
                 hash_str = self.__get_hash(torrent, downloader)
-                # 判断是否可做种
+                #  Determination of seedability
                 if self.__can_seeding(torrent, downloader):
                     can_seeding_torrents.append(hash_str)
 
             if can_seeding_torrents:
-                logger.info(f"共 {len(can_seeding_torrents)} 个任务校验完成，开始做种")
-                # 开始做种
+                logger.info(f" Common {len(can_seeding_torrents)}  Completion of mission calibration， Start the seeds.")
+                #  Start the seeds.
                 downloader_obj.start_torrents(ids=can_seeding_torrents)
-                # 去除已经处理过的种子
+                #  Removal of already treated seeds
                 self._recheck_torrents[downloader] = list(
                     set(recheck_torrents).difference(set(can_seeding_torrents)))
             else:
-                logger.info(f"没有新的任务校验完成，将在下次个周期继续检查 ...")
+                logger.info(f" No new task calibration completed， To be continued in the next cycle ...")
 
         elif torrents is None:
-            logger.info(f"下载器 {downloader} 查询校验任务失败，将在下次继续查询 ...")
+            logger.info(f" Downloader {downloader}  Query validation task failed， Will continue to inquire next time ...")
         else:
-            logger.info(f"下载器 {downloader} 中没有需要检查的校验任务，清空待处理列表")
+            logger.info(f" Downloader {downloader}  There are no calibration tasks that need to be checked in the， Empty the pending list")
             self._recheck_torrents[downloader] = []
 
         self._is_recheck_running = False
@@ -740,7 +740,7 @@ class TorrentTransfer(_PluginBase):
     @staticmethod
     def __get_hash(torrent: Any, dl_type: str):
         """
-        获取种子hash
+        Getting seedshash
         """
         try:
             return torrent.get("hash") if dl_type == "qbittorrent" else torrent.hashString
@@ -751,7 +751,7 @@ class TorrentTransfer(_PluginBase):
     @staticmethod
     def __get_label(torrent: Any, dl_type: str):
         """
-        获取种子标签
+        Get seed label
         """
         try:
             return [str(tag).strip() for tag in torrent.get("tags").split(',')] \
@@ -763,7 +763,7 @@ class TorrentTransfer(_PluginBase):
     @staticmethod
     def __get_save_path(torrent: Any, dl_type: str):
         """
-        获取种子保存路径
+        Get seed save path
         """
         try:
             return torrent.get("save_path") if dl_type == "qbittorrent" else torrent.download_dir
@@ -774,7 +774,7 @@ class TorrentTransfer(_PluginBase):
     @staticmethod
     def __can_seeding(torrent: Any, dl_type: str):
         """
-        判断种子是否可以做种并处于暂停状态
+        Determine if a seed is ready to be seeded and is in a suspended state
         """
         try:
             return (torrent.get("state") == "pausedUP") if dl_type == "qbittorrent" \
@@ -786,20 +786,20 @@ class TorrentTransfer(_PluginBase):
     @staticmethod
     def __convert_save_path(save_path: str, from_root: str, to_root: str):
         """
-        转换保存路径
+        Convert save path
         """
         try:
-            # 没有保存目录，以目的根目录为准
+            #  No save directory， Based on the destination root directory
             if not save_path:
                 return to_root
-            # 没有设置根目录时返回save_path
+            #  Returns if the root directory is not setsave_path
             if not to_root or not from_root:
                 return save_path
-            # 统一目录格式
+            #  Harmonized directory format
             save_path = os.path.normpath(save_path).replace("\\", "/")
             from_root = os.path.normpath(from_root).replace("\\", "/")
             to_root = os.path.normpath(to_root).replace("\\", "/")
-            # 替换根目录
+            #  Replace the root directory
             if save_path.startswith(from_root):
                 return save_path.replace(from_root, to_root, 1)
         except Exception as e:
@@ -808,7 +808,7 @@ class TorrentTransfer(_PluginBase):
 
     def stop_service(self):
         """
-        退出插件
+        Exit plugin
         """
         try:
             if self._scheduler:

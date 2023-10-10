@@ -7,7 +7,7 @@ from app.utils.singleton import Singleton
 
 class CustomizationMatcher(metaclass=Singleton):
     """
-    识别自定义占位符
+    Recognizing custom placeholders
     """
     customization = None
     custom_separator = None
@@ -19,13 +19,13 @@ class CustomizationMatcher(metaclass=Singleton):
 
     def match(self, title=None):
         """
-        :param title: 资源标题或文件名
-        :return: 匹配结果
+        :param title:  Resource title or file name
+        :return:  Matching results
         """
         if not title:
             return ""
         if not self.customization:
-            # 自定义占位符
+            #  Custom placeholders
             customization = self.systemconfig.get(SystemConfigKey.Customization)
             if not customization:
                 return ""
@@ -34,7 +34,7 @@ class CustomizationMatcher(metaclass=Singleton):
             self.customization = "|".join([f"({item})" for item in customization])
 
         customization_re = re.compile(r"%s" % self.customization)
-        # 处理重复多次的情况，保留先后顺序（按添加自定义占位符的顺序）
+        #  Handling of multiple repetitions， Reservation of order of precedence（ In order of adding custom placeholders）
         unique_customization = {}
         for item in re.findall(customization_re, title):
             if not isinstance(item, tuple):

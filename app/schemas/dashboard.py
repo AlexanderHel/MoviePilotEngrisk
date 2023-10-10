@@ -4,59 +4,59 @@ from pydantic import BaseModel
 
 
 class Statistic(BaseModel):
-    # 电影
+    #  Cinematic
     movie_count: Optional[int] = 0
-    # 电视剧数量
+    #  Number of tv series
     tv_count: Optional[int] = 0
-    # 集数量
+    #  Episode number (of a tv series etc)
     episode_count: Optional[int] = 0
-    # 用户数量
+    #  Number of users
     user_count: Optional[int] = 0
 
 
 class Storage(BaseModel):
-    # 总存储空间
+    #  Total storage space
     total_storage: Optional[float] = 0
-    # 已使用空间
+    #  Used space
     used_storage: Optional[float] = 0
 
 
 class ProcessInfo(BaseModel):
-    # 进程ID
+    #  StepID
     pid: Optional[int] = 0
-    # 进程名称
+    #  Process name
     name: Optional[str] = None
-    # 进程状态
+    #  Process state
     status: Optional[str] = None
-    # 进程占用CPU
+    #  Process occupancyCPU
     cpu: Optional[float] = 0.0
-    # 进程占用内存 MB
+    #  Process memory usage MB
     memory: Optional[float] = 0.0
-    # 进程创建时间
+    #  Process creation time
     create_time: Optional[float] = 0.0
-    # 进程运行时间 秒
+    #  Process runtime  Unit of angle or arc equivalent one sixtieth of a degree
     run_time: Optional[float] = 0.0
 
 
 class DownloaderInfo(BaseModel):
-    # 下载速度
+    #  Download speed
     download_speed: Optional[float] = 0.0
-    # 上传速度
+    #  Upload speed
     upload_speed: Optional[float] = 0.0
-    # 下载量
+    #  Downloads
     download_size: Optional[float] = 0.0
-    # 上传量
+    #  Upload volume
     upload_size: Optional[float] = 0.0
-    # 剩余空间
+    #  Headroom
     free_space: Optional[float] = 0.0
 
 
 class ScheduleInfo(BaseModel):
     # ID
     id: Optional[str] = None
-    # 名称
+    #  Name (of a thing)
     name: Optional[str] = None
-    # 状态
+    #  State of affairs
     status: Optional[str] = None
-    # 下次执行时间
+    #  Next execution time
     next_run: Optional[str] = None

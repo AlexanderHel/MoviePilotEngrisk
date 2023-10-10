@@ -25,12 +25,12 @@ class TheTvDbModule(_ModuleBase):
 
     def tvdb_info(self, tvdbid: int) -> Optional[dict]:
         """
-        获取TVDB信息
+        GainTVDB Text
         :param tvdbid: int
-        :return: TVDB信息
+        :return: TVDB Text
         """
         try:
-            logger.info(f"开始获取TVDB信息: {tvdbid} ...")
+            logger.info(f"开始GainTVDB Text: {tvdbid} ...")
             return self.tvdb[tvdbid].data
         except Exception as err:
-            logger.error(f"获取TVDB信息失败: {err}")
+            logger.error(f"GainTVDB Text失败: {err}")

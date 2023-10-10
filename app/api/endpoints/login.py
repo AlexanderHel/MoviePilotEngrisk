@@ -19,36 +19,36 @@ from app.utils.web import WebUtils
 router = APIRouter()
 
 
-@router.post("/access-token", summary="获取token", response_model=schemas.Token)
+@router.post("/access-token", summary=" Gaintoken", response_model=schemas.Token)
 async def login_access_token(
         db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Any:
     """
-    获取认证Token
+    Get certifiedToken
     """
-    # 检查数据库
+    #  Checking the database
     user = User.authenticate(
         db=db,
         name=form_data.username,
         password=form_data.password
     )
     if not user:
-        # 请求协助认证
-        logger.warn("登录用户本地不匹配，尝试辅助认证 ...")
+        #  Request for assistance with accreditation
+        logger.warn(" Login user local mismatch， Attempted assisted authentication ...")
         token = UserChain(db).user_authenticate(form_data.username, form_data.password)
         if not token:
-            raise HTTPException(status_code=401, detail="用户名或密码不正确")
+            raise HTTPException(status_code=401, detail=" Incorrect username or password")
         else:
-            logger.info(f"辅助认证成功，用户信息: {token}")
-            # 加入用户信息表
+            logger.info(f" Assisted certification success， User information: {token}")
+            #  Add user information sheet
             user = User.get_by_name(db=db, name=form_data.username)
             if not user:
-                logger.info(f"用户不存在，创建用户: {form_data.username}")
+                logger.info(f" The user does not exist， Create user: {form_data.username}")
                 user = User(name=form_data.username, is_active=True,
                             is_superuser=False, hashed_password=get_password_hash(token))
                 user.create(db)
     elif not user.is_active:
-        raise HTTPException(status_code=403, detail="用户未启用")
+        raise HTTPException(status_code=403, detail=" User not enabled")
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return schemas.Token(
         access_token=security.create_access_token(
@@ -61,10 +61,10 @@ async def login_access_token(
     )
 
 
-@router.get("/bing", summary="Bing每日壁纸", response_model=schemas.Response)
+@router.get("/bing", summary="Bing Daily wallpaper", response_model=schemas.Response)
 def bing_wallpaper() -> Any:
     """
-    获取Bing每日壁纸
+    GainBing Daily wallpaper
     """
     url = WebUtils.get_bing_wallpaper()
     if url:
@@ -73,10 +73,10 @@ def bing_wallpaper() -> Any:
     return schemas.Response(success=False)
 
 
-@router.get("/tmdb", summary="TMDB电影海报", response_model=schemas.Response)
+@router.get("/tmdb", summary="TMDB Movie poster", response_model=schemas.Response)
 def tmdb_wallpaper(db: Session = Depends(get_db)) -> Any:
     """
-    获取TMDB电影海报
+    GainTMDB Movie poster
     """
     wallpager = TmdbChain(db).get_random_wallpager()
     if wallpager:

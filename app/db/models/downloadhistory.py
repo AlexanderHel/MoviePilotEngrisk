@@ -6,16 +6,16 @@ from app.db.models import Base
 
 class DownloadHistory(Base):
     """
-    下载历史记录
+    Download history
     """
     id = Column(Integer, Sequence('id'), primary_key=True, index=True)
-    # 保存路径
+    #  Save path
     path = Column(String, nullable=False, index=True)
-    # 类型 电影/电视剧
+    #  Typology  Cinematic/ Dramas
     type = Column(String, nullable=False)
-    # 标题
+    #  Caption
     title = Column(String, nullable=False)
-    # 年份
+    #  Particular year
     year = Column(String)
     tmdbid = Column(Integer, index=True)
     imdbid = Column(String)
@@ -25,23 +25,23 @@ class DownloadHistory(Base):
     seasons = Column(String)
     # Exx
     episodes = Column(String)
-    # 海报
+    #  Playbill
     image = Column(String)
-    # 下载任务Hash
+    #  Download tasksHash
     download_hash = Column(String, index=True)
-    # 种子名称
+    #  Seed name
     torrent_name = Column(String)
-    # 种子描述
+    #  Seed description
     torrent_description = Column(String)
-    # 种子站点
+    #  Seed site
     torrent_site = Column(String)
-    # 下载用户
+    #  Download users
     userid = Column(String)
-    # 下载渠道
+    #  Download channels
     channel = Column(String)
-    # 创建时间
+    #  Creation time
     date = Column(String)
-    # 附加信息
+    #  Additional information
     note = Column(String)
 
     @staticmethod
@@ -60,7 +60,7 @@ class DownloadHistory(Base):
     def get_last_by(db: Session, mtype: str = None, title: str = None, year: int = None, season: str = None,
                     episode: str = None, tmdbid: int = None):
         """
-        据tmdbid、season、season_episode查询转移记录
+        Act in accordance withtmdbid、season、season_episode Access to transfer records
         """
         if tmdbid and not season and not episode:
             return db.query(DownloadHistory).filter(DownloadHistory.tmdbid == tmdbid).order_by(
@@ -74,20 +74,20 @@ class DownloadHistory(Base):
                                                     DownloadHistory.seasons == season,
                                                     DownloadHistory.episodes == episode).order_by(
                 DownloadHistory.id.desc()).all()
-        # 电视剧所有季集｜电影
+        #  All seasons of tv series｜ Cinematic
         if not season and not episode:
             return db.query(DownloadHistory).filter(DownloadHistory.type == mtype,
                                                     DownloadHistory.title == title,
                                                     DownloadHistory.year == year).order_by(
                 DownloadHistory.id.desc()).all()
-        # 电视剧某季
+        #  A certain season of a tv series
         if season and not episode:
             return db.query(DownloadHistory).filter(DownloadHistory.type == mtype,
                                                     DownloadHistory.title == title,
                                                     DownloadHistory.year == year,
                                                     DownloadHistory.seasons == season).order_by(
                 DownloadHistory.id.desc()).all()
-        # 电视剧某季某集
+        #  A certain season of a tv series某集
         if season and episode:
             return db.query(DownloadHistory).filter(DownloadHistory.type == mtype,
                                                     DownloadHistory.title == title,
@@ -99,7 +99,7 @@ class DownloadHistory(Base):
     @staticmethod
     def list_by_user_date(db: Session, date: str, userid: str = None):
         """
-        查询某用户某时间之后的下载历史
+        Query a user's download history after a certain time
         """
         if userid:
             return db.query(DownloadHistory).filter(DownloadHistory.date < date,
@@ -112,22 +112,22 @@ class DownloadHistory(Base):
 
 class DownloadFiles(Base):
     """
-    下载文件记录
+    Download file records
     """
     id = Column(Integer, Sequence('id'), primary_key=True, index=True)
-    # 下载任务Hash
+    #  Download tasksHash
     download_hash = Column(String, index=True)
-    # 下载器
+    #  Downloader
     downloader = Column(String)
-    # 完整路径
+    #  Full path
     fullpath = Column(String, index=True)
-    # 保存路径
+    #  Save path
     savepath = Column(String, index=True)
-    # 文件相对路径/名称
+    #  File relative path/ Name (of a thing)
     filepath = Column(String)
-    # 种子名称
+    #  Seed name
     torrentname = Column(String)
-    # 状态 0-已删除 1-正常
+    #  State of affairs 0- Deleted 1- Normalcy
     state = Column(Integer, nullable=False, default=1)
 
     @staticmethod

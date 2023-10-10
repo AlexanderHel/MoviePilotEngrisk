@@ -7,49 +7,49 @@ from app.schemas.types import NotificationType, MessageChannel
 
 class CommingMessage(BaseModel):
     """
-    外来消息
+    Foreign news
     """
-    # 用户ID
+    #  SubscribersID
     userid: Optional[Union[str, int]] = None
-    # 用户名称
+    #  User id
     username: Optional[str] = None
-    # 消息渠道
+    #  News channel
     channel: Optional[MessageChannel] = None
-    # 消息体
+    #  Message body
     text: Optional[str] = None
 
 
 class Notification(BaseModel):
     """
-    消息
+    Messages
     """
-    # 消息渠道
+    #  News channel
     channel: Optional[MessageChannel] = None
-    # 消息类型
+    # Messages类型
     mtype: Optional[NotificationType] = None
-    # 标题
+    #  Caption
     title: Optional[str] = None
-    # 文本内容
+    #  Text content
     text: Optional[str] = None
-    # 图片
+    #  Photograph
     image: Optional[str] = None
-    # 链接
+    #  Link (on a website)
     link: Optional[str] = None
-    # 用户ID
+    #  SubscribersID
     userid: Optional[Union[str, int]] = None
 
 
 class NotificationSwitch(BaseModel):
     """
-    消息开关
+    Messages开关
     """
-    # 消息类型
+    # Messages类型
     mtype: Optional[str] = None
-    # 微信开关
+    #  Wechat switch
     wechat: Optional[bool] = False
-    # TG开关
+    # TG Switchgear
     telegram: Optional[bool] = False
-    # Slack开关
+    # Slack Switchgear
     slack: Optional[bool] = False
-    # SynologyChat开关
+    # SynologyChat Switchgear
     synologychat: Optional[bool] = False

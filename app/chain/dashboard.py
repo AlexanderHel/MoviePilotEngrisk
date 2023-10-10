@@ -6,16 +6,16 @@ from app.chain import ChainBase
 
 class DashboardChain(ChainBase):
     """
-    各类仪表板统计处理链
+    Various dashboard statistical processing chains
     """
     def media_statistic(self) -> Optional[List[schemas.Statistic]]:
         """
-        媒体数量统计
+        Statistics on the number of media
         """
         return self.run_module("media_statistic")
 
     def downloader_info(self) -> schemas.DownloaderInfo:
         """
-        下载器信息
+        Downloader information
         """
         return self.run_module("downloader_info")

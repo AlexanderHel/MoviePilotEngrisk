@@ -9,7 +9,7 @@ from app.db.models.mediaserver import MediaServerItem
 
 class MediaServerOper(DbOper):
     """
-    媒体服务器数据管理
+    Media server data management
     """
 
     def __init__(self, db: Session = None):
@@ -17,7 +17,7 @@ class MediaServerOper(DbOper):
 
     def add(self, **kwargs) -> bool:
         """
-        新增媒体服务器数据
+        Add media server data
         """
         item = MediaServerItem(**kwargs)
         if not item.get_by_itemid(self._db, kwargs.get("item_id")):
@@ -27,27 +27,27 @@ class MediaServerOper(DbOper):
 
     def empty(self, server: str):
         """
-        清空媒体服务器数据
+        Empty media server data
         """
         MediaServerItem.empty(self._db, server)
 
     def exists(self, **kwargs) -> Optional[MediaServerItem]:
         """
-        判断媒体服务器数据是否存在
+        Determine if media server data exists
         """
         if kwargs.get("tmdbid"):
-            # 优先按TMDBID查
+            #  PrioritizationTMDBID Surname zha
             item = MediaServerItem.exist_by_tmdbid(self._db, tmdbid=kwargs.get("tmdbid"),
                                                    mtype=kwargs.get("mtype"))
         else:
-            # 按标题、类型、年份查
+            #  By title、 Typology、 Year check
             item = MediaServerItem.exists_by_title(self._db, title=kwargs.get("title"),
                                                    mtype=kwargs.get("mtype"), year=kwargs.get("year"))
         if not item:
             return None
 
         if kwargs.get("season"):
-            # 判断季是否存在
+            #  Determine if the season exists
             if not item.seasoninfo:
                 return None
             seasoninfo = json.loads(item.seasoninfo) or {}
@@ -57,7 +57,7 @@ class MediaServerOper(DbOper):
 
     def get_item_id(self, **kwargs) -> Optional[str]:
         """
-        获取媒体服务器数据ID
+        Getting media server dataID
         """
         item = self.exists(**kwargs)
         if not item:

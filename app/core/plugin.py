@@ -12,15 +12,15 @@ from app.utils.singleton import Singleton
 
 class PluginManager(metaclass=Singleton):
     """
-    插件管理器
+    Plug-in manager
     """
     systemconfig: SystemConfigOper = None
 
-    # 插件列表
+    #  Plugin list
     _plugins: dict = {}
-    # 运行态插件列表
+    #  List of runtime state plug-ins
     _running_plugins: dict = {}
-    # 配置Key
+    #  ConfigureKey
     _config_key: str = "plugin.%s"
 
     def __init__(self):
@@ -28,50 +28,50 @@ class PluginManager(metaclass=Singleton):
         self.init_config()
 
     def init_config(self):
-        # 配置管理
+        #  Configuration management
         self.systemconfig = SystemConfigOper()
-        # 停止已有插件
+        #  Stop existing plug-ins
         self.stop()
-        # 启动插件
+        #  Startup plugin
         self.start()
 
     def start(self):
         """
-        启动加载插件
+        Start loading plug-ins
         """
 
-        # 扫描插件目录
+        #  Scanning plugin catalog
         plugins = ModuleHelper.load(
             "app.plugins",
             filter_func=lambda _, obj: hasattr(obj, 'init_plugin')
         )
-        # 已安装插件
+        #  Installed plug-ins
         installed_plugins = self.systemconfig.get(SystemConfigKey.UserInstalledPlugins) or []
-        # 排序
+        #  Arrange in order
         plugins.sort(key=lambda x: x.plugin_order if hasattr(x, "plugin_order") else 0)
         self._running_plugins = {}
         self._plugins = {}
         for plugin in plugins:
             plugin_id = plugin.__name__
             try:
-                # 存储Class
+                #  StockpileClass
                 self._plugins[plugin_id] = plugin
-                # 未安装的不加载
+                #  Uninstalled not loaded
                 if plugin_id not in installed_plugins:
                     continue
-                # 生成实例
+                #  Generating examples
                 plugin_obj = plugin()
-                # 生效插件配置
+                #  Effective plugin configuration
                 plugin_obj.init_plugin(self.get_plugin_config(plugin_id))
-                # 存储运行实例
+                #  Storing running instances
                 self._running_plugins[plugin_id] = plugin_obj
                 logger.info(f"Plugin Loaded：{plugin_id}")
             except Exception as err:
-                logger.error(f"加载插件 {plugin_id} 出错：{err} - {traceback.format_exc()}")
+                logger.error(f" Loading plug-ins {plugin_id}  Make a mistake：{err} - {traceback.format_exc()}")
 
     def reload_plugin(self, plugin_id: str, conf: dict):
         """
-        重新加载插件
+        Reload the plugin
         """
         if not self._running_plugins.get(plugin_id):
             return
@@ -79,23 +79,23 @@ class PluginManager(metaclass=Singleton):
 
     def stop(self):
         """
-        停止
+        Cessation
         """
-        # 停止所有插件
+        # Cessation所有插件
         for plugin in self._running_plugins.values():
-            # 关闭数据库
+            #  Closing the database
             if hasattr(plugin, "close"):
                 plugin.close()
-            # 关闭插件
+            #  Close plug-in
             if hasattr(plugin, "stop_service"):
                 plugin.stop_service()
-        # 清空对像
+        #  Empty the image
         self._plugins = {}
         self._running_plugins = {}
 
     def get_plugin_config(self, pid: str) -> dict:
         """
-        获取插件配置
+        Getting plugin configuration
         """
         if not self._plugins.get(pid):
             return {}
@@ -103,7 +103,7 @@ class PluginManager(metaclass=Singleton):
 
     def save_plugin_config(self, pid: str, conf: dict) -> bool:
         """
-        保存插件配置
+        Save plugin configuration
         """
         if not self._plugins.get(pid):
             return False
@@ -111,7 +111,7 @@ class PluginManager(metaclass=Singleton):
 
     def get_plugin_form(self, pid: str) -> Tuple[List[dict], Dict[str, Any]]:
         """
-        获取插件表单
+        Get plugin form
         """
         if not self._running_plugins.get(pid):
             return [], {}
@@ -121,7 +121,7 @@ class PluginManager(metaclass=Singleton):
 
     def get_plugin_page(self, pid: str) -> List[dict]:
         """
-        获取插件页面
+        Get plugin page
         """
         if not self._running_plugins.get(pid):
             return []
@@ -131,7 +131,7 @@ class PluginManager(metaclass=Singleton):
 
     def get_plugin_commands(self) -> List[Dict[str, Any]]:
         """
-        获取插件命令
+        Get plugin command
         [{
             "cmd": "/xx",
             "event": EventType.xx,
@@ -148,13 +148,13 @@ class PluginManager(metaclass=Singleton):
 
     def get_plugin_apis(self) -> List[Dict[str, Any]]:
         """
-        获取插件API
+        Get pluginsAPI
         [{
             "path": "/xx",
             "endpoint": self.xxx,
             "methods": ["GET", "POST"],
-            "summary": "API名称",
-            "description": "API说明"
+            "summary": "API Name (of a thing)",
+            "description": "API Clarification"
         }]
         """
         ret_apis = []
@@ -169,7 +169,7 @@ class PluginManager(metaclass=Singleton):
 
     def run_plugin_method(self, pid: str, method: str, *args, **kwargs) -> Any:
         """
-        运行插件方法
+        How to run the plug-in
         """
         if not self._running_plugins.get(pid):
             return None
@@ -179,60 +179,60 @@ class PluginManager(metaclass=Singleton):
 
     def get_plugin_apps(self) -> List[dict]:
         """
-        获取所有插件信息
+        Get all plugin information
         """
-        # 返回值
+        #  Return value
         all_confs = []
-        # 已安装插件
+        #  Installed plug-ins
         installed_apps = self.systemconfig.get(SystemConfigKey.UserInstalledPlugins) or []
         for pid, plugin in self._plugins.items():
-            # 运行状插件
+            #  Runner plug-in
             plugin_obj = self._running_plugins.get(pid)
-            # 基本属性
+            #  Basic property
             conf = {}
             # ID
             conf.update({"id": pid})
-            # 安装状态
+            #  Installed state
             if pid in installed_apps:
                 conf.update({"installed": True})
             else:
                 conf.update({"installed": False})
-            # 运行状态
+            #  Operational state
             if plugin_obj and hasattr(plugin, "get_state"):
                 conf.update({"state": plugin_obj.get_state()})
             else:
                 conf.update({"state": False})
-            # 是否有详情页面
+            #  Availability of detail pages
             if hasattr(plugin, "get_page"):
                 if ObjectUtils.check_method(plugin.get_page):
                     conf.update({"has_page": True})
                 else:
                     conf.update({"has_page": False})
-            # 权限
+            #  Scope of one's jurisdiction
             if hasattr(plugin, "auth_level"):
                 if self.siteshelper.auth_level < plugin.auth_level:
                     continue
-            # 名称
+            #  Name (of a thing)
             if hasattr(plugin, "plugin_name"):
                 conf.update({"plugin_name": plugin.plugin_name})
-            # 描述
+            #  Descriptive
             if hasattr(plugin, "plugin_desc"):
                 conf.update({"plugin_desc": plugin.plugin_desc})
-            # 版本
+            #  Releases
             if hasattr(plugin, "plugin_version"):
                 conf.update({"plugin_version": plugin.plugin_version})
-            # 图标
+            #  Icon (computing)
             if hasattr(plugin, "plugin_icon"):
                 conf.update({"plugin_icon": plugin.plugin_icon})
-            # 主题色
+            #  Theme color
             if hasattr(plugin, "plugin_color"):
                 conf.update({"plugin_color": plugin.plugin_color})
-            # 作者
+            #  Author
             if hasattr(plugin, "plugin_author"):
                 conf.update({"plugin_author": plugin.plugin_author})
-            # 作者链接
+            #  Author链接
             if hasattr(plugin, "author_url"):
                 conf.update({"author_url": plugin.author_url})
-            # 汇总
+            #  Aggregate
             all_confs.append(conf)
         return all_confs
