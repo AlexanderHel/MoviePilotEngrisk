@@ -4,9 +4,12 @@ from typing import Union, Optional, List, Self
 import cn2an
 import regex as re
 
+
 from app.utils.string import StringUtils
 from app.schemas.types import MediaType
 
+import sys
+sys.stdout.reconfigure(encoding='utf-8')
 
 @dataclass
 class MetaBase(object):
