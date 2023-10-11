@@ -555,47 +555,7 @@ class TmdbHelper:
             tmdb_info['genre_ids'] = __get_genre_ids(tmdb_info.get('genres'))
             #  Alias and translation
             tmdb_info['names'] = self.__get_names(tmdb_info)
-            #  Convert chinese title
-            self.__update_tmdbinfo_cn_title(tmdb_info)
 
-        return tmdb_info
-
-    @staticmethod
-    def __update_tmdbinfo_cn_title(tmdb_info: dict):
-        """
-        UpdateTMDB Chinese name in the message
-        """
-
-        def __get_tmdb_chinese_title(tmdbinfo):
-            """
-            Get chinese title from alias
-            """
-            if not tmdbinfo:
-                return None
-            if tmdbinfo.get("media_type") == MediaType.MOVIE:
-                alternative_titles = tmdbinfo.get("alternative_titles", {}).get("titles", [])
-            else:
-                alternative_titles = tmdbinfo.get("alternative_titles", {}).get("results", [])
-            for alternative_title in alternative_titles:
-                iso_3166_1 = alternative_title.get("iso_3166_1")
-                if iso_3166_1 == "CN":
-                    title = alternative_title.get("title")
-                    if title and StringUtils.is_chinese(title) \
-                            and zhconv.convert(title, "zh-hans") == title:
-                        return title
-            return tmdbinfo.get("title") if tmdbinfo.get("media_type") == MediaType.MOVIE else tmdbinfo.get("name")
-
-        #  Find chinese name
-        org_title = tmdb_info.get("title") \
-            if tmdb_info.get("media_type") == MediaType.MOVIE \
-            else tmdb_info.get("name")
-        if not StringUtils.is_chinese(org_title):
-            cn_title = __get_tmdb_chinese_title(tmdb_info)
-            if cn_title and cn_title != org_title:
-                if tmdb_info.get("media_type") == MediaType.MOVIE:
-                    tmdb_info['title'] = cn_title
-                else:
-                    tmdb_info['name'] = cn_title
 
     def __get_movie_detail(self,
                            tmdbid: int,
