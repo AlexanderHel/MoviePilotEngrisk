@@ -20,30 +20,30 @@ from app.utils.http import RequestUtils
 
 
 class DoubanRank(_PluginBase):
-    # 插件名称
-    plugin_name = "豆瓣榜单订阅"
-    # 插件描述
-    plugin_desc = "监控豆瓣热门榜单，自动添加订阅。"
-    # 插件图标
+    #  Plug-in name
+    plugin_name = " Douban list subscription"
+    #  Plugin description
+    plugin_desc = " Monitor the douban hot list， Automatically add subscriptions。"
+    #  Plug-in icons
     plugin_icon = "movie.jpg"
-    # 主题色
+    #  Theme color
     plugin_color = "#01B3E3"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "jxxghp"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/jxxghp"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "doubanrank_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 6
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 2
 
-    # 退出事件
+    #  Logout event
     _event = Event()
-    # 私有属性
+    #  Private property
     downloadchain: DownloadChain = None
     subscribechain: SubscribeChain = None
     _scheduler = None
@@ -85,47 +85,47 @@ class DoubanRank(_PluginBase):
             self._ranks = config.get("ranks") or []
             self._clear = config.get("clear")
 
-        # 停止现有任务
+        #  Discontinuation of existing mandates
         self.stop_service()
 
-        # 启动服务
+        #  Starting services
         if self._enabled or self._onlyonce:
             self._scheduler = BackgroundScheduler(timezone=settings.TZ)
             if self._cron:
-                logger.info(f"豆瓣榜单订阅服务启动，周期：{self._cron}")
+                logger.info(f" Douban list subscription service launched， Cyclicality：{self._cron}")
                 try:
                     self._scheduler.add_job(func=self.__refresh_rss,
                                             trigger=CronTrigger.from_crontab(self._cron),
-                                            name="豆瓣榜单订阅")
+                                            name=" Douban list subscription")
                 except Exception as e:
-                    logger.error(f"豆瓣榜单订阅服务启动失败，错误信息：{str(e)}")
-                    self.systemmessage.put(f"豆瓣榜单订阅服务启动失败，错误信息：{str(e)}")
+                    logger.error(f" Douban list subscription service failed to start， Error message：{str(e)}")
+                    self.systemmessage.put(f" Douban list subscription service failed to start， Error message：{str(e)}")
             else:
                 self._scheduler.add_job(func=self.__refresh_rss, trigger='date',
                                         run_date=datetime.datetime.now(
                                             tz=pytz.timezone(settings.TZ)) + datetime.timedelta(seconds=3)
                                         )
-                logger.info("豆瓣榜单订阅服务启动，周期：每天 08:00")
+                logger.info(" Douban list subscription service launched， Cyclicality： Everyday 08:00")
 
             if self._onlyonce:
-                logger.info("豆瓣榜单订阅服务启动，立即运行一次")
+                logger.info(" Douban list subscription service launched， Run one immediately")
                 self._scheduler.add_job(func=self.__refresh_rss, trigger='date',
                                         run_date=datetime.datetime.now(
                                             tz=pytz.timezone(settings.TZ)) + datetime.timedelta(seconds=3)
                                         )
 
             if self._onlyonce or self._clear:
-                # 关闭一次性开关
+                #  Turn off the disposable switch
                 self._onlyonce = False
-                # 记录缓存清理标志
+                #  Logging cache cleanup flags
                 self._clearflag = self._clear
-                # 关闭清理缓存
+                #  Close clear cache
                 self._clear = False
-                # 保存配置
+                #  Save configuration
                 self.__update_config()
 
             if self._scheduler.get_jobs():
-                # 启动服务
+                #  Starting services
                 self._scheduler.print_jobs()
                 self._scheduler.start()
 
@@ -158,7 +158,7 @@ class DoubanRank(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'enabled',
-                                            'label': '启用插件',
+                                            'label': ' Enabling plug-ins',
                                         }
                                     }
                                 ]
@@ -174,7 +174,7 @@ class DoubanRank(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'onlyonce',
-                                            'label': '立即运行一次',
+                                            'label': ' Run one immediately',
                                         }
                                     }
                                 ]
@@ -195,8 +195,8 @@ class DoubanRank(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'cron',
-                                            'label': '执行周期',
-                                            'placeholder': '5位cron表达式，留空自动'
+                                            'label': ' Implementation period',
+                                            'placeholder': '5 Classifier for honorific peoplecron Displayed formula， Leave blank spaces in writing'
                                         }
                                     }
                                 ]
@@ -212,8 +212,8 @@ class DoubanRank(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'vote',
-                                            'label': '评分',
-                                            'placeholder': '评分大于等于该值才订阅'
+                                            'label': ' Score (of student's work)',
+                                            'placeholder': ' Subscribe only if the rating is greater than or equal to this value'
                                         }
                                     }
                                 ]
@@ -232,15 +232,15 @@ class DoubanRank(_PluginBase):
                                             'chips': True,
                                             'multiple': True,
                                             'model': 'ranks',
-                                            'label': '热门榜单',
+                                            'label': ' Hot list',
                                             'items': [
-                                                {'title': '电影北美票房榜', 'value': 'movie-ustop'},
-                                                {'title': '一周口碑电影榜', 'value': 'movie-weekly'},
-                                                {'title': '实时热门电影', 'value': 'movie-real-time'},
-                                                {'title': '热门综艺', 'value': 'show-domestic'},
-                                                {'title': '热门电影', 'value': 'movie-hot-gaia'},
-                                                {'title': '热门电视剧', 'value': 'tv-hot'},
-                                                {'title': '电影TOP10', 'value': 'movie-top250'},
+                                                {'title': ' Movie north american box office chart', 'value': 'movie-ustop'},
+                                                {'title': ' Weekly word-of-mouth movie list', 'value': 'movie-weekly'},
+                                                {'title': ' Hot movies', 'value': 'movie-real-time'},
+                                                {'title': ' Hot variety', 'value': 'show-domestic'},
+                                                {'title': ' Hot movies', 'value': 'movie-hot-gaia'},
+                                                {'title': ' Popular tv series', 'value': 'tv-hot'},
+                                                {'title': ' CinematicTOP10', 'value': 'movie-top250'},
                                             ]
                                         }
                                     }
@@ -258,8 +258,8 @@ class DoubanRank(_PluginBase):
                                         'component': 'VTextarea',
                                         'props': {
                                             'model': 'rss_addrs',
-                                            'label': '自定义榜单地址',
-                                            'placeholder': '每行一个地址，如：https://rsshub.app/douban/movie/ustop'
+                                            'label': ' Customized list address',
+                                            'placeholder': ' One address per line， As if：https://rsshub.app/douban/movie/ustop'
                                         }
                                     }
                                 ]
@@ -280,7 +280,7 @@ class DoubanRank(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'clear',
-                                            'label': '清理历史记录',
+                                            'label': ' Clear history',
                                         }
                                     }
                                 ]
@@ -301,23 +301,23 @@ class DoubanRank(_PluginBase):
 
     def get_page(self) -> List[dict]:
         """
-        拼装插件详情页面，需要返回页面配置，同时附带数据
+        Patchwork plug-in detail page， Need to return to page configuration， Also with data
         """
-        # 查询历史记录
+        #  Query history
         historys = self.get_data('history')
         if not historys:
             return [
                 {
                     'component': 'div',
-                    'text': '暂无数据',
+                    'text': ' No data available',
                     'props': {
                         'class': 'text-center',
                     }
                 }
             ]
-        # 数据按时间降序排序
+        #  Data is sorted in descending chronological order
         historys = sorted(historys, key=lambda x: x.get('time'), reverse=True)
-        # 拼装页面
+        #  Assembly page
         contents = []
         for history in historys:
             title = history.get("title")
@@ -375,14 +375,14 @@ class DoubanRank(_PluginBase):
                                             'props': {
                                                 'class': 'pa-0 px-2'
                                             },
-                                            'text': f'类型：{mtype}'
+                                            'text': f' Typology：{mtype}'
                                         },
                                         {
                                             'component': 'VCardText',
                                             'props': {
                                                 'class': 'pa-0 px-2'
                                             },
-                                            'text': f'时间：{time_str}'
+                                            'text': f' Timing：{time_str}'
                                         }
                                     ]
                                 }
@@ -404,7 +404,7 @@ class DoubanRank(_PluginBase):
 
     def stop_service(self):
         """
-        停止服务
+        Discontinuation of services
         """
         try:
             if self._scheduler:
@@ -419,7 +419,7 @@ class DoubanRank(_PluginBase):
 
     def __update_config(self):
         """
-        列新配置
+        New configuration
         """
         self.update_config({
             "enabled": self._enabled,
@@ -433,17 +433,17 @@ class DoubanRank(_PluginBase):
 
     def __refresh_rss(self):
         """
-        刷新RSS
+        Refresh (computer window)RSS
         """
-        logger.info(f"开始刷新豆瓣榜单 ...")
+        logger.info(f" Start refreshing the beanstalk list ...")
         addr_list = self._rss_addrs + [self._douban_address.get(rank) for rank in self._ranks]
         if not addr_list:
-            logger.info(f"未设置榜单RSS地址")
+            logger.info(f" No list setRSS Address")
             return
         else:
-            logger.info(f"共 {len(addr_list)} 个榜单RSS地址需要刷新")
+            logger.info(f" Common {len(addr_list)}  List of namesRSS Address needs to be refreshed")
 
-        # 读取历史记录
+        #  Read history
         if self._clearflag:
             history = []
         else:
@@ -453,58 +453,58 @@ class DoubanRank(_PluginBase):
             if not addr:
                 continue
             try:
-                logger.info(f"获取RSS：{addr} ...")
+                logger.info(f" GainRSS：{addr} ...")
                 rss_infos = self.__get_rss_info(addr)
                 if not rss_infos:
-                    logger.error(f"RSS地址：{addr} ，未查询到数据")
+                    logger.error(f"RSS Address：{addr} ， Data not queried")
                     continue
                 else:
-                    logger.info(f"RSS地址：{addr} ，共 {len(rss_infos)} 条数据")
+                    logger.info(f"RSS Address：{addr} ， Common {len(rss_infos)}  Data entry")
                 for rss_info in rss_infos:
                     if self._event.is_set():
-                        logger.info(f"订阅服务停止")
+                        logger.info(f" Subscription service discontinued")
                         return
 
                     title = rss_info.get('title')
                     douban_id = rss_info.get('doubanid')
                     unique_flag = f"doubanrank: {title} (DB:{douban_id})"
-                    # 检查是否已处理过
+                    #  Check if it has been processed
                     if unique_flag in [h.get("unique") for h in history]:
                         continue
-                    # 识别媒体信息
+                    #  Identify media messages
                     if douban_id:
-                        # 根据豆瓣ID获取豆瓣数据
+                        #  According to doubanID Get douban data
                         doubaninfo: Optional[dict] = self.chain.douban_info(doubanid=douban_id)
                         if not doubaninfo:
-                            logger.warn(f'未获取到豆瓣信息，标题：{title}，豆瓣ID：{douban_id}')
+                            logger.warn(f' No doujinshi information obtained， Caption：{title}， Douban, prc social networking websiteID：{douban_id}')
                             continue
-                        logger.info(f'获取到豆瓣信息，标题：{title}，豆瓣ID：{douban_id}')
-                        # 识别
+                        logger.info(f' Get the doujinshi information， Caption：{title}， Douban, prc social networking websiteID：{douban_id}')
+                        #  Recognize
                         title = doubaninfo.get("title")
                         meta = MetaInfo(doubaninfo.get("original_title") or title)
                         if doubaninfo.get("year"):
                             meta.year = doubaninfo.get("year")
                     else:
                         meta = MetaInfo(title)
-                    # 匹配媒体信息
+                    #  Matching media messages
                     mediainfo: MediaInfo = self.chain.recognize_media(meta=meta)
                     if not mediainfo:
-                        logger.warn(f'未识别到媒体信息，标题：{title}，豆瓣ID：{douban_id}')
+                        logger.warn(f' No media messages recognized， Caption：{title}， Douban, prc social networking websiteID：{douban_id}')
                         continue
-                    # 查询缺失的媒体信息
+                    #  Querying missing media information
                     exist_flag, _ = self.downloadchain.get_no_exists_info(meta=meta, mediainfo=mediainfo)
                     if exist_flag:
-                        logger.info(f'{mediainfo.title_year} 媒体库中已存在')
+                        logger.info(f'{mediainfo.title_year}  Already exists in the media library')
                         continue
-                    # 添加订阅
+                    #  Add subscription
                     self.subscribechain.add(title=mediainfo.title,
                                             year=mediainfo.year,
                                             mtype=mediainfo.type,
                                             tmdbid=mediainfo.tmdb_id,
                                             season=meta.begin_season,
                                             exist_ok=True,
-                                            username="豆瓣榜单")
-                    # 存储历史记录
+                                            username=" Douban list")
+                    #  Storing history
                     history.append({
                         "title": title,
                         "type": mediainfo.type.value,
@@ -519,16 +519,16 @@ class DoubanRank(_PluginBase):
             except Exception as e:
                 logger.error(str(e))
 
-        # 保存历史记录
+        #  Save history
         self.save_data('history', history)
-        # 缓存只清理一次
+        #  Cache is only cleared once
         self._clearflag = False
-        logger.info(f"所有榜单RSS刷新完成")
+        logger.info(f" All listsRSS Refresh complete.")
 
     @staticmethod
     def __get_rss_info(addr):
         """
-        获取RSS
+        GainRSS
         """
         try:
             ret = RequestUtils().get_res(addr)
@@ -537,35 +537,35 @@ class DoubanRank(_PluginBase):
             ret.encoding = ret.apparent_encoding
             ret_xml = ret.text
             ret_array = []
-            # 解析XML
+            #  AnalyzeXML
             dom_tree = xml.dom.minidom.parseString(ret_xml)
             rootNode = dom_tree.documentElement
             items = rootNode.getElementsByTagName("item")
             for item in items:
                 try:
-                    # 标题
+                    #  Caption
                     title = DomUtils.tag_value(item, "title", default="")
-                    # 链接
+                    #  Link (on a website)
                     link = DomUtils.tag_value(item, "link", default="")
                     if not title and not link:
-                        logger.warn(f"条目标题和链接均为空，无法处理")
+                        logger.warn(f" Entry title and link are empty， Cannot be processed")
                         continue
                     doubanid = re.findall(r"/(\d+)/", link)
                     if doubanid:
                         doubanid = doubanid[0]
                     if doubanid and not str(doubanid).isdigit():
-                        logger.warn(f"解析的豆瓣ID格式不正确：{doubanid}")
+                        logger.warn(f" Analyzed doubanID Incorrect formatting：{doubanid}")
                         continue
-                    # 返回对象
+                    #  Return object
                     ret_array.append({
                         'title': title,
                         'link': link,
                         'doubanid': doubanid
                     })
                 except Exception as e1:
-                    logger.error("解析RSS条目失败：" + str(e1))
+                    logger.error(" AnalyzeRSS Entry failure：" + str(e1))
                     continue
             return ret_array
         except Exception as e:
-            logger.error("获取RSS失败：" + str(e))
+            logger.error("GainRSS失败：" + str(e))
             return []

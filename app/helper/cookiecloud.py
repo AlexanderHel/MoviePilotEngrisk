@@ -16,22 +16,22 @@ class CookieCloudHelper:
 
     def download(self) -> Tuple[Optional[dict], str]:
         """
-        从CookieCloud下载数据
-        :return: Cookie数据、错误信息
+        Through (a gap)CookieCloud Download data
+        :return: Cookie Digital、 Error message
         """
         if not self._server or not self._key or not self._password:
-            return None, "CookieCloud参数不正确"
+            return None, "CookieCloud Parameter error"
         req_url = "%s/get/%s" % (self._server, self._key)
         ret = self._req.post_res(url=req_url, json={"password": self._password})
         if ret and ret.status_code == 200:
             result = ret.json()
             if not result:
-                return {}, "未下载到数据"
+                return {}, " No data downloaded"
             if result.get("cookie_data"):
                 contents = result.get("cookie_data")
             else:
                 contents = result
-            # 整理数据,使用domain域名的最后两级作为分组依据
+            #  Organize data, Utilizationdomain The last two levels of the domain name are used as the basis for grouping
             domain_groups = {}
             for site, cookies in contents.items():
                 for cookie in cookies:
@@ -40,13 +40,13 @@ class CookieCloudHelper:
                         domain_groups[domain_key] = [cookie]
                     else:
                         domain_groups[domain_key].append(cookie)
-            # 返回错误
+            #  Return error
             ret_cookies = {}
-            # 索引器
+            #  Indexer
             for domain, content_list in domain_groups.items():
                 if not content_list:
                     continue
-                # 只有cf的cookie过滤掉
+                #  Only ifcf (used form a nominal expression)cookie Filter out
                 cloudflare_cookie = True
                 for content in content_list:
                     if content["name"] != "cf_clearance":
@@ -54,7 +54,7 @@ class CookieCloudHelper:
                         break
                 if cloudflare_cookie:
                     continue
-                # 站点Cookie
+                #  WebsiteCookie
                 cookie_str = ";".join(
                     [f"{content.get('name')}={content.get('value')}"
                      for content in content_list
@@ -63,6 +63,6 @@ class CookieCloudHelper:
                 ret_cookies[domain] = cookie_str
             return ret_cookies, ""
         elif ret:
-            return None, f"同步CookieCloud失败，错误码：{ret.status_code}"
+            return None, f" SynchronizationCookieCloud Fail (e.g. experiments)， Error code：{ret.status_code}"
         else:
-            return None, "CookieCloud请求失败，请检查服务器地址、用户KEY及加密密码是否正确"
+            return None, "CookieCloud Request failed， Please check the server address、 SubscribersKEY And whether the encryption password is correct"

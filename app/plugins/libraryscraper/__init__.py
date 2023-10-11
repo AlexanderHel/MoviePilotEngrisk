@@ -20,43 +20,43 @@ from app.utils.system import SystemUtils
 
 class LibraryScraper(_PluginBase):
 
-    # 插件名称
-    plugin_name = "媒体库刮削"
-    # 插件描述
-    plugin_desc = "定时对媒体库进行刮削，补齐缺失元数据和图片。"
-    # 插件图标
+    #  Plug-in name
+    plugin_name = " Media library scraping"
+    #  Plugin description
+    plugin_desc = " Scheduled scraping of media libraries， Filling in missing metadata and images。"
+    #  Plug-in icons
     plugin_icon = "scraper.png"
-    # 主题色
+    #  Theme color
     plugin_color = "#FF7D00"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "jxxghp"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/jxxghp"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "libraryscraper_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 7
-    # 可使用的用户级别
+    #  Available user levels
     user_level = 1
 
-    # 私有属性
+    #  Private property
     transferhis = None
     _scheduler = None
     _scraper = None
-    # 限速开关
+    #  Speed limit switch
     _enabled = False
     _onlyonce = False
     _cron = None
     _mode = ""
     _scraper_paths = ""
     _exclude_paths = ""
-    # 退出事件
+    #  Logout event
     _event = Event()
     
     def init_plugin(self, config: dict = None):
-        # 读取配置
+        #  Read configuration
         if config:
             self._enabled = config.get("enabled")
             self._onlyonce = config.get("onlyonce")
@@ -65,33 +65,33 @@ class LibraryScraper(_PluginBase):
             self._scraper_paths = config.get("scraper_paths") or ""
             self._exclude_paths = config.get("exclude_paths") or ""
 
-        # 停止现有任务
+        #  Discontinuation of existing mandates
         self.stop_service()
 
-        # 启动定时任务 & 立即运行一次
+        #  Starting a timed task &  Run one immediately
         if self._enabled or self._onlyonce:
             self.transferhis = TransferHistoryOper(self.db)
             self._scheduler = BackgroundScheduler(timezone=settings.TZ)
             if self._cron:
-                logger.info(f"媒体库刮削服务启动，周期：{self._cron}")
+                logger.info(f" Media library scraping service launched， Cyclicality：{self._cron}")
                 try:
                     self._scheduler.add_job(func=self.__libraryscraper,
                                             trigger=CronTrigger.from_crontab(self._cron),
-                                            name="媒体库刮削")
+                                            name=" Media library scraping")
                 except Exception as e:
-                    logger.error(f"媒体库刮削服务启动失败，原因：{e}")
-                    self.systemmessage.put(f"媒体库刮削服务启动失败，原因：{e}")
+                    logger.error(f" Media library scraping service startup failure， Rationale：{e}")
+                    self.systemmessage.put(f" Media library scraping service startup failure， Rationale：{e}")
             else:
-                logger.info(f"媒体库刮削服务启动，周期：每7天")
+                logger.info(f" Media library scraping service launched， Cyclicality： Each7 Sky")
                 self._scheduler.add_job(func=self.__libraryscraper,
                                         trigger=CronTrigger.from_crontab("0 0 */7 * *"),
-                                        name="媒体库刮削")
+                                        name=" Media library scraping")
             if self._onlyonce:
-                logger.info(f"媒体库刮削服务，立即运行一次")
+                logger.info(f" Media library scraping services， Run one immediately")
                 self._scheduler.add_job(func=self.__libraryscraper, trigger='date',
                                         run_date=datetime.now(tz=pytz.timezone(settings.TZ)) + timedelta(seconds=3),
-                                        name="Cloudflare优选")
-                # 关闭一次性开关
+                                        name="Cloudflare Preferred")
+                #  Turn off the disposable switch
                 self._onlyonce = False
                 self.update_config({
                     "onlyonce": False,
@@ -102,7 +102,7 @@ class LibraryScraper(_PluginBase):
                     "exclude_paths": self._exclude_paths
                 })
             if self._scheduler.get_jobs():
-                # 启动服务
+                #  Starting services
                 self._scheduler.print_jobs()
                 self._scheduler.start()
 
@@ -135,7 +135,7 @@ class LibraryScraper(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'enabled',
-                                            'label': '启用插件',
+                                            'label': ' Enabling plug-ins',
                                         }
                                     }
                                 ]
@@ -151,7 +151,7 @@ class LibraryScraper(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'onlyonce',
-                                            'label': '立即运行一次',
+                                            'label': ' Run one immediately',
                                         }
                                     }
                                 ]
@@ -172,12 +172,12 @@ class LibraryScraper(_PluginBase):
                                         'component': 'VSelect',
                                         'props': {
                                             'model': 'mode',
-                                            'label': '刮削模式',
+                                            'label': ' Scraping mode',
                                             'items': [
-                                                {'title': '仅刮削缺失元数据和图片', 'value': ''},
-                                                {'title': '覆盖所有元数据和图片', 'value': 'force_all'},
-                                                {'title': '覆盖所有元数据', 'value': 'force_nfo'},
-                                                {'title': '覆盖所有图片', 'value': 'force_image'},
+                                                {'title': ' Scraping missing metadata and images only', 'value': ''},
+                                                {'title': ' Override all metadata and images', 'value': 'force_all'},
+                                                {'title': ' Override all metadata', 'value': 'force_nfo'},
+                                                {'title': ' Coverage of all images', 'value': 'force_image'},
                                             ]
                                         }
                                     }
@@ -194,8 +194,8 @@ class LibraryScraper(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'cron',
-                                            'label': '执行周期',
-                                            'placeholder': '5位cron表达式，留空自动'
+                                            'label': ' Implementation period',
+                                            'placeholder': '5 Classifier for honorific peoplecron Displayed formula， Leave blank spaces in writing'
                                         }
                                     }
                                 ]
@@ -215,9 +215,9 @@ class LibraryScraper(_PluginBase):
                                         'component': 'VTextarea',
                                         'props': {
                                             'model': 'scraper_paths',
-                                            'label': '削刮路径',
+                                            'label': ' Scrape path',
                                             'rows': 5,
-                                            'placeholder': '每一行一个目录，需配置到媒体文件的上级目录，即开了二级分类时需要配置到二级分类目录'
+                                            'placeholder': ' One directory per line， Needs to be configured to the parent directory of the media file， I.e., you need to configure the secondary category directory when you open the secondary category.'
                                         }
                                     }
                                 ]
@@ -237,9 +237,9 @@ class LibraryScraper(_PluginBase):
                                         'component': 'VTextarea',
                                         'props': {
                                             'model': 'exclude_paths',
-                                            'label': '排除路径',
+                                            'label': ' Excluded paths',
                                             'rows': 2,
-                                            'placeholder': '每一行一个目录'
+                                            'placeholder': ' One directory per line'
                                         }
                                     }
                                 ]
@@ -261,28 +261,28 @@ class LibraryScraper(_PluginBase):
 
     def __libraryscraper(self):
         """
-        开始刮削媒体库
+        Start scraping the media library
         """
         if not self._scraper_paths:
             return
-        # 排除目录
+        #  Exclude catalogs
         exclude_paths = self._exclude_paths.split("\n")
-        # 已选择的目录
+        #  Selected catalogs
         paths = self._scraper_paths.split("\n")
         for path in paths:
             if not path:
                 continue
             scraper_path = Path(path)
             if not scraper_path.exists():
-                logger.warning(f"媒体库刮削路径不存在：{path}")
+                logger.warning(f" Media library scraping path does not exist：{path}")
                 continue
-            logger.info(f"开始刮削媒体库：{path} ...")
-            # 遍历一层文件夹
+            logger.info(f"Start scraping the media library：{path} ...")
+            #  Traversing a layer of folders
             for sub_path in scraper_path.iterdir():
                 if self._event.is_set():
-                    logger.info(f"媒体库刮削服务停止")
+                    logger.info(f" Media library scraping service discontinued")
                     return
-                # 排除目录
+                #  Exclude catalogs
                 exclude_flag = False
                 for exclude_path in exclude_paths:
                     try:
@@ -292,49 +292,49 @@ class LibraryScraper(_PluginBase):
                     except Exception as err:
                         print(str(err))
                 if exclude_flag:
-                    logger.debug(f"{sub_path} 在排除目录中，跳过 ...")
+                    logger.debug(f"{sub_path}  In the excluded directory， Skip over ...")
                     continue
-                # 开始刮削目录
+                #  Start scraping catalog
                 if sub_path.is_dir():
-                    # 判断目录是不是媒体目录
+                    #  Determine if a directory is a media directory
                     dir_meta = MetaInfo(sub_path.name)
                     if not dir_meta.name or not dir_meta.year:
-                        logger.warn(f"{sub_path} 可能不是媒体目录，请检查刮削目录配置，跳过 ...")
+                        logger.warn(f"{sub_path}  Probably not a media catalog， Please check the scraping catalog configuration， Skip over ...")
                         continue
-                    logger.info(f"开始刮削目录：{sub_path} ...")
+                    logger.info(f" Start scraping catalog：{sub_path} ...")
                     self.__scrape_dir(path=sub_path, dir_meta=dir_meta)
-                    logger.info(f"目录 {sub_path} 刮削完成")
-            logger.info(f"媒体库 {path} 刮削完成")
+                    logger.info(f" Catalogs {sub_path}  Scraping finish")
+            logger.info(f" Media library {path}  Scraping finish")
 
     def __scrape_dir(self, path: Path, dir_meta: MetaBase):
         """
-        削刮一个目录，该目录必须是媒体文件目录
+        Scraping a catalog， The directory must be a media file directory
         """
 
-        # 媒体信息
+        #  Media information
         mediainfo = None
 
-        # 查找目录下所有的文件
+        #  Find all files in a directory
         files = SystemUtils.list_files(path, settings.RMT_MEDIAEXT)
         for file in files:
             if self._event.is_set():
-                logger.info(f"媒体库刮削服务停止")
+                logger.info(f" Media library scraping service discontinued")
                 return
 
-            # 识别元数据
+            #  Identifying metadata
             meta_info = MetaInfo(file.stem)
-            # 合并
+            #  Incorporation
             meta_info.merge(dir_meta)
-            # 是否刮削
+            #  Whether scraping
             scrap_metadata = settings.SCRAP_METADATA
 
-            # 没有媒体信息或者名字出现变化时，需要重新识别
+            #  When there is no media information or when there is a name change， Need to re-identify
             if not mediainfo \
                     or meta_info.name != dir_meta.name:
-                # 优先读取本地nfo文件
+                #  Prioritize local readsnfo File
                 tmdbid = None
                 if meta_info.type == MediaType.MOVIE:
-                    # 电影
+                    #  Cinematic
                     movie_nfo = file.parent / "movie.nfo"
                     if movie_nfo.exists():
                         tmdbid = self.__get_tmdbid_from_nfo(movie_nfo)
@@ -342,40 +342,40 @@ class LibraryScraper(_PluginBase):
                     if not tmdbid and file_nfo.exists():
                         tmdbid = self.__get_tmdbid_from_nfo(file_nfo)
                 else:
-                    # 电视剧
+                    #  Dramas
                     tv_nfo = file.parent.parent / "tvshow.nfo"
                     if tv_nfo.exists():
                         tmdbid = self.__get_tmdbid_from_nfo(tv_nfo)
                 if tmdbid:
-                    # 按TMDBID识别
-                    logger.info(f"读取到本地nfo文件的tmdbid：{tmdbid}")
+                    #  Check or refer toTMDBID Recognize
+                    logger.info(f" Read to localnfo Documentationtmdbid：{tmdbid}")
                     mediainfo = self.chain.recognize_media(tmdbid=tmdbid, mtype=meta_info.type)
                 else:
-                    # 按名称识别
+                    #  Identification by name
                     mediainfo = self.chain.recognize_media(meta=meta_info)
                 if not mediainfo:
-                    logger.warn(f"未识别到媒体信息：{file}")
+                    logger.warn(f" No media messages recognized：{file}")
                     continue
                     
-                # 如果未开启新增已入库媒体是否跟随TMDB信息变化则根据tmdbid查询之前的title
+                #  If not enabled does the new inbound media follow theTMDB Information changes are then based ontmdbid Query the previoustitle
                 if not settings.SCRAP_FOLLOW_TMDB:
                     transfer_history = self.transferhis.get_by_type_tmdbid(tmdbid=mediainfo.tmdb_id,
                                                                            mtype=mediainfo.type.value)
                     if transfer_history:
                         mediainfo.title = transfer_history.title
 
-                # 覆盖模式时，提前删除nfo
+                #  In override mode， Deletion in advancenfo
                 if self._mode in ["force_all", "force_nfo"]:
                     scrap_metadata = True
                     nfo_files = SystemUtils.list_files(path, [".nfo"])
                     for nfo_file in nfo_files:
                         try:
-                            logger.warn(f"删除nfo文件：{nfo_file}")
+                            logger.warn(f" Removingnfo File：{nfo_file}")
                             nfo_file.unlink()
                         except Exception as err:
                             print(str(err))
 
-                # 覆盖模式时，提前删除图片文件
+                #  In override mode， Early deletion of image files
                 if self._mode in ["force_all", "force_image"]:
                     scrap_metadata = True
                     image_files = SystemUtils.list_files(path, [".jpg", ".png"])
@@ -383,19 +383,19 @@ class LibraryScraper(_PluginBase):
                         if ".actors" in str(image_file):
                             continue
                         try:
-                            logger.warn(f"删除图片文件：{image_file}")
+                            logger.warn(f" Deleting image files：{image_file}")
                             image_file.unlink()
                         except Exception as err:
                             print(str(err))
 
-            # 刮削单个文件
+            #  Scraping of individual documents
             if scrap_metadata:
                 self.chain.scrape_metadata(path=file, mediainfo=mediainfo)
 
     @staticmethod
     def __get_tmdbid_from_nfo(file_path: Path):
         """
-        从nfo文件中获取信息
+        Through (a gap)nfo Getting information from documents
         :param file_path:
         :return: tmdbid
         """
@@ -419,7 +419,7 @@ class LibraryScraper(_PluginBase):
 
     def stop_service(self):
         """
-        退出插件
+        Exit plugin
         """
         try:
             if self._scheduler:

@@ -23,7 +23,7 @@ from app.utils.string import StringUtils
 
 class SearchChain(ChainBase):
     """
-    站点资源搜索处理链
+    Site resource search processing chain
     """
 
     def __init__(self, db: Session = None):
@@ -35,38 +35,38 @@ class SearchChain(ChainBase):
 
     def search_by_tmdbid(self, tmdbid: int, mtype: MediaType = None, area: str = "title") -> List[Context]:
         """
-        根据TMDB ID搜索资源，精确匹配，但不不过滤本地存在的资源
+        According toTMDB ID Search resources， Exact match， But not without filtering locally available resources
         :param tmdbid: TMDB ID
-        :param mtype: 媒体，电影 or 电视剧
-        :param area: 搜索范围，title or imdbid
+        :param mtype:  Media, esp. news media， Cinematic or  Dramas
+        :param area:  Search scope，title or imdbid
         """
         mediainfo = self.recognize_media(tmdbid=tmdbid, mtype=mtype)
         if not mediainfo:
-            logger.error(f'{tmdbid} 媒体信息识别失败！')
+            logger.error(f'{tmdbid}  Media message recognition failure！')
             return []
         results = self.process(mediainfo=mediainfo, area=area)
-        # 保存眲结果
+        #  Saving results
         bytes_results = pickle.dumps(results)
         self.systemconfig.set(SystemConfigKey.SearchResults, bytes_results)
         return results
 
     def search_by_title(self, title: str, page: int = 0, site: int = None) -> List[TorrentInfo]:
         """
-        根据标题搜索资源，不识别不过滤，直接返回站点内容
-        :param title: 标题，为空时返回所有站点首页内容
-        :param page: 页码
-        :param site: 站点ID
+        Search for resources by title， No recognition or filtering， Direct return to site content
+        :param title:  Caption， Returns all site home contents when empty
+        :param page:  Pagination
+        :param site:  WebsiteID
         """
         if title:
-            logger.info(f'开始搜索资源，关键词：{title} ...')
+            logger.info(f' Start searching for resources， Byword：{title} ...')
         else:
-            logger.info(f'开始浏览资源，站点：{site} ...')
-        # 搜索
+            logger.info(f' Start browsing resources， Website：{site} ...')
+        #  Look for sth.
         return self.__search_all_sites(keywords=[title], sites=[site] if site else None, page=page) or []
 
     def last_search_results(self) -> List[Context]:
         """
-        获取上次搜索结果
+        Get last search results
         """
         results = self.systemconfig.get(SystemConfigKey.SearchResults)
         if not results:
@@ -85,38 +85,38 @@ class SearchChain(ChainBase):
                 filter_rule: Dict[str, str] = None,
                 area: str = "title") -> List[Context]:
         """
-        根据媒体信息搜索种子资源，精确匹配，应用过滤规则，同时根据no_exists过滤本地已存在的资源
-        :param mediainfo: 媒体信息
-        :param keyword: 搜索关键词
-        :param no_exists: 缺失的媒体信息
-        :param sites: 站点ID列表，为空时搜索所有站点
-        :param priority_rule: 优先级规则，为空时使用搜索优先级规则
-        :param filter_rule: 过滤规则，为空是使用默认过滤规则
-        :param area: 搜索范围，title or imdbid
+        Search for seed resources based on media information， Exact match， Apply filtering rules， At the same time, according tono_exists Filtering resources that already exist locally
+        :param mediainfo:  Media information
+        :param keyword:  Search keywords
+        :param no_exists:  Missing media messages
+        :param sites:  WebsiteID Listings， Search all sites when empty
+        :param priority_rule:  Priority rules， Use search prioritization rules when empty
+        :param filter_rule:  Filter rules， Null is to use the default filtering rules
+        :param area:  Search scope，title or imdbid
         """
-        logger.info(f'开始搜索资源，关键词：{keyword or mediainfo.title} ...')
-        # 补充媒体信息
+        logger.info(f' Start searching for resources， Byword：{keyword or mediainfo.title} ...')
+        #  Additional media information
         if not mediainfo.names:
             mediainfo: MediaInfo = self.recognize_media(mtype=mediainfo.type,
                                                         tmdbid=mediainfo.tmdb_id)
             if not mediainfo:
-                logger.error(f'媒体信息识别失败！')
+                logger.error(f' Media message recognition failure！')
                 return []
-        # 缺失的季集
+        #  Missing seasonal episodes
         if no_exists and no_exists.get(mediainfo.tmdb_id):
-            # 过滤剧集
+            #  Filter episodes
             season_episodes = {sea: info.episodes
                                for sea, info in no_exists[mediainfo.tmdb_id].items()}
         else:
             season_episodes = None
-        # 搜索关键词
+        #  Look for sth.关键词
         if keyword:
             keywords = [keyword]
         elif mediainfo.original_title and mediainfo.title != mediainfo.original_title:
             keywords = [mediainfo.title, mediainfo.original_title]
         else:
             keywords = [mediainfo.title]
-        # 执行搜索
+        #  Perform a search
         torrents: List[TorrentInfo] = self.__search_all_sites(
             mediainfo=mediainfo,
             keywords=keywords,
@@ -124,14 +124,14 @@ class SearchChain(ChainBase):
             area=area
         )
         if not torrents:
-            logger.warn(f'{keyword or mediainfo.title} 未搜索到资源')
+            logger.warn(f'{keyword or mediainfo.title}  No resources searched')
             return []
-        # 过滤种子
+        #  Filtering seeds
         if priority_rule is None:
-            # 取搜索优先级规则
+            #  Fetch search prioritization rules
             priority_rule = self.systemconfig.get(SystemConfigKey.SearchFilterRules)
         if priority_rule:
-            logger.info(f'开始过滤资源，当前规则：{priority_rule} ...')
+            logger.info(f' Start filtering resources， Current rule：{priority_rule} ...')
             result: List[TorrentInfo] = self.filter_torrents(rule_string=priority_rule,
                                                              torrent_list=torrents,
                                                              season_episodes=season_episodes,
@@ -139,102 +139,102 @@ class SearchChain(ChainBase):
             if result is not None:
                 torrents = result
             if not torrents:
-                logger.warn(f'{keyword or mediainfo.title} 没有符合优先级规则的资源')
+                logger.warn(f'{keyword or mediainfo.title}  No resources that meet the prioritization rules')
                 return []
-        # 使用默认过滤规则再次过滤
+        #  Filter again using the default filtering rules
         torrents = self.filter_torrents_by_rule(torrents=torrents,
                                                 filter_rule=filter_rule)
         if not torrents:
-            logger.warn(f'{keyword or mediainfo.title} 没有符合过滤规则的资源')
+            logger.warn(f'{keyword or mediainfo.title}  No resources matching the filtering rules')
             return []
-        # 匹配的资源
+        #  Matched resource
         _match_torrents = []
-        # 总数
+        #  Aggregate
         _total = len(torrents)
-        # 已处理数
+        #  Number processed
         _count = 0
         if mediainfo:
             self.progress.start(ProgressKey.Search)
-            logger.info(f'开始匹配，总 {_total} 个资源 ...')
-            self.progress.update(value=0, text=f'开始匹配，总 {_total} 个资源 ...', key=ProgressKey.Search)
+            logger.info(f' Start matching， Assemble {_total}  Individual resource ...')
+            self.progress.update(value=0, text=f' Start matching， Assemble {_total}  Individual resource ...', key=ProgressKey.Search)
             for torrent in torrents:
                 _count += 1
                 self.progress.update(value=(_count / _total) * 100,
-                                     text=f'正在匹配 {torrent.site_name}，已完成 {_count} / {_total} ...',
+                                     text=f' Matching. {torrent.site_name}， Done {_count} / {_total} ...',
                                      key=ProgressKey.Search)
-                # 比对IMDBID
+                #  Verify by comparingIMDBID
                 if torrent.imdbid \
                         and mediainfo.imdb_id \
                         and torrent.imdbid == mediainfo.imdb_id:
-                    logger.info(f'{mediainfo.title} 匹配到资源：{torrent.site_name} - {torrent.title}')
+                    logger.info(f'{mediainfo.title}  Matching to resources：{torrent.site_name} - {torrent.title}')
                     _match_torrents.append(torrent)
                     continue
-                # 识别
+                #  Recognize
                 torrent_meta = MetaInfo(title=torrent.title, subtitle=torrent.description)
-                # 比对类型
+                #  Type of comparison
                 if (torrent_meta.type == MediaType.TV and mediainfo.type != MediaType.TV) \
                         or (torrent_meta.type != MediaType.TV and mediainfo.type == MediaType.TV):
-                    logger.warn(f'{torrent.site_name} - {torrent.title} 类型不匹配')
+                    logger.warn(f'{torrent.site_name} - {torrent.title}  Type mismatch')
                     continue
-                # 比对年份
+                #  Year of comparison
                 if mediainfo.year:
                     if mediainfo.type == MediaType.TV:
-                        # 剧集年份，每季的年份可能不同
+                        #  Year of episode， Years may vary from season to season
                         if torrent_meta.year and torrent_meta.year not in [year for year in
                                                                            mediainfo.season_years.values()]:
-                            logger.warn(f'{torrent.site_name} - {torrent.title} 年份不匹配')
+                            logger.warn(f'{torrent.site_name} - {torrent.title}  Year mismatch')
                             continue
                     else:
-                        # 电影年份，上下浮动1年
+                        #  Year of movie， Float up and down1 Surname nian
                         if torrent_meta.year not in [str(int(mediainfo.year) - 1),
                                                      mediainfo.year,
                                                      str(int(mediainfo.year) + 1)]:
-                            logger.warn(f'{torrent.site_name} - {torrent.title} 年份不匹配')
+                            logger.warn(f'{torrent.site_name} - {torrent.title}  Year mismatch')
                             continue
-                # 比对标题和原语种标题
+                #  Comparison of titles and original language titles
                 meta_name = StringUtils.clear_upper(torrent_meta.name)
                 if meta_name in [
                     StringUtils.clear_upper(mediainfo.title),
                     StringUtils.clear_upper(mediainfo.original_title)
                 ]:
-                    logger.info(f'{mediainfo.title} 通过标题匹配到资源：{torrent.site_name} - {torrent.title}')
+                    logger.info(f'{mediainfo.title}  Matching to resources by title：{torrent.site_name} - {torrent.title}')
                     _match_torrents.append(torrent)
                     continue
-                # 在副标题中判断是否存在标题与原语种标题
+                #  Determining the presence of a title in a subtitle with the original language title
                 if torrent.description:
                     subtitle = torrent.description.split()
                     if (StringUtils.is_chinese(mediainfo.title)
                         and str(mediainfo.title) in subtitle) \
                             or (StringUtils.is_chinese(mediainfo.original_title)
                                 and str(mediainfo.original_title) in subtitle):
-                        logger.info(f'{mediainfo.title} 通过副标题匹配到资源：{torrent.site_name} - {torrent.title}，'
-                                    f'副标题：{torrent.description}')
+                        logger.info(f'{mediainfo.title}  Matching to resources by subheading：{torrent.site_name} - {torrent.title}，'
+                                    f' Subheading：{torrent.description}')
                         _match_torrents.append(torrent)
                         continue
-                # 比对别名和译名
+                #  Comparing aliases and translations
                 for name in mediainfo.names:
                     if StringUtils.clear_upper(name) == meta_name:
-                        logger.info(f'{mediainfo.title} 通过别名或译名匹配到资源：{torrent.site_name} - {torrent.title}')
+                        logger.info(f'{mediainfo.title}  Match to resource by alias or translation：{torrent.site_name} - {torrent.title}')
                         _match_torrents.append(torrent)
                         break
                 else:
-                    logger.warn(f'{torrent.site_name} - {torrent.title} 标题不匹配')
+                    logger.warn(f'{torrent.site_name} - {torrent.title}  Title mismatch')
             self.progress.update(value=100,
-                                 text=f'匹配完成，共匹配到 {len(_match_torrents)} 个资源',
+                                 text=f' Matching complete.， Total matches {len(_match_torrents)}  Individual resource',
                                  key=ProgressKey.Search)
             self.progress.end(ProgressKey.Search)
         else:
             _match_torrents = torrents
-        logger.info(f"匹配完成，共匹配到 {len(_match_torrents)} 个资源")
-        # 去掉mediainfo中多余的数据
+        logger.info(f" Matching complete.， Total matches {len(_match_torrents)}  Individual resource")
+        #  Get rid ofmediainfo Redundant data in the
         mediainfo.clear()
-        # 组装上下文
+        #  Assembly context
         contexts = [Context(meta_info=MetaInfo(title=torrent.title, subtitle=torrent.description),
                             media_info=mediainfo,
                             torrent_info=torrent) for torrent in _match_torrents]
-        # 排序
+        #  Arrange in order
         contexts = self.torrenthelper.sort_torrents(contexts)
-        # 返回
+        #  Come (or go) back
         return contexts
 
     def __search_all_sites(self, keywords: List[str],
@@ -243,84 +243,84 @@ class SearchChain(ChainBase):
                            page: int = 0,
                            area: str = "title") -> Optional[List[TorrentInfo]]:
         """
-        多线程搜索多个站点
-        :param mediainfo:  识别的媒体信息
-        :param keywords:  搜索关键词列表
-        :param sites:  指定站点ID列表，如有则只搜索指定站点，否则搜索所有站点
-        :param page:  搜索页码
-        :param area:  搜索区域 title or imdbid
-        :reutrn: 资源列表
+        Multi-threaded search for multiple sites
+        :param mediainfo:   Identified media messages
+        :param keywords:   Search keyword list
+        :param sites:   Designated siteID Listings， Search only the specified site if available， Otherwise search all sites
+        :param page:   Search page
+        :param area:   Search area title or imdbid
+        :reutrn:  Resource list
         """
-        # 未开启的站点不搜索
+        #  Unopened sites are not searched
         indexer_sites = []
 
-        # 配置的索引站点
+        #  Configured indexing sites
         if not sites:
             sites = self.systemconfig.get(SystemConfigKey.IndexerSites) or []
 
         for indexer in self.siteshelper.get_indexers():
-            # 检查站点索引开关
+            #  Check site index switch
             if not sites or indexer.get("id") in sites:
-                # 站点流控
+                #  Site flow control
                 state, msg = self.siteshelper.check(indexer.get("domain"))
                 if state:
                     logger.warn(msg)
                     continue
                 indexer_sites.append(indexer)
         if not indexer_sites:
-            logger.warn('未开启任何有效站点，无法搜索资源')
+            logger.warn(' No active sites are turned on， Unable to search for resources')
             return []
 
-        # 开始进度
+        #  Initiation of progress
         self.progress.start(ProgressKey.Search)
-        # 开始计时
+        #  Start counting
         start_time = datetime.now()
-        # 总数
+        #  Aggregate
         total_num = len(indexer_sites)
-        # 完成数
+        #  Number of completions
         finish_count = 0
-        # 更新进度
+        #  Update progress
         self.progress.update(value=0,
-                             text=f"开始搜索，共 {total_num} 个站点 ...",
+                             text=f" Start searching， Common {total_num}  Stations ...",
                              key=ProgressKey.Search)
-        # 多线程
+        #  Multi-threaded
         executor = ThreadPoolExecutor(max_workers=len(indexer_sites))
         all_task = []
         for site in indexer_sites:
             if area == "imdbid":
-                # 搜索IMDBID
+                #  Look for sth.IMDBID
                 task = executor.submit(self.search_torrents, site=site,
                                        keywords=[mediainfo.imdb_id] if mediainfo else None,
                                        mtype=mediainfo.type if mediainfo else None,
                                        page=page)
             else:
-                # 搜索标题
+                #  Look for sth.标题
                 task = executor.submit(self.search_torrents, site=site,
                                        keywords=keywords,
                                        mtype=mediainfo.type if mediainfo else None,
                                        page=page)
             all_task.append(task)
-        # 结果集
+        #  Result set
         results = []
         for future in as_completed(all_task):
             finish_count += 1
             result = future.result()
             if result:
                 results.extend(result)
-            logger.info(f"站点搜索进度：{finish_count} / {total_num}")
+            logger.info(f" Site search progress：{finish_count} / {total_num}")
             self.progress.update(value=finish_count / total_num * 100,
-                                 text=f"正在搜索{keywords or ''}，已完成 {finish_count} / {total_num} 个站点 ...",
+                                 text=f" Searching{keywords or ''}， Done {finish_count} / {total_num}  Stations ...",
                                  key=ProgressKey.Search)
-        # 计算耗时
+        #  Computational time
         end_time = datetime.now()
-        # 更新进度
+        #  Update progress
         self.progress.update(value=100,
-                             text=f"站点搜索完成，有效资源数：{len(results)}，总耗时 {(end_time - start_time).seconds} 秒",
+                             text=f" Site search complete， Number of effective resources：{len(results)}， Total time consumption {(end_time - start_time).seconds}  Unit of angle or arc equivalent one sixtieth of a degree",
                              key=ProgressKey.Search)
-        logger.info(f"站点搜索完成，有效资源数：{len(results)}，总耗时 {(end_time - start_time).seconds} 秒")
-        # 结束进度
+        logger.info(f" Site search complete， Number of effective resources：{len(results)}， Total time consumption {(end_time - start_time).seconds}  Unit of angle or arc equivalent one sixtieth of a degree")
+        #  Conclusion of progress
         self.progress.end(ProgressKey.Search)
-        # 返回
+        #  Come (or go) back
         return results
 
     def filter_torrents_by_rule(self,
@@ -328,38 +328,38 @@ class SearchChain(ChainBase):
                                 filter_rule: Dict[str, str] = None
                                 ) -> List[TorrentInfo]:
         """
-        使用过滤规则过滤种子
-        :param torrents: 种子列表
-        :param filter_rule: 过滤规则
+        Filtering seeds using filter rules
+        :param torrents:  Seed list
+        :param filter_rule:  Filter rules
         """
 
-        # 取默认过滤规则
+        #  Takes the default filtering rules
         if not filter_rule:
             filter_rule = self.systemconfig.get(SystemConfigKey.DefaultFilterRules)
         if not filter_rule:
             return torrents
-        # 包含
+        #  Embody
         include = filter_rule.get("include")
-        # 排除
+        #  Rule out
         exclude = filter_rule.get("exclude")
 
         def __filter_torrent(t: TorrentInfo) -> bool:
             """
-            过滤种子
+            Filtering seeds
             """
-            # 包含
+            #  Embody
             if include:
                 if not re.search(r"%s" % include,
                                  f"{t.title} {t.description}", re.I):
-                    logger.info(f"{t.title} 不匹配包含规则 {include}")
+                    logger.info(f"{t.title}  Mismatch inclusion rule {include}")
                     return False
-            # 排除
+            #  Rule out
             if exclude:
                 if re.search(r"%s" % exclude,
                              f"{t.title} {t.description}", re.I):
-                    logger.info(f"{t.title} 匹配排除规则 {exclude}")
+                    logger.info(f"{t.title}  Match exclusion rules {exclude}")
                     return False
             return True
 
-        # 使用默认过滤规则再次过滤
+        #  Filter again using the default filtering rules
         return list(filter(lambda t: __filter_torrent(t), torrents))

@@ -18,7 +18,7 @@ from app.schemas.types import MediaType, SystemConfigKey
 
 class TorrentHelper:
     """
-    种子帮助类
+    Seed help category
     """
 
     def __init__(self):
@@ -31,12 +31,12 @@ class TorrentHelper:
                          proxy: bool = False) \
             -> Tuple[Optional[Path], Optional[Union[str, bytes]], Optional[str], Optional[list], Optional[str]]:
         """
-        把种子下载到本地
-        :return: 种子保存路径、种子内容、种子主目录、种子文件清单、错误信息
+        Download the seeds locally
+        :return:  Seed save path、 Seed content、 Master catalog of seeds、 List of seed documents、 Error message
         """
         if url.startswith("magnet:"):
-            return None, url, "", [], f"磁力链接"
-        # 请求种子文件
+            return None, url, "", [], f" Magnetic link"
+        #  Request for seed files
         req = RequestUtils(
             ua=ua,
             cookies=cookie,
@@ -46,7 +46,7 @@ class TorrentHelper:
         while req and req.status_code in [301, 302]:
             url = req.headers['Location']
             if url and url.startswith("magnet:"):
-                return None, url, "", [], f"获取到磁力链接"
+                return None, url, "", [], f" Getting to the magnet link"
             req = RequestUtils(
                 ua=ua,
                 cookies=cookie,
@@ -55,13 +55,13 @@ class TorrentHelper:
             ).get_res(url=url, allow_redirects=False)
         if req and req.status_code == 200:
             if not req.content:
-                return None, None, "", [], "未下载到种子数据"
-            # 解析内容格式
+                return None, None, "", [], " Seed data not downloaded"
+            #  Parsing content format
             if req.text and str(req.text).startswith("magnet:"):
-                # 磁力链接
-                return None, req.text, "", [], f"获取到磁力链接"
-            elif req.text and "下载种子文件" in req.text:
-                # 首次下载提示页面
+                #  Magnetic link
+                return None, req.text, "", [], f" Getting to the magnet link"
+            elif req.text and " Download seed file" in req.text:
+                #  First download tips page
                 skip_flag = False
                 try:
                     forms = re.findall(r'<form.*?action="(.*?)".*?>(.*?)</form>', req.text, re.S)
@@ -75,7 +75,7 @@ class TorrentHelper:
                             data = {}
                             for item in inputs:
                                 data[item[0]] = item[1]
-                            # 改写req
+                            #  Rewritereq
                             req = RequestUtils(
                                 ua=ua,
                                 cookies=cookie,
@@ -83,90 +83,90 @@ class TorrentHelper:
                                 proxies=settings.PROXY if proxy else None
                             ).post_res(url=action, data=data)
                             if req and req.status_code == 200:
-                                # 检查是不是种子文件，如果不是抛出异常
+                                #  Check if it's a seed file， If an exception is not thrown
                                 Torrent.from_string(req.content)
-                                # 跳过成功
-                                logger.info(f"触发了站点首次种子下载，已自动跳过：{url}")
+                                #  Skip success
+                                logger.info(f" Triggered the site's first seed download， Automatically skipped：{url}")
                                 skip_flag = True
                             elif req is not None:
-                                logger.warn(f"触发了站点首次种子下载，且无法自动跳过，"
-                                            f"返回码：{req.status_code}，错误原因：{req.reason}")
+                                logger.warn(f" Triggered the site's first seed download， And cannot be skipped automatically，"
+                                            f" Return code：{req.status_code}， Cause of error：{req.reason}")
                             else:
-                                logger.warn(f"触发了站点首次种子下载，且无法自动跳过：{url}")
+                                logger.warn(f" Triggered the site's first seed download， And cannot be skipped automatically：{url}")
                         break
                 except Exception as err:
-                    logger.warn(f"触发了站点首次种子下载，尝试自动跳过时出现错误：{err}，链接：{url}")
+                    logger.warn(f" Triggered the site's first seed download， Error when trying to auto-skip：{err}， Link (on a website)：{url}")
                 if not skip_flag:
-                    return None, None, "", [], "种子数据有误，请确认链接是否正确，如为PT站点则需手工在站点下载一次种子"
-            # 种子内容
+                    return None, None, "", [], " Seed data incorrect， Please make sure the link is correct， IfPT The site will have to manually download the seed once at the site"
+            #  Seed content
             if req.content:
-                # 检查是不是种子文件，如果不是仍然抛出异常
+                #  Check if it's a seed file， If not, the exception is still thrown
                 try:
-                    # 读取种子文件名
+                    #  Read seed file name
                     file_name = self.get_url_filename(req, url)
-                    # 种子文件路径
+                    #  Seed file path
                     file_path = Path(settings.TEMP_PATH) / file_name
-                    # 保存到文件
+                    #  Save to file
                     file_path.write_bytes(req.content)
-                    # 获取种子目录和文件清单
+                    #  Get a list of seed directories and files
                     folder_name, file_list = self.get_torrent_info(file_path)
-                    # 成功拿到种子数据
+                    #  Success in getting seed data
                     return file_path, req.content, folder_name, file_list, ""
                 except Exception as err:
-                    logger.error(f"种子文件解析失败：{err}")
-                # 种子数据仍然错误
-                return None, None, "", [], "种子数据有误，请确认链接是否正确"
-            # 返回失败
+                    logger.error(f" Seed file parsing failure：{err}")
+                #  Seed data still incorrect
+                return None, None, "", [], " Seed data incorrect， Please make sure the link is correct"
+            #  Return failure
             return None, None, "", [], ""
         elif req is None:
-            return None, None, "", [], "无法打开链接"
+            return None, None, "", [], " Unable to open link"
         elif req.status_code == 429:
-            return None, None, "", [], "触发站点流控，请稍后重试"
+            return None, None, "", [], " Trigger site flow control， Please try again later."
         else:
-            return None, None, "", [], f"下载种子出错，状态码：{req.status_code}"
+            return None, None, "", [], f" Error downloading seeds， Status code：{req.status_code}"
 
     @staticmethod
     def get_torrent_info(torrent_path: Path) -> Tuple[str, List[str]]:
         """
-        获取种子文件的文件夹名和文件清单
-        :param torrent_path: 种子文件路径
-        :return: 文件夹名、文件清单，单文件种子返回空文件夹名
+        Get the folder name and file list of the seed file
+        :param torrent_path:  Seed file path
+        :return:  Folder name、 List of documents， Single file seeds return empty folder names
         """
         if not torrent_path or not torrent_path.exists():
             return "", []
         try:
             torrentinfo = Torrent.from_file(torrent_path)
-            # 获取文件清单
+            #  Access to the list of documents
             if (not torrentinfo.files
                     or (len(torrentinfo.files) == 1
                         and torrentinfo.files[0].name == torrentinfo.name)):
-                # 单文件种子目录名返回空
+                #  Single file seed directory name returns null
                 folder_name = ""
-                # 单文件种子
+                #  Single-file seed
                 file_list = [torrentinfo.name]
             else:
-                # 目录名
+                #  Catalog name
                 folder_name = torrentinfo.name
-                # 文件清单，如果一级目录与种子名相同则去掉
+                #  List of documents， Remove the first level directory if it is the same as the seed name
                 file_list = []
                 for fileinfo in torrentinfo.files:
                     file_path = Path(fileinfo.name)
-                    # 根路径
+                    #  Root path
                     root_path = file_path.parts[0]
                     if root_path == folder_name:
                         file_list.append(str(file_path.relative_to(root_path)))
                     else:
                         file_list.append(fileinfo.name)
-            logger.info(f"解析种子：{torrent_path.name} => 目录：{folder_name}，文件清单：{file_list}")
+            logger.info(f" Parse seed：{torrent_path.name} =>  Catalogs：{folder_name}， List of documents：{file_list}")
             return folder_name, file_list
         except Exception as err:
-            logger.error(f"种子文件解析失败：{err}")
+            logger.error(f" Seed file parsing failure：{err}")
             return "", []
 
     @staticmethod
     def get_url_filename(req: Response, url: str) -> str:
         """
-        从下载请求中获取种子文件名
+        Get the seed file name from the download request
         """
         if not req:
             return ""
@@ -184,67 +184,67 @@ class TorrentHelper:
 
     def sort_torrents(self, torrent_list: List[Context]) -> List[Context]:
         """
-        对种子对行排序
+        Sorting seeds against rows
         """
         if not torrent_list:
             return []
 
         def get_sort_str(_context):
             """
-            排序函数，值越大越优先
+            Sorting function， The larger the value, the higher the priority
             """
             _meta = _context.meta_info
             _torrent = _context.torrent_info
             _media = _context.media_info
-            # 站点优先级
+            #  Site prioritization
             _site_order = 999 - (_torrent.site_order or 0)
-            # 季数
+            #  Quarter
             _season_len = str(len(_meta.season_list)).rjust(2, '0')
-            # 集数
+            #  Episode number (of a tv series etc)
             if not _meta.episode_list:
-                # 无集数的排最前面
+                #  No episodes at the top of the list.
                 _episode_len = "9999"
             else:
-                # 集数越多的排越前面
+                #  Episode number (of a tv series etc)越多的排越前面
                 _episode_len = str(len(_meta.episode_list)).rjust(4, '0')
-            # 优先规则
+            #  Priority rules
             priority = self.system_config.get(SystemConfigKey.TorrentsPriority)
             if priority != "site":
-                # 排序：标题、资源类型、做种、季集
+                #  Arrange in order： Caption、 Resource type、 Breed、 End of a season
                 return "%s%s%s%s" % (str(_media.title).ljust(100, ' '),
                                      str(_torrent.pri_order).rjust(3, '0'),
                                      str(_torrent.seeders).rjust(10, '0'),
                                      "%s%s" % (_season_len, _episode_len))
             else:
-                # 排序：标题、资源类型、站点、做种、季集
+                #  Arrange in order： Caption、 Resource type、 Website、 Breed、 End of a season
                 return "%s%s%s%s%s" % (str(_media.title).ljust(100, ' '),
                                        str(_torrent.pri_order).rjust(3, '0'),
                                        str(_site_order).rjust(3, '0'),
                                        str(_torrent.seeders).rjust(10, '0'),
                                        "%s%s" % (_season_len, _episode_len))
 
-        # 匹配的资源中排序分组选最好的一个下载
-        # 按站点顺序、资源匹配顺序、做种人数下载数逆序排序
+        #  Sorting and grouping of matching resources to select the best one to download
+        #  Order by site、 Resource matching order、 Do seed number of downloads in reverse order
         torrent_list = sorted(torrent_list, key=lambda x: get_sort_str(x), reverse=True)
 
         return torrent_list
 
     def sort_group_torrents(self, torrent_list: List[Context]) -> List[Context]:
         """
-        对媒体信息进行排序、去重
+        Sorting media messages、 De-emphasize
         """
         if not torrent_list:
             return []
 
-        # 排序
+        #  Arrange in order
         torrent_list = self.sort_torrents(torrent_list)
 
-        # 控重
+        #  Weight control
         result = []
         _added = []
-        # 排序后重新加入数组，按真实名称控重，即只取每个名称的第一个
+        #  Arrange in order后重新加入数组，按真实名称控重，即只取每个名称的第一个
         for context in torrent_list:
-            # 控重的主链是名称、年份、季、集
+            #  Weight control的主链是名称、年份、季、集
             meta = context.meta_info
             media = context.media_info
             if media.type == MediaType.TV:
@@ -261,7 +261,7 @@ class TorrentHelper:
     @staticmethod
     def get_torrent_episodes(files: list) -> list:
         """
-        从种子的文件清单中获取所有集数
+        Get all episodes from the seed's file list
         """
         episodes = []
         for file in files:
@@ -270,7 +270,7 @@ class TorrentHelper:
             file_path = Path(file)
             if file_path.suffix not in settings.RMT_MEDIAEXT:
                 continue
-            # 只使用文件名识别
+            #  Use only file name recognition
             meta = MetaInfo(file_path.stem)
             if not meta.begin_episode:
                 continue

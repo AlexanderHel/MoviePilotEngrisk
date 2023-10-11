@@ -3,7 +3,7 @@ import abc
 
 class Singleton(abc.ABCMeta, type):
     """
-    类单例模式
+    Class singleton pattern
     """
 
     _instances: dict = {}
@@ -16,5 +16,5 @@ class Singleton(abc.ABCMeta, type):
 
 class AbstractSingleton(abc.ABC, metaclass=Singleton):
     """
-    抽像类单例模式
+    抽像Class singleton pattern
     """

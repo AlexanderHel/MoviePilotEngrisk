@@ -6,37 +6,37 @@ from pydantic import BaseModel
 class Site(BaseModel):
     # ID
     id: Optional[int]
-    # 站点名称
+    #  Site name
     name: Optional[str]
-    # 站点主域名Key
+    #  Primary domain name of the siteKey
     domain: Optional[str]
-    # 站点地址
+    #  Site address
     url: Optional[str]
-    # 站点优先级
+    #  Site prioritization
     pri: Optional[int] = 0
-    # RSS地址
+    # RSS Address
     rss: Optional[str] = None
     # Cookie
     cookie: Optional[str] = None
     # User-Agent
     ua: Optional[str] = None
-    # 是否使用代理
+    #  Whether to use a proxy
     proxy: Optional[int] = 0
-    # 过滤规则
+    #  Filter rules
     filter: Optional[str] = None
-    # 是否演染
+    #  Whether or not to act and dye
     render: Optional[int] = 0
-    # 是否公开站点
+    #  Whether or not the site is public
     public: Optional[int] = 0
-    # 备注
+    #  Note
     note: Optional[str] = None
-    # 流控单位周期
+    #  Flow control unit cycle
     limit_interval: Optional[int] = None
-    # 流控次数
+    #  Number of flow controls
     limit_count: Optional[int] = None
-    # 流控间隔
+    #  Flow control interval
     limit_seconds: Optional[int] = None
-    # 是否启用
+    #  Enable or disable
     is_active: Optional[bool] = True
 
     class Config:

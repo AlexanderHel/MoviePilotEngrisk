@@ -8,7 +8,7 @@ class IpUtils:
     @staticmethod
     def is_ipv4(ip):
         """
-        判断是不是ipv4
+        Whether or notipv4
         """
         try:
             socket.inet_pton(socket.AF_INET, ip)
@@ -25,7 +25,7 @@ class IpUtils:
     @staticmethod
     def is_ipv6(ip):
         """
-        判断是不是ipv6
+        Whether or notipv6
         """
         try:
             socket.inet_pton(socket.AF_INET6, ip)
@@ -36,7 +36,7 @@ class IpUtils:
     @staticmethod
     def is_internal(hostname):
         """
-        判断一个host是内网还是外网
+        Determine ahost Is it intranet or extranet
         """
         hostname = urlparse(hostname).hostname
         if IpUtils.is_ip(hostname):
@@ -47,7 +47,7 @@ class IpUtils:
     @staticmethod
     def is_ip(addr):
         """
-        判断是不是ip
+        Whether or notip
         """
         try:
             socket.inet_aton(addr)
@@ -58,21 +58,21 @@ class IpUtils:
     @staticmethod
     def is_internal_domain(domain):
         """
-        判断域名是否为内部域名
+        Determine if a domain name is internal
         """
-        # 获取域名对应的 IP 地址
+        #  Get the domain name's corresponding IP  Address
         try:
             ip = socket.gethostbyname(domain)
         except socket.error:
             return False
 
-        # 判断 IP 地址是否属于内网 IP 地址范围
+        #  Judgements IP  Whether the address belongs to the intranet IP  Address range
         return IpUtils.is_private_ip(ip)
 
     @staticmethod
     def is_private_ip(ip_str):
         """
-        判断是不是内网ip
+        Determine if it's an intranetip
         """
         try:
             return ipaddress.ip_address(ip_str.strip()).is_private

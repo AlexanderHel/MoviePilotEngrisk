@@ -7,33 +7,33 @@ from app.db.models.downloadhistory import DownloadHistory, DownloadFiles
 
 class DownloadHistoryOper(DbOper):
     """
-    下载历史管理
+    Download history management
     """
 
     def get_by_path(self, path: Path) -> DownloadHistory:
         """
-        按路径查询下载记录
-        :param path: 数据key
+        Search download records by path
+        :param path:  Digitalkey
         """
         return DownloadHistory.get_by_path(self._db, str(path))
 
     def get_by_hash(self, download_hash: str) -> DownloadHistory:
         """
-        按Hash查询下载记录
-        :param download_hash: 数据key
+        Check or refer toHash Check download records
+        :param download_hash:  Digitalkey
         """
         return DownloadHistory.get_by_hash(self._db, download_hash)
 
     def add(self, **kwargs) -> DownloadHistory:
         """
-        新增下载历史
+        Added download history
         """
         downloadhistory = DownloadHistory(**kwargs)
         return downloadhistory.create(self._db)
 
     def add_files(self, file_items: List[dict]):
         """
-        新增下载历史文件
+        Added download history文件
         """
         for file_item in file_items:
             downloadfile = DownloadFiles(**file_item)
@@ -41,43 +41,43 @@ class DownloadHistoryOper(DbOper):
 
     def truncate_files(self):
         """
-        清空下载历史文件记录
+        Empty the download history file record
         """
         DownloadFiles.truncate(self._db)
 
     def get_files_by_hash(self, download_hash: str, state: int = None) -> List[DownloadFiles]:
         """
-        按Hash查询下载文件记录
-        :param download_hash: 数据key
-        :param state: 删除状态
+        Check or refer toHash Query download file records
+        :param download_hash:  Digitalkey
+        :param state:  Delete status
         """
         return DownloadFiles.get_by_hash(self._db, download_hash, state)
 
     def get_file_by_fullpath(self, fullpath: str) -> DownloadFiles:
         """
-        按fullpath查询下载文件记录
-        :param fullpath: 数据key
+        Check or refer tofullpath Query download file records
+        :param fullpath:  Digitalkey
         """
         return DownloadFiles.get_by_fullpath(self._db, fullpath)
 
     def get_files_by_savepath(self, fullpath: str) -> List[DownloadFiles]:
         """
-        按savepath查询下载文件记录
-        :param fullpath: 数据key
+        Check or refer tosavepath Query download file records
+        :param fullpath:  Digitalkey
         """
         return DownloadFiles.get_by_savepath(self._db, fullpath)
 
     def delete_file_by_fullpath(self, fullpath: str):
         """
-        按fullpath删除下载文件记录
-        :param fullpath: 数据key
+        Check or refer tofullpath Delete download file records
+        :param fullpath:  Digitalkey
         """
         DownloadFiles.delete_by_fullpath(self._db, fullpath)
 
     def get_hash_by_fullpath(self, fullpath: str) -> str:
         """
-        按fullpath查询下载文件记录hash
-        :param fullpath: 数据key
+        Check or refer tofullpath Query download file recordshash
+        :param fullpath:  Digitalkey
         """
         fileinfo: DownloadFiles = DownloadFiles.get_by_fullpath(self._db, fullpath)
         if fileinfo:
@@ -86,20 +86,20 @@ class DownloadHistoryOper(DbOper):
 
     def list_by_page(self, page: int = 1, count: int = 30) -> List[DownloadHistory]:
         """
-        分页查询下载历史
+        Pagination query download history
         """
         return DownloadHistory.list_by_page(self._db, page, count)
 
     def truncate(self):
         """
-        清空下载记录
+        Empty download log
         """
         DownloadHistory.truncate(self._db)
 
     def get_last_by(self, mtype=None, title: str = None, year: str = None,
                     season: str = None, episode: str = None, tmdbid=None) -> List[DownloadHistory]:
         """
-        按类型、标题、年份、季集查询下载记录
+        By type、 Caption、 Particular year、 Season set search download records
         """
         return DownloadHistory.get_last_by(db=self._db,
                                            mtype=mtype,
@@ -111,7 +111,7 @@ class DownloadHistoryOper(DbOper):
 
     def list_by_user_date(self, date: str, userid: str = None) -> List[DownloadHistory]:
         """
-        查询某用户某时间之后的下载历史
+        Query a user's download history after a certain time
         """
         return DownloadHistory.list_by_user_date(db=self._db,
                                                  date=date,

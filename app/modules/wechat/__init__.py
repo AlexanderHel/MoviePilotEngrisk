@@ -26,42 +26,42 @@ class WechatModule(_ModuleBase):
     def message_parser(self, body: Any, form: Any,
                        args: Any) -> Optional[CommingMessage]:
         """
-        解析消息内容，返回字典，注意以下约定值：
-        userid: 用户ID
-        username: 用户名
-        text: 内容
-        :param body: 请求体
-        :param form: 表单
-        :param args: 参数
-        :return: 渠道、消息体
+        Parsing message content， Return to dictionary， Note the following convention values：
+        userid:  SubscribersID
+        username:  User id
+        text:  Element
+        :param body:  Requestor
+        :param form:  Form (document)
+        :param args:  Parameters
+        :return:  (fig.) channel、 Message body
         """
         try:
-            # URL参数
+            # URL Parameters
             sVerifyMsgSig = args.get("msg_signature")
             sVerifyTimeStamp = args.get("timestamp")
             sVerifyNonce = args.get("nonce")
             if not sVerifyMsgSig or not sVerifyTimeStamp or not sVerifyNonce:
-                logger.debug(f"微信请求参数错误：{args}")
+                logger.debug(f" Wechat request parameter error：{args}")
                 return None
-            # 解密模块
+            #  Decryption module
             wxcpt = WXBizMsgCrypt(sToken=settings.WECHAT_TOKEN,
                                   sEncodingAESKey=settings.WECHAT_ENCODING_AESKEY,
                                   sReceiveId=settings.WECHAT_CORPID)
-            # 报文数据
+            #  Message data
             if not body:
-                logger.debug(f"微信请求数据为空")
+                logger.debug(f" Wechat request data is empty")
                 return None
-            logger.debug(f"收到微信请求：{body}")
+            logger.debug(f" Received wechat request：{body}")
             ret, sMsg = wxcpt.DecryptMsg(sPostData=body,
                                          sMsgSignature=sVerifyMsgSig,
                                          sTimeStamp=sVerifyTimeStamp,
                                          sNonce=sVerifyNonce)
             if ret != 0:
-                logger.error(f"解密微信消息失败 DecryptMsg ret = {ret}")
+                logger.error(f" Failure to decrypt wechat messages DecryptMsg ret = {ret}")
                 return None
-            # 解析XML报文
+            #  AnalyzeXML Telegram
             """
-            1、消息格式：
+            1、 Message format：
             <xml>
                <ToUserName><![CDATA[toUser]]></ToUserName>
                <FromUserName><![CDATA[fromUser]]></FromUserName> 
@@ -71,7 +71,7 @@ class WechatModule(_ModuleBase):
                <MsgId>1234567890123456</MsgId>
                <AgentID>1</AgentID>
             </xml>
-            2、事件格式：
+            2、 Event format：
             <xml>
                 <ToUserName><![CDATA[toUser]]></ToUserName>
                 <FromUserName><![CDATA[UserID]]></FromUserName>
@@ -83,49 +83,49 @@ class WechatModule(_ModuleBase):
             """
             dom_tree = xml.dom.minidom.parseString(sMsg.decode('UTF-8'))
             root_node = dom_tree.documentElement
-            # 消息类型
+            #  Message type
             msg_type = DomUtils.tag_value(root_node, "MsgType")
-            # Event event事件只有click才有效,enter_agent无效
+            # Event event The event is onlyclick Only then will it work,enter_agent Null
             event = DomUtils.tag_value(root_node, "Event")
-            # 用户ID
+            #  SubscribersID
             user_id = DomUtils.tag_value(root_node, "FromUserName")
-            # 没的消息类型和用户ID的消息不要
+            #  No message types and usersID The message don't
             if not msg_type or not user_id:
-                logger.warn(f"解析不到消息类型和用户ID")
+                logger.warn(f" Failure to parse message type and userID")
                 return None
-            # 解析消息内容
+            #  Parsing message content
             if msg_type == "event" and event == "click":
-                # 校验用户有权限执行交互命令
+                #  Verify that the user has permission to execute interactive commands
                 if settings.WECHAT_ADMINS:
                     wechat_admins = settings.WECHAT_ADMINS.split(',')
                     if wechat_admins and not any(
                             user_id == admin_user for admin_user in wechat_admins):
-                        self.wechat.send_msg(title="用户无权限执行菜单命令", userid=user_id)
+                        self.wechat.send_msg(title=" Users do not have permission to execute menu commands", userid=user_id)
                         return None
-                # 根据EventKey执行命令
+                #  According toEventKey Execute a command
                 content = DomUtils.tag_value(root_node, "EventKey")
-                logger.info(f"收到微信事件：userid={user_id}, event={content}")
+                logger.info(f" Incidents of receipt of microsoft messages：userid={user_id}, event={content}")
             elif msg_type == "text":
-                # 文本消息
+                #  Text message
                 content = DomUtils.tag_value(root_node, "Content", default="")
-                logger.info(f"收到微信消息：userid={user_id}, text={content}")
+                logger.info(f" Received a wechat message：userid={user_id}, text={content}")
             else:
                 return None
 
             if content:
-                # 处理消息内容
+                #  Processing message content
                 return CommingMessage(channel=MessageChannel.Wechat,
                                       userid=user_id, username=user_id, text=content)
         except Exception as err:
-            logger.error(f"微信消息处理发生错误：{err}")
+            logger.error(f" Wechat message processing error occurred：{err}")
         return None
 
     @checkMessage(MessageChannel.Wechat)
     def post_message(self, message: Notification) -> None:
         """
-        发送消息
-        :param message: 消息内容
-        :return: 成功或失败
+        Send a message
+        :param message:  Message
+        :return:  Success or failure
         """
         self.wechat.send_msg(title=message.title, text=message.text,
                              image=message.image, userid=message.userid)
@@ -133,29 +133,29 @@ class WechatModule(_ModuleBase):
     @checkMessage(MessageChannel.Wechat)
     def post_medias_message(self, message: Notification, medias: List[MediaInfo]) -> Optional[bool]:
         """
-        发送媒体信息选择列表
-        :param message: 消息内容
-        :param medias: 媒体列表
-        :return: 成功或失败
+        Send media message selection list
+        :param message:  Message
+        :param medias:  Media list
+        :return:  Success or failure
         """
-        # 先发送标题
+        #  Send the title first
         self.wechat.send_msg(title=message.title, userid=message.userid)
-        # 再发送内容
+        #  Resend content
         return self.wechat.send_medias_msg(medias=medias, userid=message.userid)
 
     @checkMessage(MessageChannel.Wechat)
     def post_torrents_message(self, message: Notification, torrents: List[Context]) -> Optional[bool]:
         """
-        发送种子信息选择列表
-        :param message: 消息内容
-        :param torrents: 种子列表
-        :return: 成功或失败
+        Send seed message selection list
+        :param message:  Message
+        :param torrents:  Seed list
+        :return:  Success or failure
         """
         return self.wechat.send_torrents_msg(title=message.title, torrents=torrents, userid=message.userid)
 
     def register_commands(self, commands: Dict[str, dict]):
         """
-        注册命令，实现这个函数接收系统可用的命令菜单
-        :param commands: 命令字典
+        Registration command， Implement this function to receive the menu of commands available to the system
+        :param commands:  Command dictionary
         """
         self.wechat.create_menus(commands)

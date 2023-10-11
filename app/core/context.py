@@ -10,49 +10,49 @@ from app.schemas.types import MediaType
 
 @dataclass
 class TorrentInfo:
-    # 站点ID
+    #  WebsiteID
     site: int = None
-    # 站点名称
+    #  Site name
     site_name: str = None
-    # 站点Cookie
+    #  WebsiteCookie
     site_cookie: str = None
-    # 站点UA
+    #  WebsiteUA
     site_ua: str = None
-    # 站点是否使用代理
+    #  Whether the site uses a proxy
     site_proxy: bool = False
-    # 站点优先级
+    #  Site prioritization
     site_order: int = 0
-    # 种子名称
+    #  Seed name
     title: str = None
-    # 种子副标题
+    #  Seed subtitle
     description: str = None
     # IMDB ID
     imdbid: str = None
-    # 种子链接
+    #  Seed links
     enclosure: str = None
-    # 详情页面
+    #  Detail page
     page_url: str = None
-    # 种子大小
+    #  Seed size
     size: float = 0
-    # 做种者
+    #  Breeder
     seeders: int = 0
-    # 下载者
+    #  Downloader
     peers: int = 0
-    # 完成者
+    #  Completer
     grabs: int = 0
-    # 发布时间
+    #  Release time
     pubdate: str = None
-    # 已过时间
+    #  Past due
     date_elapsed: str = None
-    # 上传因子
+    #  Upload factor
     uploadvolumefactor: float = None
-    # 下载因子
+    #  Download factor
     downloadvolumefactor: float = None
     # HR
     hit_and_run: bool = False
-    # 种子标签
+    #  Seed labels
     labels: list = field(default_factory=list)
-    # 种子优先级
+    #  Seeding priority
     pri_order: int = 0
 
     def __setattr__(self, name: str, value: Any):
@@ -60,7 +60,7 @@ class TorrentInfo:
 
     def __get_properties(self):
         """
-        获取属性列表
+        Getting a list of properties
         """
         property_names = []
         for member_name in dir(self.__class__):
@@ -71,7 +71,7 @@ class TorrentInfo:
 
     def from_dict(self, data: dict):
         """
-        从字典中初始化
+        Initialize from dictionary
         """
         properties = self.__get_properties()
         for key, value in data.items():
@@ -82,32 +82,32 @@ class TorrentInfo:
     @staticmethod
     def get_free_string(upload_volume_factor: float, download_volume_factor: float) -> str:
         """
-        计算促销类型
+        Calculate the type of promotion
         """
         if upload_volume_factor is None or download_volume_factor is None:
-            return "未知"
+            return " Uncharted"
         free_strs = {
-            "1.0 1.0": "普通",
-            "1.0 0.0": "免费",
+            "1.0 1.0": " Ordinary",
+            "1.0 0.0": " Free (of charge)",
             "2.0 1.0": "2X",
-            "2.0 0.0": "2X免费",
+            "2.0 0.0": "2X Free (of charge)",
             "1.0 0.5": "50%",
             "2.0 0.5": "2X 50%",
             "1.0 0.7": "70%",
             "1.0 0.3": "30%"
         }
-        return free_strs.get('%.1f %.1f' % (upload_volume_factor, download_volume_factor), "未知")
+        return free_strs.get('%.1f %.1f' % (upload_volume_factor, download_volume_factor), " Uncharted")
 
     @property
     def volume_factor(self):
         """
-        返回促销信息
+        Back to promotions
         """
         return self.get_free_string(self.uploadvolumefactor, self.downloadvolumefactor)
 
     def to_dict(self):
         """
-        返回字典
+        Return to dictionary
         """
         dicts = asdict(self)
         dicts["volume_factor"] = self.volume_factor
@@ -116,13 +116,13 @@ class TorrentInfo:
 
 @dataclass
 class MediaInfo:
-    # 类型 电影、电视剧
+    #  Typology  Cinematic、 Dramas
     type: MediaType = None
-    # 媒体标题
+    #  Media title
     title: str = None
-    # 年份
+    #  Particular year
     year: str = None
-    # 季
+    #  Classifier for seasonal crop yield or seasons of a tv series
     season: int = None
     # TMDB ID
     tmdb_id: int = None
@@ -130,91 +130,91 @@ class MediaInfo:
     imdb_id: str = None
     # TVDB ID
     tvdb_id: int = None
-    # 豆瓣ID
+    #  Douban, prc social networking websiteID
     douban_id: str = None
-    # 媒体原语种
+    #  Original language of the media
     original_language: str = None
-    # 媒体原发行标题
+    #  Original media release title
     original_title: str = None
-    # 媒体发行日期
+    #  Media release date
     release_date: str = None
-    # 背景图片
+    #  Background image
     backdrop_path: str = None
-    # 海报图片
+    #  Poster image
     poster_path: str = None
     # LOGO
     logo_path: str = None
-    # 评分
+    #  Score (of student's work)
     vote_average: int = 0
-    # 描述
+    #  Descriptive
     overview: str = None
-    # 风格ID
+    #  HairstyleID
     genre_ids: list = field(default_factory=list)
-    # 所有别名和译名
+    #  All aliases and translations
     names: list = field(default_factory=list)
-    # 各季的剧集清单信息
+    #  Episode list information for each season
     seasons: Dict[int, list] = field(default_factory=dict)
-    # 各季详情
+    #  Seasonal details
     season_info: List[dict] = field(default_factory=list)
-    # 各季的年份
+    #  Year of each season
     season_years: dict = field(default_factory=dict)
-    # 二级分类
+    #  Secondary classification
     category: str = ""
     # TMDB INFO
     tmdb_info: dict = field(default_factory=dict)
-    # 豆瓣 INFO
+    #  Douban, prc social networking website INFO
     douban_info: dict = field(default_factory=dict)
-    # 导演
+    #  Director (film etc)
     directors: List[dict] = field(default_factory=list)
-    # 演员
+    #  Actor or actress
     actors: List[dict] = field(default_factory=list)
-    # 是否成人内容
+    #  Adult content or not
     adult: bool = False
-    # 创建人
+    #  Founder
     created_by: list = field(default_factory=list)
-    # 集时长
+    #  Episode length
     episode_run_time: list = field(default_factory=list)
-    # 风格
+    #  Hairstyle
     genres: List[dict] = field(default_factory=list)
-    # 首播日期
+    #  Premiere date
     first_air_date: str = None
-    # 首页
+    #  Home page (of a website)
     homepage: str = None
-    # 语种
+    #  Language type (in a classification)
     languages: list = field(default_factory=list)
-    # 最后上映日期
+    #  Last release date
     last_air_date: str = None
-    # 流媒体平台
+    #  Streaming media platform
     networks: list = field(default_factory=list)
-    # 集数
+    #  Episode number (of a tv series etc)
     number_of_episodes: int = 0
-    # 季数
+    #  Classifier for seasonal crop yield or seasons of a tv series数
     number_of_seasons: int = 0
-    # 原产国
+    #  Country of origin
     origin_country: list = field(default_factory=list)
-    # 原名
+    #  Original name
     original_name: str = None
-    # 出品公司
+    #  Production company
     production_companies: list = field(default_factory=list)
-    # 出品国
+    #  Producer
     production_countries: list = field(default_factory=list)
-    # 语种
+    #  Language type (in a classification)
     spoken_languages: list = field(default_factory=list)
-    # 状态
+    #  State of affairs
     status: str = None
-    # 标签
+    #  Tab (of a window) (computing)
     tagline: str = None
-    # 评价数量
+    #  Number of evaluations
     vote_count: int = 0
-    # 流行度
+    #  Popularity
     popularity: int = 0
-    # 时长
+    #  Length of time
     runtime: int = None
-    # 下一集
+    #  Next episode
     next_episode_to_air: dict = field(default_factory=dict)
 
     def __post_init__(self):
-        # 设置媒体信息
+        #  Setting up media information
         if self.tmdb_info:
             self.set_tmdb_info(self.tmdb_info)
         if self.douban_info:
@@ -225,7 +225,7 @@ class MediaInfo:
 
     def __get_properties(self):
         """
-        获取属性列表
+        Getting a list of properties
         """
         property_names = []
         for member_name in dir(self.__class__):
@@ -236,7 +236,7 @@ class MediaInfo:
 
     def from_dict(self, data: dict):
         """
-        从字典中初始化
+        Initialize from dictionary
         """
         properties = self.__get_properties()
         for key, value in data.items():
@@ -248,13 +248,13 @@ class MediaInfo:
 
     def set_image(self, name: str, image: str):
         """
-        设置图片地址
+        Setting the image address
         """
         setattr(self, f"{name}_path", image)
 
     def get_image(self, name: str):
         """
-        获取图片地址
+        Get image address
         """
         try:
             return getattr(self, f"{name}_path")
@@ -263,20 +263,20 @@ class MediaInfo:
 
     def set_category(self, cat: str):
         """
-        设置二级分类
+        Setting up secondary categorization
         """
         self.category = cat or ""
 
     def set_tmdb_info(self, info: dict):
         """
-        初始化媒信息
+        Initialize matchmaker information
         """
 
         def __directors_actors(tmdbinfo: dict) -> Tuple[List[dict], List[dict]]:
             """
-            查询导演和演员
-            :param tmdbinfo: TMDB元数据
-            :return: 导演列表，演员列表
+            Search for directors and actors
+            :param tmdbinfo: TMDB Metadata
+            :return:  Director's list， Cast list
             """
             """
             "cast": [
@@ -328,9 +328,9 @@ class MediaInfo:
 
         if not info:
             return
-        # 本体
+        #  Noumenon (object of purely intellectual perception according kant)
         self.tmdb_info = info
-        # 类型
+        #  Typology
         if isinstance(info.get('media_type'), MediaType):
             self.type = info.get('media_type')
         elif info.get('media_type'):
@@ -341,98 +341,98 @@ class MediaInfo:
         self.tmdb_id = info.get('id')
         if not self.tmdb_id:
             return
-        # 额外ID
+        #  AddedID
         if info.get("external_ids"):
             self.tvdb_id = info.get("external_ids", {}).get("tvdb_id")
             self.imdb_id = info.get("external_ids", {}).get("imdb_id")
-        # 评分
+        #  Score (of student's work)
         self.vote_average = round(float(info.get('vote_average')), 1) if info.get('vote_average') else 0
-        # 描述
+        #  Descriptive
         self.overview = info.get('overview')
-        # 风格
+        #  Hairstyle
         self.genre_ids = info.get('genre_ids') or []
-        # 原语种
+        #  Original language
         self.original_language = info.get('original_language')
         if self.type == MediaType.MOVIE:
-            # 标题
+            #  Caption
             self.title = info.get('title')
-            # 原标题
+            #  Original title
             self.original_title = info.get('original_title')
-            # 发行日期
+            #  Issue date
             self.release_date = info.get('release_date')
             if self.release_date:
-                # 年份
+                #  Particular year
                 self.year = self.release_date[:4]
         else:
-            # 电视剧
+            #  Dramas
             self.title = info.get('name')
-            # 原标题
+            #  Original title
             self.original_title = info.get('original_name')
-            # 发行日期
+            #  Issue date
             self.release_date = info.get('first_air_date')
             if self.release_date:
-                # 年份
+                #  Particular year
                 self.year = self.release_date[:4]
-            # 季集信息
+            #  Classifier for seasonal crop yield or seasons of a tv series集信息
             if info.get('seasons'):
                 self.season_info = info.get('seasons')
                 for seainfo in info.get('seasons'):
-                    # 季
+                    #  Classifier for seasonal crop yield or seasons of a tv series
                     season = seainfo.get("season_number")
                     if not season:
                         continue
-                    # 集
+                    #  Classifier for sections of a tv series e.g. episode
                     episode_count = seainfo.get("episode_count")
                     self.seasons[season] = list(range(1, episode_count + 1))
-                    # 年份
+                    #  Particular year
                     air_date = seainfo.get("air_date")
                     if air_date:
                         self.season_years[season] = air_date[:4]
-        # 海报
+        #  Playbill
         if info.get('poster_path'):
             self.poster_path = f"https://{settings.TMDB_IMAGE_DOMAIN}/t/p/original{info.get('poster_path')}"
-        # 背景
+        #  Contexts
         if info.get('backdrop_path'):
             self.backdrop_path = f"https://{settings.TMDB_IMAGE_DOMAIN}/t/p/original{info.get('backdrop_path')}"
-        # 导演和演员
+        #  Director (film etc)和演员
         self.directors, self.actors = __directors_actors(info)
-        # 别名和译名
+        #  Alias and translation
         self.names = info.get('names') or []
-        # 剩余属性赋值
+        #  Remaining attribute assignments
         for key, value in info.items():
             if hasattr(self, key) and not getattr(self, key):
                 setattr(self, key, value)
 
     def set_douban_info(self, info: dict):
         """
-        初始化豆瓣信息
+        Initialize bean information
         """
         if not info:
             return
-        # 本体
+        #  Noumenon (object of purely intellectual perception according kant)
         self.douban_info = info
-        # 豆瓣ID
+        #  Douban, prc social networking websiteID
         self.douban_id = str(info.get("id"))
-        # 类型
+        #  Typology
 
         if not self.type:
             if isinstance(info.get('media_type'), MediaType):
                 self.type = info.get('media_type')
             else:
                 self.type = MediaType.MOVIE if info.get("type") == "movie" else MediaType.TV
-        # 标题
+        #  Caption
         if not self.title:
             self.title = info.get("title")
-            # 识别标题中的季
+            #  Identify the season in the title
             meta = MetaInfo(self.title)
             self.season = meta.begin_season
-        # 原语种标题
+        #  Original language标题
         if not self.original_title:
             self.original_title = info.get("original_title")
-        # 年份
+        #  Particular year
         if not self.year:
             self.year = info.get("year")[:4] if info.get("year") else None
-        # 评分
+        #  Score (of student's work)
         if not self.vote_average:
             rating = info.get("rating")
             if rating:
@@ -440,7 +440,7 @@ class MediaInfo:
             else:
                 vote_average = 0
             self.vote_average = vote_average
-        # 发行日期
+        #  Issue date
         if not self.release_date:
             if info.get("release_date"):
                 self.release_date = info.get("release_date")
@@ -450,37 +450,37 @@ class MediaInfo:
                     match = re.search(r'\d{4}-\d{2}-\d{2}', release_date)
                     if match:
                         self.release_date = match.group()
-        # 海报
+        #  Playbill
         if not self.poster_path:
             self.poster_path = info.get("pic", {}).get("large")
             if not self.poster_path and info.get("cover_url"):
                 self.poster_path = info.get("cover_url")
             if not self.poster_path and info.get("cover"):
                 self.poster_path = info.get("cover").get("url")
-        # 简介
+        #  Synopsis
         if not self.overview:
             self.overview = info.get("intro") or info.get("card_subtitle") or ""
-        # 从简介中提取年份
+        #  Extracting years from profiles
         if self.overview and not self.year:
             match = re.search(r'\d{4}', self.overview)
             if match:
                 self.year = match.group()
-        # 导演和演员
+        #  Director (film etc)和演员
         if not self.directors:
             self.directors = info.get("directors") or []
         if not self.actors:
             self.actors = info.get("actors") or []
-        # 别名
+        #  Nickname
         if not self.names:
             self.names = info.get("aka") or []
-        # 剧集
+        #  Episode
         if self.type == MediaType.TV and not self.seasons:
             meta = MetaInfo(info.get("title"))
             if meta.begin_season:
                 episodes_count = info.get("episodes_count")
                 if episodes_count:
                     self.seasons[meta.begin_season] = list(range(1, episodes_count + 1))
-        # 剩余属性赋值
+        #  Remaining attribute assignments
         for key, value in info.items():
             if not hasattr(self, key):
                 setattr(self, key, value)
@@ -494,7 +494,7 @@ class MediaInfo:
     @property
     def detail_link(self):
         """
-        TMDB媒体详情页地址
+        TMDB Media detail page address
         """
         if self.tmdb_id:
             if self.type == MediaType.MOVIE:
@@ -508,7 +508,7 @@ class MediaInfo:
     @property
     def stars(self):
         """
-        返回评分星星个数
+        Returns the number of stars in the rating
         """
         if not self.vote_average:
             return ""
@@ -517,12 +517,12 @@ class MediaInfo:
     @property
     def vote_star(self):
         if self.vote_average:
-            return "评分：%s" % self.stars
+            return " Score (of student's work)：%s" % self.stars
         return ""
 
     def get_backdrop_image(self, default: bool = False):
         """
-        返回背景图片地址
+        Returns the address of the background image
         """
         if self.backdrop_path:
             return self.backdrop_path.replace("original", "w500")
@@ -530,7 +530,7 @@ class MediaInfo:
 
     def get_message_image(self, default: bool = None):
         """
-        返回消息图片地址
+        Returns the address of the message image
         """
         if self.backdrop_path:
             return self.backdrop_path.replace("original", "w500")
@@ -538,7 +538,7 @@ class MediaInfo:
 
     def get_poster_image(self, default: bool = None):
         """
-        返回海报图片地址
+        Return to poster image address
         """
         if self.poster_path:
             return self.poster_path.replace("original", "w500")
@@ -546,8 +546,8 @@ class MediaInfo:
 
     def get_overview_string(self, max_len: int = 140):
         """
-        返回带限定长度的简介信息
-        :param max_len: 内容长度
+        Returns the profile information with a limited length
+        :param max_len:  Content length
         :return:
         """
         overview = str(self.overview).strip()
@@ -558,7 +558,7 @@ class MediaInfo:
 
     def to_dict(self):
         """
-        返回字典
+        Return to dictionary
         """
         dicts = asdict(self)
         dicts["type"] = self.type.value if self.type else None
@@ -568,7 +568,7 @@ class MediaInfo:
 
     def clear(self):
         """
-        去除多余数据，减小体积
+        Remove redundant data， Bulk reduction
         """
         self.tmdb_info = {}
         self.douban_info = {}
@@ -588,19 +588,19 @@ class MediaInfo:
 @dataclass
 class Context:
     """
-    上下文对象
+    Context object (computing)
     """
 
-    # 识别信息
+    #  Identifying information
     meta_info: MetaBase = None
-    # 媒体信息
+    #  Media information
     media_info: MediaInfo = None
-    # 种子信息
+    #  Seed information
     torrent_info: TorrentInfo = None
 
     def to_dict(self):
         """
-        转换为字典
+        Convert to dictionary
         """
         return {
             "meta_info": self.meta_info.to_dict() if self.meta_info else None,

@@ -8,22 +8,22 @@ from app.db.models import Base
 
 class MediaServerItem(Base):
     """
-    站点表
+    Site list
     """
     id = Column(Integer, Sequence('id'), primary_key=True, index=True)
-    # 服务器类型
+    #  Server type
     server = Column(String)
-    # 媒体库ID
+    #  Media libraryID
     library = Column(String)
     # ID
     item_id = Column(String, index=True)
-    # 类型
+    #  Typology
     item_type = Column(String)
-    # 标题
+    #  Caption
     title = Column(String, index=True)
-    # 原标题
+    #  Original title
     original_title = Column(String)
-    # 年份
+    #  Particular year
     year = Column(String)
     # TMDBID
     tmdbid = Column(Integer, index=True)
@@ -31,13 +31,13 @@ class MediaServerItem(Base):
     imdbid = Column(String, index=True)
     # TVDBID
     tvdbid = Column(String, index=True)
-    # 路径
+    #  Trails
     path = Column(String)
-    # 季集
+    #  End of a season
     seasoninfo = Column(String)
-    # 备注
+    #  Note
     note = Column(String)
-    # 同步时间
+    #  Synchronous time
     lst_mod_date = Column(String, default=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     @staticmethod

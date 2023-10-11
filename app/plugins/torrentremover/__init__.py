@@ -20,28 +20,28 @@ lock = threading.Lock()
 
 
 class TorrentRemover(_PluginBase):
-    # 插件名称
-    plugin_name = "自动删种"
-    # 插件描述
-    plugin_desc = "自动删除下载器中的下载任务。"
-    # 插件图标
+    #  Plug-in name
+    plugin_name = " Automatic seed deletion"
+    #  Plugin description
+    plugin_desc = " Automatic deletion of download tasks in the downloader。"
+    #  Plug-in icons
     plugin_icon = "torrent.png"
-    # 主题色
+    #  Theme color
     plugin_color = "#02853F"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "jxxghp"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/jxxghp"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "torrentremover_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 8
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 2
 
-    # 私有属性
+    #  Private property
     qb = None
     tr = None
     _event = threading.Event()
@@ -97,20 +97,20 @@ class TorrentRemover(_PluginBase):
                 try:
                     self._scheduler.add_job(func=self.delete_torrents,
                                             trigger=CronTrigger.from_crontab(self._cron),
-                                            name="自动删种服务")
-                    logger.info(f"自动删种服务启动，周期：{self._cron}")
+                                            name=" Automatic seed deletion service")
+                    logger.info(f" Automated seed deletion service activation， Cyclicality：{self._cron}")
                 except Exception as err:
-                    logger.error(f"自动删种服务启动失败：{str(err)}")
-                    self.systemmessage.put(f"自动删种服务启动失败：{str(err)}")
+                    logger.error(f" Failure to start the auto-delete seeding service：{str(err)}")
+                    self.systemmessage.put(f" Failure to start the auto-delete seeding service：{str(err)}")
             if self._onlyonce:
-                logger.info(f"自动删种服务启动，立即运行一次")
+                logger.info(f" Automated seed deletion service activation， Run one immediately")
                 self._scheduler.add_job(func=self.delete_torrents, trigger='date',
                                         run_date=datetime.now(
                                             tz=pytz.timezone(settings.TZ)) + timedelta(seconds=3)
                                         )
-                # 关闭一次性开关
+                #  Turn off the disposable switch
                 self._onlyonce = False
-                # 保存设置
+                #  Save settings
                 self.update_config({
                     "enabled": self._enabled,
                     "notify": self._notify,
@@ -133,7 +133,7 @@ class TorrentRemover(_PluginBase):
 
                 })
             if self._scheduler.get_jobs():
-                # 启动服务
+                #  Starting services
                 self._scheduler.print_jobs()
                 self._scheduler.start()
 
@@ -166,7 +166,7 @@ class TorrentRemover(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'enabled',
-                                            'label': '启用插件',
+                                            'label': ' Enabling plug-ins',
                                         }
                                     }
                                 ]
@@ -182,7 +182,7 @@ class TorrentRemover(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'notify',
-                                            'label': '发送通知',
+                                            'label': ' Send notification',
                                         }
                                     }
                                 ]
@@ -203,7 +203,7 @@ class TorrentRemover(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'cron',
-                                            'label': '执行周期',
+                                            'label': ' Implementation period',
                                             'placeholder': '0 */12 * * *'
                                         }
                                     }
@@ -220,11 +220,11 @@ class TorrentRemover(_PluginBase):
                                         'component': 'VSelect',
                                         'props': {
                                             'model': 'action',
-                                            'label': '动作',
+                                            'label': ' Movements',
                                             'items': [
-                                                {'title': '暂停', 'value': 'pause'},
-                                                {'title': '删除种子', 'value': 'delete'},
-                                                {'title': '删除种子和文件', 'value': 'deletefile'}
+                                                {'title': ' Pause (media player)', 'value': 'pause'},
+                                                {'title': ' Delete seeds', 'value': 'delete'},
+                                                {'title': ' Deleting seeds and files', 'value': 'deletefile'}
                                             ]
                                         }
                                     }
@@ -247,7 +247,7 @@ class TorrentRemover(_PluginBase):
                                             'chips': True,
                                             'multiple': True,
                                             'model': 'downloaders',
-                                            'label': '下载器',
+                                            'label': ' Downloader',
                                             'items': [
                                                 {'title': 'Qbittorrent', 'value': 'qbittorrent'},
                                                 {'title': 'Transmission', 'value': 'transmission'}
@@ -271,8 +271,8 @@ class TorrentRemover(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'size',
-                                            'label': '种子大小（GB）',
-                                            'placeholder': '例如1-10'
+                                            'label': ' Seed size（GB）',
+                                            'placeholder': ' For example1-10'
                                         }
                                     }
                                 ]
@@ -287,7 +287,7 @@ class TorrentRemover(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'ratio',
-                                            'label': '分享率',
+                                            'label': ' Sharing rate',
                                             'placeholder': ''
                                         }
                                     }
@@ -303,7 +303,7 @@ class TorrentRemover(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'time',
-                                            'label': '做种时间（小时）',
+                                            'label': ' Time of planting（ Hourly）',
                                             'placeholder': ''
                                         }
                                     }
@@ -319,7 +319,7 @@ class TorrentRemover(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'upspeed',
-                                            'label': '平均上传速度',
+                                            'label': ' Average upload speed',
                                             'placeholder': ''
                                         }
                                     }
@@ -335,8 +335,8 @@ class TorrentRemover(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'labels',
-                                            'label': '标签',
-                                            'placeholder': '用,分隔多个标签'
+                                            'label': ' Tab (of a window) (computing)',
+                                            'placeholder': ' Expense or outlay, Separate multiple tags'
                                         }
                                     }
                                 ]
@@ -351,8 +351,8 @@ class TorrentRemover(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'pathkeywords',
-                                            'label': '保存路径关键词',
-                                            'placeholder': '支持正式表达式'
+                                            'label': ' Save path keywords',
+                                            'placeholder': ' Support for formal expressions'
                                         }
                                     }
                                 ]
@@ -367,8 +367,8 @@ class TorrentRemover(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'trackerkeywords',
-                                            'label': 'Tracker关键词',
-                                            'placeholder': '支持正式表达式'
+                                            'label': 'Tracker Byword',
+                                            'placeholder': ' Support for formal expressions'
                                         }
                                     }
                                 ]
@@ -383,8 +383,8 @@ class TorrentRemover(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'errorkeywords',
-                                            'label': '错误信息关键词（TR）',
-                                            'placeholder': '支持正式表达式，仅适用于TR'
+                                            'label': ' Error message keywords（TR）',
+                                            'placeholder': ' Support for formal expressions， Only applicable toTR'
                                         }
                                     }
                                 ]
@@ -399,8 +399,8 @@ class TorrentRemover(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'torrentstates',
-                                            'label': '任务状态（QB）',
-                                            'placeholder': '用,分隔多个状态，仅适用于QB'
+                                            'label': ' Mission status（QB）',
+                                            'placeholder': ' Expense or outlay, Separating multiple states， Only applicable toQB'
                                         }
                                     }
                                 ]
@@ -415,8 +415,8 @@ class TorrentRemover(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'torrentcategorys',
-                                            'label': '任务分类',
-                                            'placeholder': '用,分隔多个分类'
+                                            'label': ' Classification of tasks',
+                                            'placeholder': ' Expense or outlay, Separate multiple classifications'
                                         }
                                     }
                                 ]
@@ -437,7 +437,7 @@ class TorrentRemover(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'samedata',
-                                            'label': '处理辅种',
+                                            'label': ' Auxiliary species',
                                         }
                                     }
                                 ]
@@ -453,7 +453,7 @@ class TorrentRemover(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'mponly',
-                                            'label': '仅MoviePilot任务',
+                                            'label': ' MerelyMoviePilot Mandates',
                                         }
                                     }
                                 ]
@@ -469,7 +469,7 @@ class TorrentRemover(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'onlyonce',
-                                            'label': '立即运行一次',
+                                            'label': ' Run one immediately',
                                         }
                                     }
                                 ]
@@ -488,7 +488,7 @@ class TorrentRemover(_PluginBase):
                                     {
                                         'component': 'VAlert',
                                         'props': {
-                                            'text': '自动删种存在风险，如设置不当可能导致数据丢失！建议动作先选择暂停，确定条件正确后再改成删除。'
+                                            'text': ' Automatic seed deletion is risky， Improper settings may result in data loss！ Suggested action is to select pause first， Make sure the condition is correct before changing it to delete。'
                                         }
                                     }
                                 ]
@@ -523,7 +523,7 @@ class TorrentRemover(_PluginBase):
 
     def stop_service(self):
         """
-        退出插件
+        Exit plugin
         """
         try:
             if self._scheduler:
@@ -538,7 +538,7 @@ class TorrentRemover(_PluginBase):
 
     def __get_downloader(self, dtype: str):
         """
-        根据类型返回下载器实例
+        Returns downloader instances by type
         """
         if dtype == "qbittorrent":
             return self.qb
@@ -549,91 +549,91 @@ class TorrentRemover(_PluginBase):
 
     def delete_torrents(self):
         """
-        定时删除下载器中的下载任务
+        Timed deletion of download tasks in downloader
         """
         for downloader in self._downloaders:
             try:
                 with lock:
-                    # 获取需删除种子列表
+                    #  Get the list of seeds to be deleted
                     torrents = self.get_remove_torrents(downloader)
-                    logger.info(f"自动删种任务 获取符合处理条件种子数 {len(torrents)}")
-                    # 下载器
+                    logger.info(f" Auto-deletion of seed tasks  Obtaining the number of seeds eligible for treatment {len(torrents)}")
+                    #  Downloader
                     downlader_obj = self.__get_downloader(downloader)
                     if self._action == "pause":
-                        message_text = f"{downloader.title()} 共暂停{len(torrents)}个种子"
+                        message_text = f"{downloader.title()}  Total suspension{len(torrents)} Seed"
                         for torrent in torrents:
                             if self._event.is_set():
-                                logger.info(f"自动删种服务停止")
+                                logger.info(f" Automatic seed censoring service discontinued")
                                 return
                             text_item = f"{torrent.get('name')} " \
-                                        f"来自站点：{torrent.get('site')} " \
-                                        f"大小：{StringUtils.str_filesize(torrent.get('size'))}"
-                            # 暂停种子
+                                        f" From the site：{torrent.get('site')} " \
+                                        f" Adults and children：{StringUtils.str_filesize(torrent.get('size'))}"
+                            #  Suspension of seeds
                             downlader_obj.stop_torrents(ids=[torrent.get("id")])
-                            logger.info(f"自动删种任务 暂停种子：{text_item}")
+                            logger.info(f" Auto-deletion of seed tasks  Suspension of seeds：{text_item}")
                             message_text = f"{message_text}\n{text_item}"
                     elif self._action == "delete":
-                        message_text = f"{downloader.title()} 共删除{len(torrents)}个种子"
+                        message_text = f"{downloader.title()}  Total deleted{len(torrents)} Seed"
                         for torrent in torrents:
                             if self._event.is_set():
-                                logger.info(f"自动删种服务停止")
+                                logger.info(f" Automatic seed censoring service discontinued")
                                 return
                             text_item = f"{torrent.get('name')} " \
-                                        f"来自站点：{torrent.get('site')} " \
-                                        f"大小：{StringUtils.str_filesize(torrent.get('size'))}"
-                            # 删除种子
+                                        f" From the site：{torrent.get('site')} " \
+                                        f" Adults and children：{StringUtils.str_filesize(torrent.get('size'))}"
+                            #  Delete seeds
                             downlader_obj.delete_torrents(delete_file=False,
                                                           ids=[torrent.get("id")])
-                            logger.info(f"自动删种任务 删除种子：{text_item}")
+                            logger.info(f" Auto-deletion of seed tasks  Delete seeds：{text_item}")
                             message_text = f"{message_text}\n{text_item}"
                     elif self._action == "deletefile":
-                        message_text = f"{downloader.title()} 共删除{len(torrents)}个种子及文件"
+                        message_text = f"{downloader.title()}  Total deleted{len(torrents)} Seeds and documents"
                         for torrent in torrents:
                             if self._event.is_set():
-                                logger.info(f"自动删种服务停止")
+                                logger.info(f" Automatic seed censoring service discontinued")
                                 return
                             text_item = f"{torrent.get('name')} " \
-                                        f"来自站点：{torrent.get('site')} " \
-                                        f"大小：{StringUtils.str_filesize(torrent.get('size'))}"
-                            # 删除种子
+                                        f" From the site：{torrent.get('site')} " \
+                                        f" Adults and children：{StringUtils.str_filesize(torrent.get('size'))}"
+                            #  Delete seeds
                             downlader_obj.delete_torrents(delete_file=True,
                                                           ids=[torrent.get("id")])
-                            logger.info(f"自动删种任务 删除种子及文件：{text_item}")
+                            logger.info(f" Auto-deletion of seed tasks  Deleting seeds and files：{text_item}")
                             message_text = f"{message_text}\n{text_item}"
                     else:
                         continue
                     if torrents and message_text and self._notify:
                         self.post_message(
                             mtype=NotificationType.SiteMessage,
-                            title=f"【自动删种任务完成】",
+                            title=f"【 Automatic seeding task completion】",
                             text=message_text
                         )
             except Exception as e:
-                logger.error(f"自动删种任务异常：{str(e)}")
+                logger.error(f" Anomalies in automatic seed deletion tasks：{str(e)}")
 
     def __get_qb_torrent(self, torrent: Any) -> Optional[dict]:
         """
-        检查QB下载任务是否符合条件
+        ProbeQB Download task eligibility
         """
-        # 完成时间
+        #  Completion time
         date_done = torrent.completion_on if torrent.completion_on > 0 else torrent.added_on
-        # 现在时间
+        #  Current time
         date_now = int(time.mktime(datetime.now().timetuple()))
-        # 做种时间
+        #  Time of planting
         torrent_seeding_time = date_now - date_done if date_done else 0
-        # 平均上传速度
+        #  Average upload speed
         torrent_upload_avs = torrent.uploaded / torrent_seeding_time if torrent_seeding_time else 0
-        # 大小 单位：GB
+        #  Adults and children  Work unit (one's workplace)：GB
         sizes = self._size.split('-') if self._size else []
         minsize = sizes[0] * 1024 * 1024 * 1024 if sizes else 0
         maxsize = sizes[-1] * 1024 * 1024 * 1024 if sizes else 0
-        # 分享率
+        #  Sharing rate
         if self._ratio and torrent.ratio <= float(self._ratio):
             return None
-        # 做种时间 单位：小时
+        #  Time of planting 单位：小时
         if self._time and torrent_seeding_time <= float(self._time) * 3600:
             return None
-        # 文件大小
+        #  File size
         if self._size and (torrent.size >= int(maxsize) or torrent.size <= int(minsize)):
             return None
         if self._upspeed and torrent_upload_avs >= float(self._upspeed) * 1024:
@@ -655,23 +655,23 @@ class TorrentRemover(_PluginBase):
 
     def __get_tr_torrent(self, torrent: Any) -> Optional[dict]:
         """
-        检查TR下载任务是否符合条件
+        ProbeTR Download task eligibility
         """
-        # 完成时间
+        #  Completion time
         date_done = torrent.date_done or torrent.date_added
-        # 现在时间
+        #  Current time
         date_now = int(time.mktime(datetime.now().timetuple()))
-        # 做种时间
+        #  Time of planting
         torrent_seeding_time = date_now - int(time.mktime(date_done.timetuple())) if date_done else 0
-        # 上传量
+        #  Upload volume
         torrent_uploaded = torrent.ratio * torrent.total_size
-        # 平均上传速茺
+        #  Average upload speed
         torrent_upload_avs = torrent_uploaded / torrent_seeding_time if torrent_seeding_time else 0
-        # 大小 单位：GB
+        #  Adults and children  Work unit (one's workplace)：GB
         sizes = self._size.split('-') if self._size else []
         minsize = sizes[0] * 1024 * 1024 * 1024 if sizes else 0
         maxsize = sizes[-1] * 1024 * 1024 * 1024 if sizes else 0
-        # 分享率
+        #  Sharing rate
         if self._ratio and torrent.ratio <= float(self._ratio):
             return None
         if self._time and torrent_seeding_time <= float(self._time) * 3600:
@@ -704,23 +704,23 @@ class TorrentRemover(_PluginBase):
 
     def get_remove_torrents(self, downloader: str):
         """
-        获取自动删种任务种子
+        Obtaining seeds for automated deletion tasks
         """
         remove_torrents = []
-        # 下载器对象
+        #  Downloader对象
         downloader_obj = self.__get_downloader(downloader)
-        # 标题
+        #  Caption
         if self._labels:
             tags = self._labels.split(',')
         else:
             tags = []
         if self._mponly:
             tags.extend(settings.TORRENT_TAG)
-        # 查询种子
+        #  Inquiry seeds
         torrents, error_flag = downloader_obj.get_torrents(tags=tags or None)
         if error_flag:
             return []
-        # 处理种子
+        #  Seed treatment
         for torrent in torrents:
             if downloader == "qbittorrent":
                 item = self.__get_qb_torrent(torrent)
@@ -729,7 +729,7 @@ class TorrentRemover(_PluginBase):
             if not item:
                 continue
             remove_torrents.append(item)
-        # 处理辅种
+        #  Auxiliary species
         if self._samedata and remove_torrents:
             remove_ids = [t.get("id") for t in remove_torrents]
             remove_torrents_plus = []
@@ -747,7 +747,7 @@ class TorrentRemover(_PluginBase):
                         plus_name = torrent.name
                         plus_size = torrent.total_size
                         plus_site = torrent.trackers[0].get("sitename") if torrent.trackers else ""
-                    # 比对名称和大小
+                    #  Compare names and sizes
                     if plus_name == name \
                             and plus_size == size \
                             and plus_id not in remove_ids:

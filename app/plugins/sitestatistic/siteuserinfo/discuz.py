@@ -40,7 +40,7 @@ class DiscuzUserInfo(ISiteUserInfo):
 
     def _parse_user_detail_info(self, html_text: str):
         """
-        解析用户额外信息，加入时间，等级
+        Parsing additional user information， Joining time， Hierarchy
         :param html_text:
         :return:
         """
@@ -48,44 +48,44 @@ class DiscuzUserInfo(ISiteUserInfo):
         if not html:
             return None
 
-        # 用户等级
+        #  User level
         user_levels_text = html.xpath('//a[contains(@href, "usergroup")]/text()')
         if user_levels_text:
             self.user_level = user_levels_text[-1].strip()
 
-        # 加入日期
-        join_at_text = html.xpath('//li[em[text()="注册时间"]]/text()')
+        #  Date of accession
+        join_at_text = html.xpath('//li[em[text()=" Registration time"]]/text()')
         if join_at_text:
             self.join_at = StringUtils.unify_datetime_str(join_at_text[0].strip())
 
-        # 分享率
-        ratio_text = html.xpath('//li[contains(.//text(), "分享率")]//text()')
+        #  Sharing rate
+        ratio_text = html.xpath('//li[contains(.//text(), " Sharing rate")]//text()')
         if ratio_text:
             ratio_match = re.search(r"\(([\d,.]+)\)", ratio_text[0])
             if ratio_match and ratio_match.group(1).strip():
                 self.bonus = StringUtils.str_float(ratio_match.group(1))
 
-        # 积分
-        bouns_text = html.xpath('//li[em[text()="积分"]]/text()')
+        #  Accumulated points (in sports, at school etc)
+        bouns_text = html.xpath('//li[em[text()=" Accumulated points (in sports, at school etc)"]]/text()')
         if bouns_text:
             self.bonus = StringUtils.str_float(bouns_text[0].strip())
 
-        # 上传
-        upload_text = html.xpath('//li[em[contains(text(),"上传量")]]/text()')
+        #  Upload
+        upload_text = html.xpath('//li[em[contains(text()," Upload volume")]]/text()')
         if upload_text:
             self.upload = StringUtils.num_filesize(upload_text[0].strip().split('/')[-1])
 
-        # 下载
-        download_text = html.xpath('//li[em[contains(text(),"下载量")]]/text()')
+        #  Downloading
+        download_text = html.xpath('//li[em[contains(text()," Downloads")]]/text()')
         if download_text:
             self.download = StringUtils.num_filesize(download_text[0].strip().split('/')[-1])
 
     def _parse_user_torrent_seeding_info(self, html_text: str, multi_page: bool = False) -> Optional[str]:
         """
-        做种相关信息
+        Seeding information
         :param html_text:
-        :param multi_page: 是否多页数据
-        :return: 下页地址
+        :param multi_page:  Whether multiple pages of data
+        :return:  Next page address
         """
         html = etree.HTML(html_text)
         if not html:
@@ -93,11 +93,11 @@ class DiscuzUserInfo(ISiteUserInfo):
 
         size_col = 3
         seeders_col = 4
-        # 搜索size列
+        #  Look for sth.size Columns
         if html.xpath('//tr[position()=1]/td[.//img[@class="size"] and .//img[@alt="size"]]'):
             size_col = len(html.xpath('//tr[position()=1]/td[.//img[@class="size"] '
                                       'and .//img[@alt="size"]]/preceding-sibling::td')) + 1
-        # 搜索seeders列
+        #  Look for sth.seeders Columns
         if html.xpath('//tr[position()=1]/td[.//img[@class="seeders"] and .//img[@alt="seeders"]]'):
             seeders_col = len(html.xpath('//tr[position()=1]/td[.//img[@class="seeders"] '
                                          'and .//img[@alt="seeders"]]/preceding-sibling::td')) + 1
@@ -121,9 +121,9 @@ class DiscuzUserInfo(ISiteUserInfo):
         self.seeding_size += page_seeding_size
         self.seeding_info.extend(page_seeding_info)
 
-        # 是否存在下页数据
+        #  Existence of next page data
         next_page = None
-        next_page_text = html.xpath('//a[contains(.//text(), "下一页") or contains(.//text(), "下一頁")]/@href')
+        next_page_text = html.xpath('//a[contains(.//text(), " Next page") or contains(.//text(), " Next page")]/@href')
         if next_page_text:
             next_page = next_page_text[-1].strip()
 

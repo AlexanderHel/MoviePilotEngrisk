@@ -13,9 +13,9 @@ from app.utils.string import StringUtils
 
 class RssHelper:
     """
-    RSS帮助类，解析RSS报文、获取RSS地址等
+    RSS Help class， AnalyzeRSS Telegram、 GainRSS Address, etc.
     """
-    # 各站点RSS链接获取配置
+    #  StationsRSS Link to get configuration
     rss_link_conf = {
         "default": {
             "xpath": "//a[@class='faqlink']/@href",
@@ -223,12 +223,12 @@ class RssHelper:
     @staticmethod
     def parse(url, proxy: bool = False) -> Union[List[dict], None]:
         """
-        解析RSS订阅URL，获取RSS中的种子信息
-        :param url: RSS地址
-        :param proxy: 是否使用代理
-        :return: 种子信息列表，如为None代表Rss过期
+        AnalyzeRSS Subscribe toURL， GainRSS Seed information in
+        :param url: RSS Address
+        :param proxy:  Whether to use a proxy
+        :return:  Seed information list， IfNone In the name ofRss Expire (as in expiration date)
         """
-        # 开始处理
+        #  Commencement of processing
         ret_array: list = []
         if not url:
             return []
@@ -243,39 +243,39 @@ class RssHelper:
         if ret:
             ret_xml = ret.text
             try:
-                # 解析XML
+                #  AnalyzeXML
                 dom_tree = xml.dom.minidom.parseString(ret_xml)
                 rootNode = dom_tree.documentElement
                 items = rootNode.getElementsByTagName("item")
                 for item in items:
                     try:
-                        # 标题
+                        #  Caption
                         title = DomUtils.tag_value(item, "title", default="")
                         if not title:
                             continue
-                        # 描述
+                        #  Descriptive
                         description = DomUtils.tag_value(item, "description", default="")
-                        # 种子页面
+                        #  Seed page
                         link = DomUtils.tag_value(item, "link", default="")
-                        # 种子链接
+                        #  Seed links
                         enclosure = DomUtils.tag_value(item, "enclosure", "url", default="")
                         if not enclosure and not link:
                             continue
-                        # 部分RSS只有link没有enclosure
+                        #  PortionRSS Only iflink Hasn'tenclosure
                         if not enclosure and link:
                             enclosure = link
-                        # 大小
+                        #  Adults and children
                         size = DomUtils.tag_value(item, "enclosure", "length", default=0)
                         if size and str(size).isdigit():
                             size = int(size)
                         else:
                             size = 0
-                        # 发布日期
+                        #  Release date
                         pubdate = DomUtils.tag_value(item, "pubDate", default="")
                         if pubdate:
-                            # 转换为时间
+                            #  Convert to time
                             pubdate = StringUtils.get_time(pubdate)
-                        # 返回对象
+                        #  Return object
                         tmp_dict = {'title': title,
                                     'enclosure': enclosure,
                                     'size': size,
@@ -288,9 +288,9 @@ class RssHelper:
                         continue
             except Exception as e2:
                 print(str(e2))
-                # RSS过期 观众RSS 链接已过期，您需要获得一个新的！  pthome RSS Link has expired, You need to get a new one!
+                # RSS Expire (as in expiration date)  Visitors (an exhibition etc)RSS  Link has expired， You need to get a new！  pthome RSS Link has expired, You need to get a new one!
                 _rss_expired_msg = [
-                    "RSS 链接已过期, 您需要获得一个新的!",
+                    "RSS  Link has expired,  You need to get a new!",
                     "RSS Link has expired, You need to get a new one!",
                     "RSS Link has expired, You need to get new!"
                 ]
@@ -300,23 +300,23 @@ class RssHelper:
 
     def get_rss_link(self, url: str, cookie: str, ua: str, proxy: bool = False) -> Tuple[str, str]:
         """
-        获取站点rss地址
-        :param url: 站点地址
-        :param cookie: 站点cookie
-        :param ua: 站点ua
-        :param proxy: 是否使用代理
-        :return: rss地址、错误信息
+        Get siterss Address
+        :param url:  Site address
+        :param cookie:  Websitecookie
+        :param ua:  Websiteua
+        :param proxy:  Whether to use a proxy
+        :return: rss Address、 Error message
         """
         try:
-            # 获取站点域名
+            #  Get site domain name
             domain = StringUtils.get_url_domain(url)
-            # 获取配置
+            #  Get configuration
             site_conf = self.rss_link_conf.get(domain) or self.rss_link_conf.get("default")
-            # RSS地址
+            # RSS Address
             rss_url = urljoin(url, site_conf.get("url"))
-            # RSS请求参数
+            # RSS Request parameters
             rss_params = site_conf.get("params")
-            # 请求RSS页面
+            #  RequestingRSS Web page
             if site_conf.get("render"):
                 html_text = PlaywrightHelper().get_page_source(
                     url=rss_url,
@@ -334,15 +334,15 @@ class RssHelper:
                 if res:
                     html_text = res.text
                 elif res is not None:
-                    return "", f"获取 {url} RSS链接失败，错误码：{res.status_code}，错误原因：{res.reason}"
+                    return "", f" Gain {url} RSS Link failure， Error code：{res.status_code}， Cause of error：{res.reason}"
                 else:
-                    return "", f"获取RSS链接失败：无法连接 {url} "
-            # 解析HTML
+                    return "", f" GainRSS Link failure： Connectionless {url} "
+            #  AnalyzeHTML
             html = etree.HTML(html_text)
             if html:
                 rss_link = html.xpath(site_conf.get("xpath"))
                 if rss_link:
                     return str(rss_link[-1]), ""
-            return "", f"获取RSS链接失败：{url}"
+            return "", f" GainRSS Link failure：{url}"
         except Exception as e:
-            return "", f"获取 {url} RSS链接失败：{str(e)}"
+            return "", f" Gain {url} RSS Link failure：{str(e)}"

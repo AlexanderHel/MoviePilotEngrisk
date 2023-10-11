@@ -4,9 +4,9 @@ from pydantic import BaseModel
 
 
 class Response(BaseModel):
-    # 状态
+    #  State of affairs
     success: bool
-    # 消息文本
+    #  Message text
     message: Optional[str] = None
-    # 数据
+    #  Digital
     data: Optional[Union[dict, list]] = {}

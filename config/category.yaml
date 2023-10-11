@@ -1,48 +1,48 @@
-# 配置电影的分类策略， 配置为空或者不配置该项则不启用电影分类
+#  Configure the categorization strategy for movies，  Configure this item as empty or do not configure it to disable movie categorization.
 movie:
-  # 分类名同时也是目录名，会按先后顺序匹配，匹配后程序会按这个名称建立二级目录
-  动画电影:
-    # 分类依据，可以是：original_language 语种、production_countries 国家或地区、genre_ids 内容类型等，只要TMDB API返回的字段中有就行
-    # 配置多项条件时，需要同时满足；不需要的匹配项可以删掉或者配置为空
-    # 匹配 genre_ids 内容类型，16是动漫
+  #  The category name is also the catalog name， Will match in order of precedence， The program creates a secondary directory by this name after the match is made
+  Animated movie:
+    #  Classification basis， Can be：original_language  Language type (in a classification)、production_countries  Country or area、genre_ids  Type of content, etc.， So long asTMDB API Returned fields are fine if they are
+    #  When configuring multiple conditions， Needs to be satisfied at the same time； Unwanted matches can be deleted or configured as empty
+    #  Match genre_ids  Content type，16 It's anime.
     genre_ids: '16'
-  华语电影:
-    # 匹配语种
+  Chinese language movie:
+    #  Matching languages
     original_language: 'zh,cn,bo,za'
-  # 未配置任何过滤条件时，则按先后顺序不符合上面分类的都会在这个分类下，建议配置在最末尾
-  外语电影:
+  #  When no filter is configured， Then, in order of priority, those that don't fit into the above categories will be under this category， Recommended configuration at the very end
+  Foreign language movies:
 
-# 配置电视剧的分类策略， 配置为空或者不配置该项则不启用电视剧分类
+#  Configure the categorization strategy for tv series，  Configure this item to be empty or leave it blank to disable tv show categorization.
 tv:
-  # 分类名同时也是目录名，会按先后顺序匹配，匹配后程序会按这个名称建立二级目录
-  动漫:
-    # 分类依据，可以是：original_language 语种、origin_country 国家或地区、genre_ids 内容类型等，只要TMDB API返回的字段中有就行
-    # 配置多项条件时，需要同时满足；不需要的匹配项可以删掉或者配置为空
-    # 匹配 genre_ids 内容类型，16是动漫
+  #  The category name is also the catalog name， Will match in order of precedence， The program creates a secondary directory by this name after the match is made
+  Cartoons and comics:
+    #  Classification basis， Can be：original_language  Language type (in a classification)、origin_country  Country or area、genre_ids  Type of content, etc.， So long asTMDB API Returned fields are fine if they are
+    #  When configuring multiple conditions， Needs to be satisfied at the same time； Unwanted matches can be deleted or configured as empty
+    #  Match genre_ids  Content type，16 It's anime.
     genre_ids: '16'
-  纪录片:
-     # 匹配 genre_ids 内容类型，99是纪录片
+  Documentary (film or tv program):
+     #  Match genre_ids  Content type，99 It's a documentary.
     genre_ids: '99'
-  儿童:
-    # 匹配 genre_ids 内容类型，10762是儿童
+  Violence:
+    #  Match genre_ids  Content type，10762 Children
     genre_ids: '10762'
-  综艺:
-    # 匹配 genre_ids 内容类型，10764 10767都是综艺
+  Comprehensive arts and entertainment:
+    #  Match genre_ids  Content type，10764 10767 It's all about variety.
     genre_ids: '10764,10767'
-  国产剧:
-    # 匹配 origin_country 国家，CN是中国大陆，TW是中国台湾，HK是中国香港
+  Nationalized drama:
+    #  Match origin_country  Our country，CN Mainland china，TW It's from taiwan, china.，HK Hong kong, china
     origin_country: 'CN,TW,HK'
-  欧美剧:
-    # 匹配 origin_country 国家，主要欧美国家列表
+  European and american drama:
+    #  Match origin_country  Our country， List of major european and american countries
     origin_country: 'US,FR,GB,DE,ES,IT,NL,PT,RU,UK'
-  日韩剧:
-    # 匹配 origin_country 国家，主要亚洲国家列表
+  Japanese-south korean drama:
+    #  Match origin_country  Our country， List of major asian countries
     origin_country: 'JP,KP,KR,TH,IN,SG'
-  # 未匹配以上分类，则命名为未分类
-  未分类:
+  #  No match for the above classification， Then name it uncategorized
+  Uncategorized:
 
 
-## genre_ids 内容类型 字典，注意部分中英文是不一样的
+## genre_ids  Content type  Dictionaries， Note that some of the chinese and english are not the same
 #	28	Action
 #	12	Adventure
 #	16	Animation
@@ -62,153 +62,153 @@ tv:
 #	53	Thriller
 #	10752	War
 #	37	Western
-#	28	动作
-#	12	冒险
-#	16	动画
-#	35	喜剧
-#	80	犯罪
-#	99	纪录
-#	18	剧情
-#	10751	家庭
-#	14	奇幻
-#	36	历史
-#	27	恐怖
-#	10402	音乐
-#	9648	悬疑
-#	10749	爱情
-#	878	科幻
-#	10770	电视电影
-#	53	惊悚
-#	10752	战争
-#	37	西部
+#	28	 Movements
+#	12	 Take chances
+#	16	 Anime
+#	35	 Comedy
+#	80	 Offense
+#	99	 Record
+#	18	 Plots
+#	10751	 Household
+#	14	 Fantastical
+#	36	 Histories
+#	27	 Frightening
+#	10402	 Concert
+#	9648	 Unapologetic
+#	10749	 Romance
+#	878	 Sci-fi
+#	10770	 Tv movie
+#	53	 Horror (movie)
+#	10752	 Conflict
+#	37	 Western part
 
-## original_language 语种 字典
-#	af	南非语
-#	ar	阿拉伯语
-#	az	阿塞拜疆语
-#	be	比利时语
-#	bg	保加利亚语
-#	ca	加泰隆语
-#	cs	捷克语
-#	cy	威尔士语
-#	da	丹麦语
-#	de	德语
-#	dv	第维埃语
-#	el	希腊语
-#	en	英语
-#	eo	世界语
-#	es	西班牙语
-#	et	爱沙尼亚语
-#	eu	巴士克语
-#	fa	法斯语
-#	fi	芬兰语
-#	fo	法罗语
-#	fr	法语
-#	gl	加里西亚语
-#	gu	古吉拉特语
-#	he	希伯来语
-#	hi	印地语
-#	hr	克罗地亚语
-#	hu	匈牙利语
-#	hy	亚美尼亚语
-#	id	印度尼西亚语
-#	is	冰岛语
-#	it	意大利语
-#	ja	日语
-#	ka	格鲁吉亚语
-#	kk	哈萨克语
-#	kn	卡纳拉语
-#	ko	朝鲜语
-#	kok	孔卡尼语
-#	ky	吉尔吉斯语
-#	lt	立陶宛语
-#	lv	拉脱维亚语
-#	mi	毛利语
-#	mk	马其顿语
-#	mn	蒙古语
-#	mr	马拉地语
-#	ms	马来语
-#	mt	马耳他语
-#	nb	挪威语(伯克梅尔)
-#	nl	荷兰语
-#	ns	北梭托语
-#	pa	旁遮普语
-#	pl	波兰语
-#	pt	葡萄牙语
-#	qu	克丘亚语
-#	ro	罗马尼亚语
-#	ru	俄语
-#	sa	梵文
-#	se	北萨摩斯语
-#	sk	斯洛伐克语
-#	sl	斯洛文尼亚语
-#	sq	阿尔巴尼亚语
-#	sv	瑞典语
-#	sw	斯瓦希里语
-#	syr	叙利亚语
-#	ta	泰米尔语
-#	te	泰卢固语
-#	th	泰语
-#	tl	塔加路语
-#	tn	茨瓦纳语
-#	tr	土耳其语
-#	ts	宗加语
-#	tt	鞑靼语
-#	uk	乌克兰语
-#	ur	乌都语
-#	uz	乌兹别克语
-#	vi	越南语
-#	xh	班图语
-#	zh	中文
-#	cn	中文
-#	zu	祖鲁语
+## original_language  Language type (in a classification)  Dictionaries
+#	af	 Afrikaans (language)
+#	ar	 Arabic (language)
+#	az	 Azerbaijani (language)
+#	be	 Belgian (language)
+#	bg	 Bulgarian (language)
+#	ca	 Catalan (language)
+#	cs	 Czech (language)
+#	cy	 Welsh (language)
+#	da	 Danish
+#	de	 German (language)
+#	dv	 Tiwié (language)
+#	el	 Greek language
+#	en	 English (language)
+#	eo	 Esperanto
+#	es	 Spanish language
+#	et	 Estonian (language)
+#	eu	 Basque (language)
+#	fa	 Farsi
+#	fi	 Finnish (language)
+#	fo	 Faroese
+#	fr	 French (language)
+#	gl	 Galician (language)
+#	gu	 Gujarati (language)
+#	he	 Hebrew language
+#	hi	 Hindi (language)
+#	hr	 Croatian (language)
+#	hu	 Hungarian language
+#	hy	 Armenian (language)
+#	id	 Indonesian language
+#	is	 Icelandic (language)
+#	it	 Italian (language)
+#	ja	 Dictionary
+#	ka	 Georgian (language)
+#	kk	 Kazakh language
+#	kn	 Canara language
+#	ko	 Korean language
+#	kok	 Konkani
+#	ky	 Kyrgyz (language)
+#	lt	 Lithuanian (language)
+#	lv	 Latvian (language)
+#	mi	 Maori language
+#	mk	 Macedonian (language)
+#	mn	 Mongolian language
+#	mr	 Marathi language of west india
+#	ms	 Malay
+#	mt	 Maltese (language)
+#	nb	 Norwegian( Berkermer (name))
+#	nl	 Dutch (language)
+#	ns	 Northern sotho
+#	pa	 Punjabi (language)
+#	pl	 Polish (language)
+#	pt	 Portuguese (language)
+#	qu	 Quechua
+#	ro	 Romanian (language)
+#	ru	 Russian (language)
+#	sa	 Sanskrit
+#	se	 North samoan
+#	sk	 Slovak (language)
+#	sl	 Slovenian (language)
+#	sq	 Albanian (language)
+#	sv	 Swedish (language)
+#	sw	 Kiswahili
+#	syr	 Syriac language (from syria)
+#	ta	 Tamil language
+#	te	 Telegu, the official language of andhra pradesh, india
+#	th	 Thai (language)
+#	tl	 Tagalog (language)
+#	tn	 Tswana language
+#	tr	 Turkish (language)
+#	ts	 Zonga language
+#	tt	 Tatar (language)
+#	uk	 Ukrainian (language)
+#	ur	 Urdu (language)
+#	uz	 Uzbek (language)
+#	vi	 Vietnamese language
+#	xh	 Bantu language
+#	zh	 Chinese writing
+#	cn	 Chinese writing
+#	zu	 Zulu (language)
 
-## origin_country 国家地区 字典
-#	AR	阿根廷
-#	AU	澳大利亚
-#	BE	比利时
-#	BR	巴西
-#	CA	加拿大
-#	CH	瑞士
-#	CL	智利
-#	CO	哥伦比亚
-#	CZ	捷克
-#	DE	德国
-#	DK	丹麦
-#	EG	埃及
-#	ES	西班牙
-#	FR	法国
-#	GR	希腊
-#	HK	香港
-#	IL	以色列
-#	IN	印度
-#	IQ	伊拉克
-#	IR	伊朗
-#	IT	意大利
-#	JP	日本
-#	MM	缅甸
-#	MO	澳门
-#	MX	墨西哥
-#	MY	马来西亚
-#	NL	荷兰
-#	NO	挪威
-#	PH	菲律宾
-#	PK	巴基斯坦
-#	PL	波兰
-#	RU	俄罗斯
-#	SE	瑞典
-#	SG	新加坡
-#	TH	泰国
-#	TR	土耳其
-#	US	美国
-#	VN	越南
-#	CN	中国 内地
-#	GB	英国
-#	TW	中国台湾
-#	NZ	新西兰
-#	SA	沙特阿拉伯
-#	LA	老挝
-#	KP	朝鲜 北朝鲜
-#	KR	韩国 南朝鲜
-#	PT	葡萄牙
-#	MN	蒙古国 蒙古
+## origin_country  Country area  Dictionaries
+#	AR	 Argentina
+#	AU	 Australia
+#	BE	 Belgium
+#	BR	 Brazilian
+#	CA	 Canadian
+#	CH	 Switzerland
+#	CL	 Chile
+#	CO	 Columbia (district of, or university etc)
+#	CZ	 Czech republic (from 1993)
+#	DE	 German
+#	DK	 Denmark
+#	EG	 Egypt
+#	ES	 Spanish
+#	FR	 French
+#	GR	 Greece
+#	HK	 Fact
+#	IL	 Palestine
+#	IN	 India
+#	IQ	 Iraqi
+#	IR	 Iranian
+#	IT	 Italy
+#	JP	 Japanese
+#	MM	 Myanmar (or burma)
+#	MO	 Aomen
+#	MX	 Mexico
+#	MY	 Malaysia
+#	NL	 The netherlands
+#	NO	 Norway
+#	PH	 Philippine
+#	PK	 Pakistan
+#	PL	 Polish
+#	RU	 Georgia
+#	SE	 Sweden
+#	SG	 Singaporean
+#	TH	 Thailand
+#	TR	 Istanbul
+#	US	 United states of america
+#	VN	 Vietnam
+#	CN	 Sino  Mainland china (prc excluding hong kong and macau, but including islands such as hainan)
+#	GB	 United kingdom of great britain and northern ireland
+#	TW	 China-taiwan
+#	NZ	 New zeeland
+#	SA	 Saudi arabia
+#	LA	 Laos
+#	KP	 Korean joseon or chosun dynasty 1392-1910  North korea (esp. japanese usage)
+#	KR	 South korea (republic of korea)  South korea (esp. north korean usage)
+#	PT	 Portugal
+#	MN	 Mongolia  Mongolia

@@ -5,51 +5,51 @@ from pydantic import BaseModel
 
 class Subscribe(BaseModel):
     id: Optional[int] = None
-    # 订阅名称
+    #  Subscription name
     name: Optional[str] = None
-    # 订阅年份
+    #  Year of subscription
     year: Optional[str] = None
-    # 订阅类型 电影/电视剧
+    #  Subscription type  Cinematic/ Dramas
     type: Optional[str] = None
-    # 搜索关键字
+    #  Search keywords
     keyword: Optional[str] = None
     tmdbid: Optional[int] = None
     doubanid: Optional[str] = None
-    # 季号
+    #  Quarter
     season: Optional[int] = None
-    # 海报
+    #  Playbill
     poster: Optional[str] = None
-    # 背景图
+    #  Background image
     backdrop: Optional[str] = None
-    # 评分
+    #  Score (of student's work)
     vote: Optional[int] = 0
-    # 描述
+    #  Descriptive
     description: Optional[str] = None
-    # 过滤规则
+    #  Filter rules
     filter: Optional[str] = None
-    # 包含
+    #  Embody
     include: Optional[str] = None
-    # 排除
+    #  Rule out
     exclude: Optional[str] = None
-    # 总集数
+    #  Total episodes
     total_episode: Optional[int] = 0
-    # 开始集数
+    #  Number of episodes
     start_episode: Optional[int] = 0
-    # 缺失集数
+    #  Missing episodes
     lack_episode: Optional[int] = 0
-    # 附加信息
+    #  Additional information
     note: Optional[str] = None
-    # 状态：N-新建， R-订阅中
+    #  State of affairs：N- Newly built， R- Subscription
     state: Optional[str] = None
-    # 最后更新时间
+    #  Last updated
     last_update: Optional[str] = None
-    # 订阅用户
+    #  Subscriber
     username: Optional[str] = None
-    # 订阅站点
+    #  Subscribe to the site
     sites: Optional[List[int]] = None
-    # 是否洗版
+    #  Whether or not to wash the plate
     best_version: Optional[int] = 0
-    # 当前优先级
+    #  Current priority
     current_priority: Optional[int] = None
 
     class Config:

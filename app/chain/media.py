@@ -11,60 +11,60 @@ from app.utils.string import StringUtils
 
 class MediaChain(ChainBase):
     """
-    媒体信息处理链
+    Media information processing chain
     """
 
     def recognize_by_title(self, title: str, subtitle: str = None) -> Optional[Context]:
         """
-        根据主副标题识别媒体信息
+        Identify media messages based on main and subheadings
         """
-        logger.info(f'开始识别媒体信息，标题：{title}，副标题：{subtitle} ...')
-        # 识别元数据
+        logger.info(f' Start recognizing media messages， Caption：{title}， Subheading：{subtitle} ...')
+        #  Identifying metadata
         metainfo = MetaInfo(title, subtitle)
-        # 识别媒体信息
+        #  Identify media messages
         mediainfo: MediaInfo = self.recognize_media(meta=metainfo)
         if not mediainfo:
-            logger.warn(f'{title} 未识别到媒体信息')
+            logger.warn(f'{title}  No media messages recognized')
             return Context(meta_info=metainfo)
-        logger.info(f'{title} 识别到媒体信息：{mediainfo.type.value} {mediainfo.title_year}')
-        # 更新媒体图片
+        logger.info(f'{title}  Recognition of media messages：{mediainfo.type.value} {mediainfo.title_year}')
+        #  Updating media images
         self.obtain_images(mediainfo=mediainfo)
-        # 返回上下文
+        #  Return context
         return Context(meta_info=metainfo, media_info=mediainfo)
 
     def recognize_by_path(self, path: str) -> Optional[Context]:
         """
-        根据文件路径识别媒体信息
+        Identify media information based on file paths
         """
-        logger.info(f'开始识别媒体信息，文件：{path} ...')
+        logger.info(f' Start recognizing media messages， File：{path} ...')
         file_path = Path(path)
-        # 元数据
+        #  Metadata
         file_meta = MetaInfoPath(file_path)
-        # 识别媒体信息
+        #  Identify media messages
         mediainfo = self.recognize_media(meta=file_meta)
         if not mediainfo:
-            logger.warn(f'{path} 未识别到媒体信息')
+            logger.warn(f'{path}  No media messages recognized')
             return Context(meta_info=file_meta)
-        logger.info(f'{path} 识别到媒体信息：{mediainfo.type.value} {mediainfo.title_year}')
-        # 更新媒体图片
+        logger.info(f'{path}  Recognition of media messages：{mediainfo.type.value} {mediainfo.title_year}')
+        #  Updating media images
         self.obtain_images(mediainfo=mediainfo)
-        # 返回上下文
+        #  Return context
         return Context(meta_info=file_meta, media_info=mediainfo)
 
     def search(self, title: str) -> Tuple[MetaBase, List[MediaInfo]]:
         """
-        搜索媒体信息
-        :param title: 搜索内容
-        :return: 识别元数据，媒体信息列表
+        Search for media information
+        :param title:  Search content
+        :return:  Identifying metadata， Media information list
         """
-        # 提取要素
+        #  Elements of extraction
         mtype, key_word, season_num, episode_num, year, content = StringUtils.get_keyword(title)
-        # 识别
+        #  Recognize
         meta = MetaInfo(content)
         if not meta.name:
-            logger.warn(f'{title} 未识别到元数据！')
+            logger.warn(f'{title}  No metadata recognized！')
             return meta, []
-        # 合并信息
+        #  Consolidated information
         if mtype:
             meta.type = mtype
         if season_num:
@@ -73,12 +73,12 @@ class MediaChain(ChainBase):
             meta.begin_episode = episode_num
         if year:
             meta.year = year
-        # 开始搜索
-        logger.info(f"开始搜索媒体信息：{meta.name}")
+        #  Start searching
+        logger.info(f"开始Search for media information：{meta.name}")
         medias: Optional[List[MediaInfo]] = self.search_medias(meta=meta)
         if not medias:
-            logger.warn(f"{meta.name} 没有找到对应的媒体信息！")
+            logger.warn(f"{meta.name}  No corresponding media information was found！")
             return meta, []
-        logger.info(f"{content} 搜索到 {len(medias)} 条相关媒体信息")
-        # 识别的元数据，媒体信息列表
+        logger.info(f"{content}  Search to {len(medias)}  Relevant media information")
+        #  Recognize的元数据，媒体信息列表
         return meta, medias

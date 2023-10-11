@@ -1,286 +1,286 @@
 # MoviePilot
 
-基于 [NAStool](https://github.com/NAStool/nas-tools) 部分代码重新设计，聚焦自动化核心需求，减少问题同时更易于扩展和维护。
+Based on the partial code redesign of [NAStool](https://github.com/NAStool/nas-tools) , it focuses on the core requirements of automation, reducing problems and making it easier to expand and maintain.
 
-# 仅用于学习交流使用，请勿在任何国内平台宣传该项目！
+#Only for learning and communication, please do not promote this project on any domestic platform!
 
-发布频道：https://t.me/moviepilot_channel
+Release channel: https://t.me/moviepilot_channel
 
-## 主要特性
-- 前后端分离，基于FastApi + Vue3，前端项目地址：[MoviePilot-Frontend](https://github.com/jxxghp/MoviePilot-Frontend)
-- 聚焦核心需求，简化功能和设置，部分设置项可直接使用默认值。
-- 重新设计了用户界面，更加美观易用。
+## Main features
+-Separation of front-end and back-end, based on FastApi + Vue3 , front-end project address: [MoviePilot-Frontend](https://github.com/jxxghp/MoviePilot-Frontend)
+-Focus on core needs, simplify functions and settings, and use default values for some settings.
+-The user interface has been redesigned to be more beautiful and easier to use .
 
-## 安装
+## Installation
 
-### 1. **安装CookieCloud插件**
+### 1. ** Install CookieCloud plug-in **
 
-站点信息需要通过CookieCloud同步获取，因此需要安装CookieCloud插件，将浏览器中的站点Cookie数据同步到云端后再同步到MoviePilot使用。 插件下载地址请点击 [这里](https://github.com/easychen/CookieCloud/releases)。
+Site information needs to be obtained through CookieCloud synchronization , so you need to install the CookieCloud plug-in to synchronize the site cookie data in the browser to the cloud and then synchronize it to MoviePilot for use. Please click [ here ](https://github.com/easychen/CookieCloud/releases) for the plug-in download address .
 
-### 2. **安装CookieCloud服务端（可选）**
+### 2. ** Install CookieCloud server (optional) **
 
-MoviePilot内置了公共CookieCloud服务器，如果需要自建服务，可参考 [CookieCloud](https://github.com/easychen/CookieCloud) 项目进行搭建，docker镜像请点击 [这里](https://hub.docker.com/r/easychen/cookiecloud)。
+MoviePilot has a built-in public CookieCloud server . If you need to build your own service, you can refer to the [CookieCloud](https://github.com/easychen/CookieCloud) project to build it. For the docker image, please click [ here ](https://hub .docker.com/r/easychen/cookiecloud) .
 
-**声明：** 本项目不会收集用户敏感数据，Cookie同步也是基于CookieCloud项目实现，非本项目提供的能力。技术角度上CookieCloud采用端到端加密，在个人不泄露`用户KEY`和`端对端加密密码`的情况下第三方无法窃取任何用户信息（包括服务器持有者）。如果你不放心，可以不使用公共服务或者不使用本项目，但如果使用后发生了任何信息泄露与本项目无关！
+** Statement: ** This project will not collect sensitive user data. Cookie synchronization is also based on the CookieCloud project and is not a capability provided by this project. From a technical perspective , CookieCloud uses end-to-end encryption. A third party cannot steal any user information (including the server holder ) without revealing the ` user KEY` and ` end-to-end encrypted password` . If you are worried, you don’t have to use public services or this project. However, if any information leakage occurs after use, this project has nothing to do with it!
 
-### 3. **安装配套管理软件**
+### 3. ** Install supporting management software **
 
-MoviePilot需要配套下载器和媒体服务器配合使用。
-- 下载器支持：qBittorrent、Transmission，QB版本号要求>= 4.3.9，TR版本号要求>= 3.0，推荐使用QB。
-- 媒体服务器支持：Jellyfin、Emby、Plex，推荐使用Emby。
+MoviePilot requires a downloader and media server to be used together.
+-Downloader supports : qBittorrent , Transmission , QB version number requirement >= 4.3.9 , TR version number requirement >= 3.0 , QB is recommended .
+-Media server support: Jellyfin , Emby , Plex , Emby is recommended .
 
-### 4. **安装MoviePilot**
+### 4. ** Install MoviePilot**
 
-- Docker镜像
+- Docker image
 
-  点击 [这里](https://hub.docker.com/r/jxxghp/moviepilot) 或执行命令：
+  Click [ here ](https://hub.docker.com/r/jxxghp/moviepilot) or execute the command:
 
-  ```shell
-  docker pull jxxghp/moviepilot:latest
-  ```
+```shell
+docker pull jxxghp/moviepilot:latest
+```
 
 - Windows
 
-  下载 [MoviePilot.exe](https://github.com/jxxghp/MoviePilot/releases)，双击运行后自动生成配置文件目录。
+  Download [MoviePilot.exe](https://github.com/jxxghp/MoviePilot/releases) , double-click to run and automatically generate the configuration file directory.
 
-## 配置
+## Configuration
 
-项目的所有配置均通过环境变量进行设置，支持两种配置方式：
-- 在Docker环境变量部分或Wdinows系统环境变量中进行参数配置，如未自动显示配置项则需要手动增加对应环境变量。
-- 下载 [app.env](https://github.com/jxxghp/MoviePilot/raw/main/config/app.env) 配置文件，修改好配置后放置到配置文件映射路径根目录，配置项可根据说明自主增减。
+All configurations of the project are set through environment variables, and two configuration methods are supported:
+- Configure parameters in the Docker environment variables section or Wdinows system environment variables. If the configuration items are not automatically displayed, you need to manually add the corresponding environment variables.
+-Download the [app.env](https://github.com/jxxghp/MoviePilot/raw/main/config/app.env) configuration file, modify the configuration and place it in the root directory of the configuration file mapping path , configuration items You can increase or decrease it according to the instructions.
 
-配置文件映射路径：`/config`，配置项生效优先级：环境变量 > env文件 > 默认值，**部分参数如路径映射、站点认证、权限端口、时区等必须通过环境变量进行配置**。
+Configuration file mapping path: `/config` , configuration item effective priority: environment variables > env file > default value, ** Some parameters such as path mapping, site authentication, permission port, time zone, etc. must be configured through environment variables ** .
 
->   $\color{red}{*}$   号标识的为必填项，其它为可选项，可选项可删除配置变量从而使用默认值。
+items marked with $\color{red}{*}$ are required, and the others are optional. If you choose the option, you can delete the configuration variable and use the default value.
 
-### 1. **基础设置**
+### 1. ** Basic Settings **
 
-- **NGINX_PORT $\color{red}{*}$ ：** WEB服务端口，默认`3000`，可自行修改，不能与API服务端口冲突（仅支持环境变量配置）
-- **PORT $\color{red}{*}$ ：** API服务端口，默认`3001`，可自行修改，不能与WEB服务端口冲突（仅支持环境变量配置）
-- **PUID**：运行程序用户的`uid`，默认`0`（仅支持环境变量配置）
-- **PGID**：运行程序用户的`gid`，默认`0`（仅支持环境变量配置）
-- **UMASK**：掩码权限，默认`000`，可以考虑设置为`022`（仅支持环境变量配置）
-- **PROXY_HOST：** 网络代理，访问themoviedb或者重启更新需要使用代理访问，格式为`http(s)://ip:port`、`socks5://user:pass@host:port`（仅支持环境变量配置）
-- **MOVIEPILOT_AUTO_UPDATE**：重启更新，`true`/`false`，默认`true` **注意：如果出现网络问题可以配置`PROXY_HOST`**（仅支持环境变量配置）
-- **MOVIEPILOT_AUTO_UPDATE_DEV**：重启时更新到未发布的开发版本代码，`true`/`false`，默认`false`（仅支持环境变量配置）
+- **NGINX_PORT $\color{red}{*}$ : ** WEB service port, default `3000` , can be modified by yourself, and cannot conflict with the API service port (only environment variable configuration is supported)
+- **PORT $\color{red}{*}$ : ** API service port, default `3001` , can be modified by yourself, and cannot conflict with the WEB service port (only environment variable configuration is supported)
+- **PUID** : `uid` of the user running the program , default `0` ( only environment variable configuration is supported)
+- **PGID** : `gid` of the user running the program , default `0` ( only environment variable configuration is supported)
+- **UMASK** : Mask permission, default `000` , you can consider setting it to `022` ( only environment variable configuration is supported)
+- **MOVIEPILOT_AUTO_UPDATE** : Restart update, `true`/`false` , default `true` ** Note: If there is a network problem, you can configure `PROXY_HOST` , see the explanation of `PROXY_HOST` below for details ** ( only Support environment variable configuration)
+- **MOVIEPILOT_AUTO_UPDATE_DEV** : Update to unreleased development version code when restarting, `true`/`false` , default `false` ( only environment variable configuration is supported)
 ---
-- **SUPERUSER $\color{red}{*}$ ：** 超级管理员用户名，默认`admin`，安装后使用该用户登录后台管理界面
-- **SUPERUSER_PASSWORD $\color{red}{*}$ ：** 超级管理员初始密码，默认`password`，建议修改为复杂密码
-- **API_TOKEN $\color{red}{*}$ ：** API密钥，默认`moviepilot`，在媒体服务器Webhook、微信回调等地址配置中需要加上`?token=`该值，建议修改为复杂字符串
-- **TMDB_API_DOMAIN：** TMDB API地址，默认`api.themoviedb.org`，也可配置为`api.tmdb.org`或其它中转代理服务地址，能连通即可
-- **TMDB_IMAGE_DOMAIN：** TMDB图片地址，默认`image.tmdb.org`，可配置为其它中转代理以加速TMDB图片显示，如：`static-mdb.v.geilijiasu.com`
+- **SUPERUSER $\color{red}{*}$ : ** Super administrator username, default `admin` , use this user to log in to the backend management interface after installation
+- **SUPERUSER_PASSWORD $\color{red}{*}$ : ** Super administrator initial password, default `password` , it is recommended to change it to a complex password
+- **API_TOKEN $\color{red}{*}$ : ** API key , default `moviepilot` , the value `?token=` needs to be added to the media server Webhook , WeChat callback and other address configurations , it is recommended to change it to a complex string
+- **PROXY_HOST : ** Network proxy. To access themoviedb or restart the update, you need to use proxy access. The format is `http(s)://ip:port` , `socks5://user:pass@host:port` ( optional )
+- **TMDB_API_DOMAIN : ** TMDB API address, the default is `api.themoviedb.org` , it can also be configured as `api.tmdb.org` or other transfer proxy service address, as long as it can be connected
+- **TMDB_IMAGE_DOMAIN : ** TMDB image address, default `image.tmdb.org` , can be configured as other transfer agent to speed up TMDB image display, such as: `static-mdb.v.geilijiasu.com`
 ---
-- **SCRAP_METADATA：** 刮削入库的媒体文件，`true`/`false`，默认`true`
-- **SCRAP_SOURCE：** 刮削元数据及图片使用的数据源，`themoviedb`/`douban`，默认`themoviedb`
-- **SCRAP_FOLLOW_TMDB：** 新增已入库媒体是否跟随TMDB信息变化，`true`/`false`，默认`true`
+- **SCRAP_METADATA : ** Scrape media files into the library , `true`/`false` , default `true`
+- **SCRAP_SOURCE : ** Data source used for scraping metadata and images, `themoviedb`/`douban` , default `themoviedb`
+- **SCRAP_FOLLOW_TMDB : ** Whether the newly added media will follow the changes of TMDB information , `true`/`false` , default `true`
 ---
-- **TRANSFER_TYPE $\color{red}{*}$ ：** 整理转移方式，支持`link`/`copy`/`move`/`softlink`/`rclone_copy`/`rclone_move`  **注意：在`link`和`softlink`转移方式下，转移后的文件会继承源文件的权限掩码，不受`UMASK`影响；rclone需要自行映射rclone配置目录到容器中或在容器内完成rclone配置，节点名称必须为：`MP`**
-- **LIBRARY_PATH $\color{red}{*}$ ：** 媒体库目录，多个目录使用`,`分隔
-- **LIBRARY_MOVIE_NAME：** 电影媒体库目录名称（不是完整路径），默认`电影`
-- **LIBRARY_TV_NAME：** 电视剧媒体库目录称（不是完整路径），默认`电视剧`
-- **LIBRARY_ANIME_NAME：** 动漫媒体库目录称（不是完整路径），默认`电视剧/动漫`
-- **LIBRARY_CATEGORY：** 媒体库二级分类开关，`true`/`false`，默认`false`，开启后会根据配置 [category.yaml](https://github.com/jxxghp/MoviePilot/raw/main/config/category.yaml) 自动在媒体库目录下建立二级目录分类
+- **TRANSFER_TYPE $\color{red}{*}$ : ** Organize transfer methods, support `link`/`copy`/`move`/`softlink` ** Note: Transfer between `link` and `softlink` In this mode, the transferred file will inherit the permission mask of the source file and will not be affected by `UMASK` **
+- **LIBRARY_PATH $\color{red}{*}$ : ** Media library directory, multiple directories are separated by `,`
+- **LIBRARY_MOVIE_NAME : ** Movie media library directory name (not full path), default ` movie`
+- **LIBRARY_TV_NAME : ** TV drama media library directory name (not the full path), default ` TV drama`
+- **LIBRARY_ANIME_NAME : ** Animation media library directory name (not the full path), default ` TV Series / Anime`
+- **LIBRARY_CATEGORY : ** Media library secondary classification switch, `true`/`false` , default `false` , after being turned on, it will be configured according to [category.yaml](https://github.com/jxxghp/MoviePilot /raw/main/config/category.yaml) automatically creates a secondary directory category in the media library directory.
 ---
-- **COOKIECLOUD_HOST $\color{red}{*}$ ：** CookieCloud服务器地址，格式：`http(s)://ip:port`，不配置默认使用内建服务器`https://movie-pilot.org/cookiecloud`
-- **COOKIECLOUD_KEY $\color{red}{*}$ ：** CookieCloud用户KEY
-- **COOKIECLOUD_PASSWORD $\color{red}{*}$ ：** CookieCloud端对端加密密码
-- **COOKIECLOUD_INTERVAL $\color{red}{*}$ ：** CookieCloud同步间隔（分钟）
-- **USER_AGENT $\color{red}{*}$ ：** CookieCloud保存Cookie对应的浏览器UA，建议配置，设置后可增加连接站点的成功率，同步站点后可以在管理界面中修改
-- **OCR_HOST：** OCR识别服务器地址，格式：`http(s)://ip:port`，用于识别站点验证码实现自动登录获取Cookie等，不配置默认使用内建服务器`https://movie-pilot.org`，可使用 [这个镜像](https://hub.docker.com/r/jxxghp/moviepilot-ocr) 自行搭建。
+- **COOKIECLOUD_HOST $\color{red}{*}$ : ** CookieCloud server address, format: `http(s)://ip:port` , if not configured , the built-in server `https:/ will be used by default /movie-pilot.org/cookiecloud`
+- **COOKIECLOUD_KEY $\color{red}{*}$ : ** CookieCloud user KEY
+- **COOKIECLOUD_PASSWORD $\color{red}{*}$ : ** CookieCloud end-to-end encryption password
+- **COOKIECLOUD_INTERVAL $\color{red}{*}$ : ** CookieCloud synchronization interval (minutes)
+- **USER_AGENT $\color{red}{*}$ : ** CookieCloud saves the browser UA corresponding to the cookie . It is recommended to configure it. After setting, it can increase the success rate of connecting to the site. It can be modified in the management interface after synchronizing the site.
+- **OCR_HOST : ** OCR identification server address, format: `http(s)://ip:port` , used to identify site verification codes to achieve automatic login to obtain cookies , etc. If not configured , the built-in server `https will be used by default ://movie-pilot.org` , you can use [ this image ](https://hub.docker.com/r/jxxghp/moviepilot-ocr) to build it yourself.
 ---
-- **SUBSCRIBE_MODE：** 订阅模式，`rss`/`spider`，默认`spider`，`rss`模式通过定时刷新RSS来匹配订阅（RSS地址会自动获取，也可手动维护），对站点压力小，同时可设置订阅刷新周期，24小时运行，但订阅和下载通知不能过滤和显示免费，推荐使用rss模式。
-- **SUBSCRIBE_RSS_INTERVAL：** RSS订阅模式刷新时间间隔（分钟），默认`30`分钟，不能小于5分钟。
-- **SUBSCRIBE_SEARCH：** 订阅搜索，`true`/`false`，默认`false`，开启后会每隔24小时对所有订阅进行全量搜索，以补齐缺失剧集（一般情况下正常订阅即可，订阅搜索只做为兜底，会增加站点压力，不建议开启）。
-- **SEARCH_SOURCE：** 媒体信息搜索来源，`themoviedb`/`douban`，默认`themoviedb`
+- **SUBSCRIBE_MODE : ** Subscription mode, `rss`/`spider` , default `spider` , `rss` mode matches the subscription by regularly refreshing RSS ( the RSS address will be automatically obtained, or can be maintained manually), It puts less pressure on the site. At the same time, the subscription refresh cycle can be set and runs 24 hours a day. However, subscription and download notifications cannot be filtered and displayed for free. It is recommended to use RSS mode.
+- **SUBSCRIBE_RSS_INTERVAL : ** RSS subscription mode refresh interval (minutes), default `30` minutes , cannot be less than 5 minutes .
+- **SUBSCRIBE_SEARCH : ** Subscription search, `true`/`false` , default `false` , after turning on, all subscriptions will be fully searched every 24 hours to fill in missing episodes (normally normal Just subscribe. Subscribing to search is only for backup and will increase the pressure on the site. It is not recommended to enable it).
+- **SEARCH_SOURCE : ** Media information search source, `themoviedb`/`douban` , default `themoviedb`
 ---
-- **AUTO_DOWNLOAD_USER：** 远程交互搜索时自动择优下载的用户ID，多个用户使用,分割，未设置需要选择资源或者回复`0`
-- **MESSAGER $\color{red}{*}$ ：** 消息通知渠道，支持 `telegram`/`wechat`/`slack`/`synologychat`，开启多个渠道时使用`,`分隔。同时还需要配置对应渠道的环境变量，非对应渠道的变量可删除，推荐使用`telegram`
+- **AUTO_DOWNLOAD_USER : ** User ID to automatically select the best download during remote interactive search , used by multiple users , divided, if not set, you need to select resources or reply `0`
+- **MESSAGER $\color{red}{*}$ : ** Message notification channel, supports `telegram`/`wechat`/`slack`/`synologychat` , use `,` to separate multiple channels . At the same time, you also need to configure the environment variables of the corresponding channel. Variables that do not correspond to the channel can be deleted. It is recommended to use `telegram`
 
-  - `wechat`设置项：
+- `wechat` settings:
 
-    - **WECHAT_CORPID：** WeChat企业ID
-    - **WECHAT_APP_SECRET：** WeChat应用Secret
-    - **WECHAT_APP_ID：** WeChat应用ID
-    - **WECHAT_TOKEN：** WeChat消息回调的Token
-    - **WECHAT_ENCODING_AESKEY：** WeChat消息回调的EncodingAESKey
-    - **WECHAT_ADMINS：** WeChat管理员列表，多个管理员用英文逗号分隔（可选）
-    - **WECHAT_PROXY：** WeChat代理服务器（后面不要加/）
+- **WECHAT_CORPID : ** WeChat corporate ID
+- **WECHAT_APP_SECRET : ** WeChat Application Secret
+- **WECHAT_APP_ID : ** WeChat application ID
+- **WECHAT_TOKEN : ** Token for WeChat message callback
+- **WECHAT_ENCODING_AESKEY : ** EncodingAESKey of WeChat message callback
+- **WECHAT_ADMINS : ** WeChat administrator list, multiple administrators separated by English commas (optional)
+- **WECHAT_PROXY : ** WeChat proxy server (do not add / after )
 
-  - `telegram`设置项：
+- `telegram` settings:
 
-    - **TELEGRAM_TOKEN：** Telegram Bot Token
-    - **TELEGRAM_CHAT_ID：** Telegram Chat ID
-    - **TELEGRAM_USERS：** Telegram 用户ID，多个使用,分隔，只有用户ID在列表中才可以使用Bot，如未设置则均可以使用Bot
-    - **TELEGRAM_ADMINS：** Telegram 管理员ID，多个使用,分隔，只有管理员才可以操作Bot菜单，如未设置则均可以操作菜单（可选）
+- **TELEGRAM_TOKEN : ** Telegram Bot Token
+- **TELEGRAM_CHAT_ID : ** Telegram Chat ID
+- **TELEGRAM_USERS : ** Telegram user ID , multiple use , separated, only the user ID in the list can use Bot , if not set, all Bot can be used
+- **TELEGRAM_ADMINS : ** Telegram administrator ID , multiple uses , separated, only administrators can operate the Bot menu , if not set, everyone can operate the menu (optional)
 
-  - `slack`设置项：
+- `slack` settings:
 
-    - **SLACK_OAUTH_TOKEN：** Slack Bot User OAuth Token
-    - **SLACK_APP_TOKEN：** Slack App-Level Token
-    - **SLACK_CHANNEL：** Slack 频道名称，默认`全体`（可选）
+- **SLACK_OAUTH_TOKEN : ** Slack Bot User OAuth Token
+- **SLACK_APP_TOKEN : ** Slack App-Level Token
+** SLACK_CHANNEL : ** Slack channel name, default ` all` ( optional )
   
-  - `synologychat`设置项：
+- `synologychat` settings:
 
-    - **SYNOLOGYCHAT_WEBHOOK：** 在Synology Chat中创建机器人，获取机器人`传入URL`
-    - **SYNOLOGYCHAT_TOKEN：** SynologyChat机器人`令牌`
-
----
-- **DOWNLOAD_PATH $\color{red}{*}$ ：** 下载保存目录，**注意：需要将`moviepilot`及`下载器`的映射路径保持一致**，否则会导致下载文件无法转移
-- **DOWNLOAD_MOVIE_PATH：** 电影下载保存目录路径，不设置则下载到`DOWNLOAD_PATH`
-- **DOWNLOAD_TV_PATH：** 电视剧下载保存目录路径，不设置则下载到`DOWNLOAD_PATH`
-- **DOWNLOAD_ANIME_PATH：** 动漫下载保存目录路径，不设置则下载到`DOWNLOAD_PATH`
-- **DOWNLOAD_CATEGORY：** 下载二级分类开关，`true`/`false`，默认`false`，开启后会根据配置 [category.yaml](https://github.com/jxxghp/MoviePilot/raw/main/config/category.yaml) 自动在下载目录下建立二级目录分类
-- **DOWNLOAD_SUBTITLE：** 下载站点字幕，`true`/`false`，默认`true`
-- **DOWNLOADER_MONITOR：** 下载器监控，`true`/`false`，默认为`true`，开启后下载完成时才会自动整理入库
-- **TORRENT_TAG：** 下载器种子标签，默认为`MOVIEPILOT`，设置后只有MoviePilot添加的下载才会处理，留空所有下载器中的任务均会处理
-- **DOWNLOADER $\color{red}{*}$ ：** 下载器，支持`qbittorrent`/`transmission`，QB版本号要求>= 4.3.9，TR版本号要求>= 3.0，同时还需要配置对应渠道的环境变量，非对应渠道的变量可删除，推荐使用`qbittorrent`
-
-  - `qbittorrent`设置项：
-
-    - **QB_HOST：** qbittorrent地址，格式：`ip:port`，https需要添加`https://`前缀
-    - **QB_USER：** qbittorrent用户名
-    - **QB_PASSWORD：** qbittorrent密码
-    - **QB_CATEGORY：** qbittorrent分类自动管理，`true`/`false`，默认`false`，开启后会将下载二级分类传递到下载器，由下载器管理下载目录，需要同步开启`DOWNLOAD_CATEGORY`
-
-  - `transmission`设置项：
-
-    - **TR_HOST：** transmission地址，格式：`ip:port`，https需要添加`https://`前缀
-    - **TR_USER：** transmission用户名
-    - **TR_PASSWORD：** transmission密码
+- **SYNOLOGYCHAT_WEBHOOK : ** Create a bot in Synology Chat and get the bot's ` incoming URL`
+- **SYNOLOGYCHAT_TOKEN : ** SynologyChat bot ` token`
 
 ---
-- **REFRESH_MEDIASERVER：** 入库后是否刷新媒体服务器，`true`/`false`，默认`true`
-- **MEDIASERVER $\color{red}{*}$ ：** 媒体服务器，支持`emby`/`jellyfin`/`plex`，同时开启多个使用`,`分隔。还需要配置对应媒体服务器的环境变量，非对应媒体服务器的变量可删除，推荐使用`emby`
+- **DOWNLOAD_PATH $\color{red}{*}$ : ** Download saving directory, ** Note : The mapping paths of `moviepilot` and ` Downloader` need to be consistent ** , otherwise it will cause downloading File cannot be transferred
+- **DOWNLOAD_MOVIE_PATH : ** Movie download and save directory path, if not set, download to `DOWNLOAD_PATH`
+- **DOWNLOAD_TV_PATH : ** The path to the TV series download and save directory. If not set, it will be downloaded to `DOWNLOAD_PATH`
+- **DOWNLOAD_ANIME_PATH : ** Animation download and save directory path, if not set, download to `DOWNLOAD_PATH`
+- **DOWNLOAD_CATEGORY : ** Download the secondary classification switch, `true`/`false` , the default is `false` , after being turned on, it will be configured according to [category.yaml](https://github.com/jxxghp/MoviePilot /raw/main/config/category.yaml) automatically creates a secondary directory category in the download directory.
+- **DOWNLOAD_SUBTITLE : ** Download site subtitles, `true`/`false` , default `true`
+- **DOWNLOADER_MONITOR : ** Downloader monitoring, `true`/`false` , the default is `true` , it will be automatically sorted into the database when the download is completed.
+- **TORRENT_TAG : ** Downloader seed tag, the default is `MOVIEPILOT` . After setting, only downloads added by MoviePilot will be processed. If left blank, all tasks in the downloader will be processed.
+- **DOWNLOADER $\color{red}{*}$ : ** Downloader , supports `qbittorrent`/`transmission` , QB version number requirement >= 4.3.9 , TR version number requirement >= 3.0 , at the same time You also need to configure the environment variables of the corresponding channel. Variables that do not correspond to the channel can be deleted. It is recommended to use `qbittorrent`
 
-  - `emby`设置项：
+- `qbittorrent` settings:
 
-    - **EMBY_HOST：** Emby服务器地址，格式：`ip:port`，https需要添加`https://`前缀
-    - **EMBY_API_KEY：** Emby Api Key，在`设置->高级->API密钥`处生成
+- **QB_HOST : ** qbittorrent address, format: `ip:port` , https needs to add `https://` prefix
+- **QB_USER : ** qbittorrent username
+- **QB_PASSWORD : ** qbittorrent password
+- **QB_CATEGORY : ** Automatic management of qbittorrent categories, `true`/`false` , default `false` , when enabled, the download secondary category will be passed to the downloader, and the downloader will manage the download directory, which needs to be synchronized Turn on `DOWNLOAD_CATEGORY`
 
-  - `jellyfin`设置项：
+- `transmission` settings:
 
-    - **JELLYFIN_HOST：** Jellyfin服务器地址，格式：`ip:port`，https需要添加`https://`前缀
-    - **JELLYFIN_API_KEY：** Jellyfin Api Key，在`设置->高级->API密钥`处生成
+- **TR_HOST : ** transmission address, format: `ip:port` , https needs to add `https://` prefix
+- **TR_USER : ** transmission username
+- **TR_PASSWORD : ** transmission password
 
-  - `plex`设置项：
+---
+- **REFRESH_MEDIASERVER : ** Whether to refresh the media server after storage , `true`/`false` , default `true`
+- **MEDIASERVER $\color{red}{*}$ : ** Media server , supports `emby`/`jellyfin`/`plex` , and can open multiple files at the same time separated by `,` . You also need to configure the environment variables corresponding to the media server. Variables that do not correspond to the media server can be deleted. It is recommended to use `emby`
 
-    - **PLEX_HOST：** Plex服务器地址，格式：`ip:port`，https需要添加`https://`前缀
-    - **PLEX_TOKEN：** Plex网页Url中的`X-Plex-Token`，通过浏览器F12->网络从请求URL中获取
+- `emby` settings:
 
-- **MEDIASERVER_SYNC_INTERVAL:** 媒体服务器同步间隔（小时），默认`6`，留空则不同步
-- **MEDIASERVER_SYNC_BLACKLIST:** 媒体服务器同步黑名单，多个媒体库名称使用,分割
+- **EMBY_HOST : ** Emby server address, format: `ip:port` , https needs to add `https://` prefix
+- **EMBY_API_KEY : ** Emby Api Key , generated at ` Settings- > Advanced- > API Key`
 
+- `jellyfin` settings:
 
-### 2. **用户认证**
+- **JELLYFIN_HOST : ** Jellyfin server address, format: `ip:port` , https needs to add `https://` prefix
+- **JELLYFIN_API_KEY : ** Jellyfin Api Key , generated at ` Settings- > Advanced- > API Key`
 
-`MoviePilot`需要认证后才能使用，配置`AUTH_SITE`后，需要根据下表配置对应站点的认证参数（**仅能通过环境变量配置**）
+- `plex` settings:
 
-- **AUTH_SITE $\color{red}{*}$ ：** 认证站点，支持`iyuu`/`hhclub`/`audiences`/`hddolby`/`zmpt`/`freefarm`/`hdfans`/`wintersakura`/`leaves`/`1ptba`/`icc2022`/`ptlsp`/`xingtan`
+- **PLEX_HOST : ** Plex server address, format: `ip:port` , https needs to add `https://` prefix
+- **PLEX_TOKEN : ** `X-Plex-Token` in the Plex web page Url , obtained from the request URL through the browser F12-> Network
 
-|      站点      |                          参数                           |
-|:------------:|:-----------------------------------------------------:|
-|     iyuu     |                 `IYUU_SIGN`：IYUU登录令牌                  |
-|    hhclub    |     `HHCLUB_USERNAME`：用户名<br/>`HHCLUB_PASSKEY`：密钥     |
-|  audiences   |    `AUDIENCES_UID`：用户ID<br/>`AUDIENCES_PASSKEY`：密钥    |
-|   hddolby    |      `HDDOLBY_ID`：用户ID<br/>`HDDOLBY_PASSKEY`：密钥       |
-|     zmpt     |         `ZMPT_UID`：用户ID<br/>`ZMPT_PASSKEY`：密钥         |
-|   freefarm   |     `FREEFARM_UID`：用户ID<br/>`FREEFARM_PASSKEY`：密钥     |
-|    hdfans    |       `HDFANS_UID`：用户ID<br/>`HDFANS_PASSKEY`：密钥       |
-| wintersakura | `WINTERSAKURA_UID`：用户ID<br/>`WINTERSAKURA_PASSKEY`：密钥 |
-|    leaves    |       `LEAVES_UID`：用户ID<br/>`LEAVES_PASSKEY`：密钥       |
-|    1ptba     |        `1PTBA_UID`：用户ID<br/>`1PTBA_PASSKEY`：密钥        |
-|   icc2022    |      `ICC2022_UID`：用户ID<br/>`ICC2022_PASSKEY`：密钥      |
-|    ptlsp     |        `PTLSP_UID`：用户ID<br/>`PTLSP_PASSKEY`：密钥        |
-|   xingtan    |      `XINGTAN_UID`：用户ID<br/>`XINGTAN_PASSKEY`：密钥      |
+- **MEDIASERVER_SYNC_INTERVAL:** Media server synchronization interval (hours), default `6` , leave it blank to not synchronize
+- **MEDIASERVER_SYNC_BLACKLIST:** Media server synchronization blacklist, multiple media library names used , split
 
 
-### 2. **进阶配置**
+### 2. ** User Authentication **
 
-- **BIG_MEMORY_MODE：** 大内存模式，默认为`false`，开启后会占用更多的内存，但响应速度会更快
+`MoviePilot` requires authentication before it can be used. After configuring `AUTH_SITE` , you need to configure the authentication parameters of the corresponding site according to the following table ( ** can only be configured through environment variables ** )
 
-- **MOVIE_RENAME_FORMAT：** 电影重命名格式
+- **AUTH_SITE $\color{red}{*}$ : ** Authentication site, supports `iyuu`/`hhclub`/`audiences`/`hddolby`/`zmpt`/`freefarm`/`hdfans`/` wintersakura`/`leaves`/`1ptba`/`icc2022`/`ptlsp`/`xingtan`
 
-`MOVIE_RENAME_FORMAT`支持的配置项：
+| Site | Parameters |
+|:---------------------:|:---------------------------------- ------------------:|
+| iyuu | `IYUU_SIGN` : IYUU login token |
+| hhclub | `HHCLUB_USERNAME` : username <br/> `HHCLUB_PASSKEY` : key |
+| audiences | `AUDIENCES_UID` : User ID<br/> `AUDIENCES_PASSKEY` : Key |
+| hddolby | `HDDOLBY_ID` : User ID<br/> `HDDOLBY_PASSKEY` : Key |
+| zmpt | `ZMPT_UID` : User ID<br/> `ZMPT_PASSKEY` : Key |
+| freefarm | `FREEFARM_UID` : User ID<br/> `FREEFARM_PASSKEY` : Key |
+| hdfans | `HDFANS_UID` : User ID<br/> `HDFANS_PASSKEY` : Key |
+| wintersakura | `WINTERSAKURA_UID` : User ID<br/> `WINTERSAKURA_PASSKEY` : Key |
+| leaves | `LEAVES_UID` : User ID<br/> `LEAVES_PASSKEY` : Key |
+| 1ptba | `1PTBA_UID` : User ID<br/> `1PTBA_PASSKEY` : Key |
+| icc2022 | `ICC2022_UID` : User ID<br/> `ICC2022_PASSKEY` : Key |
+| ptlsp | `PTLSP_UID` : User ID<br/> `PTLSP_PASSKEY` : Key |
+| _ _ _ _
 
-> `title`： 标题  
-> `original_name`： 原文件名  
-> `original_title`： 原语种标题  
-> `name`： 识别名称  
-> `year`： 年份  
-> `resourceType`：资源类型  
-> `effect`：特效  
-> `edition`： 版本（资源类型+特效）  
-> `videoFormat`： 分辨率  
-> `releaseGroup`： 制作组/字幕组  
-> `customization`： 自定义占位符  
-> `videoCodec`： 视频编码  
-> `audioCodec`： 音频编码  
-> `tmdbid`： TMDBID  
-> `imdbid`： IMDBID  
-> `part`：段/节  
-> `fileExt`：文件扩展名
 
-`MOVIE_RENAME_FORMAT`默认配置格式：
+### 2. ** Advanced configuration **
+
+- **BIG_MEMORY_MODE : ** Big memory mode, the default is `false` , it will take up more memory when turned on, but the response speed will be faster
+
+- **MOVIE_RENAME_FORMAT : ** Movie rename format
+
+Configuration items supported by `MOVIE_RENAME_FORMAT` :
+
+> `title` : title  
+> `original_name` : Original file name  
+> `original_title` : Original language title  
+> `name` : identification name  
+> `year` : years  
+> `resourceType` : resource type  
+> `effect` : special effects  
+> `edition` : Version ( resource type + special effects)  
+> `videoFormat` : resolution  
+> `releaseGroup` : Production team / subtitle team  
+> `customization` : Custom placeholder  
+> `videoCodec` : video encoding  
+> `audioCodec` : audio encoding  
+> `tmdbid` : TMDBID
+> `imdbid` : IMDBID
+> `part` : paragraph / section  
+> `fileExt` : file extension
+
+`MOVIE_RENAME_FORMAT` default configuration format:
 
 ```
 {{title}}{% if year %} ({{year}}){% endif %}/{{title}}{% if year %} ({{year}}){% endif %}{% if part %}-{{part}}{% endif %}{% if videoFormat %} - {{videoFormat}}{% endif %}{{fileExt}}
 ```
 
-- **TV_RENAME_FORMAT：** 电视剧重命名格式
+- **TV_RENAME_FORMAT : ** TV series renaming format
 
-`TV_RENAME_FORMAT`额外支持的配置项：
+Additional configuration items supported by `TV_RENAME_FORMAT` :
 
-> `season`： 季号  
-> `episode`： 集号  
-> `season_episode`： 季集 SxxExx  
-> `episode_title`： 集标题
+> `season` : Season number  
+> `episode` : Set number  
+> `season_episode` : Season EpisodeSxxExx
+> `episode_title` : episode title
 
-`TV_RENAME_FORMAT`默认配置格式：
+`TV_RENAME_FORMAT` default configuration format:
 
 ```
-{{title}}{% if year %} ({{year}}){% endif %}/Season {{season}}/{{title}} - {{season_episode}}{% if part %}-{{part}}{% endif %}{% if episode %} - 第 {{episode}} 集{% endif %}{{fileExt}}
+{{title}}{% if year %} ({{year}}){% endif %}/Season {{season}}/{{title}} - {{season_episode}}{% if part %}-{ {part}}{ % endif %}{% if episode %} -Episode {{episode}} {% endif %}{{fileExt}}
 ```
 
 
-### 3. **优先级规则**
+### 3. ** Priority Rules **
 
-- 仅支持使用内置规则进行排列组合，内置规则有：`蓝光原盘`、`4K`、`1080P`、`中文字幕`、`特效字幕`、`H265`、`H264`、`杜比`、`HDR`、`REMUX`、`WEB-DL`、`免费`、`国语配音` 等
-- 符合任一层级规则的资源将被标识选中，匹配成功的层级做为该资源的优先级，排越前面优先级超高
-- 不符合过滤规则所有层级规则的资源将不会被选中
+-Only supports the use of built - in rules for arrangement and combination. The built-in rules are: ` Blu-ray original disc` , `4K` , `1080P` , ` Chinese subtitles` , ` Special effects subtitles` , ` H265` , `H264` , ` Dolby` , `HDR` , `REMUX` , ` WEB -DL` , ` Free` , ` Mandarin Dubbing` , etc.
+-Resources that meet the rules of any level will be identified and selected. The level with successful matching will be used as the priority of the resource. The priority will be higher if it is ranked higher.
+that do not comply with all levels of filtering rules will not be selected
 
 
-## 使用
+## Use
 
-- 通过CookieCloud同步快速同步站点，不需要使用的站点可在WEB管理界面中禁用，无法同步的站点可手动新增。
-- 通过WEB进行管理，将WEB添加到手机桌面获得类App使用效果，管理界面端口：`3000`，后台API端口：`3001`。
-- 通过下载器监控或使用目录监控插件实现自动整理入库刮削（二选一）。
-- 通过微信/Telegram/Slack/SynologyChat远程管理，其中微信/Telegram将会自动添加操作菜单（微信菜单条数有限制，部分菜单不显示）；微信需要在官方页面设置回调地址，SynologyChat需要设置机器人传入地址，地址相对路径为：`/api/v1/message/`。
-- 设置媒体服务器Webhook，通过MoviePilot发送播放通知等。Webhook回调相对路径为`/api/v1/webhook?token=moviepilot`（`3001`端口），其中`moviepilot`为设置的`API_TOKEN`。
-- 将MoviePilot做为Radarr或Sonarr服务器添加到Overseerr或Jellyseerr（`API服务端口`），可使用Overseerr/Jellyseerr浏览订阅。
-- 映射宿主机docker.sock文件到容器`/var/run/docker.sock`，以支持内建重启操作。实例：`-v /var/run/docker.sock:/var/run/docker.sock:ro`
+- Quickly synchronize sites through CookieCloud synchronization. Sites that are not needed can be disabled in the WEB management interface, and sites that cannot be synchronized can be added manually .
+-Manage through WEB, add WEB to the mobile desktop to obtain App- like usage effects, management interface port: ` 3000` , background API port: `3001` .
+-Achieve automatic sorting and scraping through downloader monitoring or directory monitoring plug-in (choose one of the two).
+-Remote management through WeChat /Telegram/Slack/SynologyChat , where WeChat /Telegram will automatically add an operation menu (the number of WeChat menus is limited, and some menus are not displayed); WeChat needs to set the callback address on the official page, and SynologyChat needs to set it The robot passes in the address, and the relative path of the address is: `/api/v1/message/` .
+-Set media server Webhook , send playback notifications through MoviePilot , etc. The relative path of Webhook callback is `/api/v1/webhook?token=moviepilot` ( `3001` port), where `moviepilot` is the set `API_TOKEN` .
+- Add MoviePilot as a Radarr or Sonarr server to Overseerr or Jellyseerr ( `API service port` ) , and you can use Overseerr/Jellyseerr to browse subscriptions.
+- Map the host docker.sock file to the container `/var/run/docker.sock` to support built-in restart operations. Example: `-v /var/run/docker.sock:/var/run/docker.sock:ro`
 
-### **注意**
-- 容器首次启动需要下载浏览器内核，根据网络情况可能需要较长时间，此时无法登录。可映射`/moviepilot`目录避免容器重置后重新触发浏览器内核下载。 
-- 使用反向代理时，需要添加以下配置，否则可能会导致部分功能无法访问（`ip:port`修改为实际值）：
+### ** NOTE **
+-The first startup of the container requires downloading the browser kernel, which may take a long time depending on network conditions, and you cannot log in at this time. The `/moviepilot` directory can be mapped to avoid re-triggering the browser kernel download after the container is reset. 
+-When using a reverse proxy , you need to add the following configuration, otherwise some functions may be inaccessible ( `ip:port` is modified to the actual value):
 ```nginx configuration
-location / {
-    proxy_pass http://ip:port;
-    proxy_set_header Host $http_host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
+location/{
+proxy_pass http://ip:port;
+proxy_set_header Host $http_host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header X-Forwarded-Proto $scheme;
 }
 ```
-- 新建的企业微信应用需要固定公网IP的代理才能收到消息，代理添加以下代码：
+-The newly created enterprise WeChat application requires a proxy with a fixed public IP to receive messages. Add the following code to the proxy:
 ```nginx configuration
 location /cgi-bin/gettoken {
-    proxy_pass https://qyapi.weixin.qq.com;
+proxy_pass https://qyapi.weixin.qq.com;
 }
 location /cgi-bin/message/send {
-    proxy_pass https://qyapi.weixin.qq.com;
+proxy_pass https://qyapi.weixin.qq.com;
 }
-location  /cgi-bin/menu/create {
-    proxy_pass https://qyapi.weixin.qq.com;
+location /cgi-bin/menu/create {
+proxy_pass https://qyapi.weixin.qq.com;
 }
 ```
 

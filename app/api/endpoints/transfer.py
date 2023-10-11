@@ -13,7 +13,7 @@ from app.schemas import MediaType
 router = APIRouter()
 
 
-@router.post("/manual", summary="手动转移", response_model=schemas.Response)
+@router.post("/manual", summary=" Manual transfer", response_model=schemas.Response)
 def manual_transfer(path: str,
                     target: str = None,
                     tmdbid: int = None,
@@ -28,29 +28,29 @@ def manual_transfer(path: str,
                     db: Session = Depends(get_db),
                     _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    手动转移，支持自定义剧集识别格式
-    :param path: 转移路径或文件
-    :param target: 目标路径
-    :param type_name: 媒体类型、电影/电视剧
+    Manual transfer， Support customized episode recognition format
+    :param path:  Transfer path or file
+    :param target:  Target path
+    :param type_name:  Media type、 Cinematic/ Dramas
     :param tmdbid: tmdbid
-    :param season: 剧集季号
-    :param transfer_type: 转移类型，move/copy
-    :param episode_format: 剧集识别格式
-    :param episode_detail: 剧集识别详细信息
-    :param episode_part: 剧集识别分集信息
-    :param episode_offset: 剧集识别偏移量
-    :param min_filesize: 最小文件大小(MB)
-    :param db: 数据库
-    :param _: Token校验
+    :param season:  Episode number
+    :param transfer_type:  Type of transfer，move/copy
+    :param episode_format:  Episode recognition format
+    :param episode_detail:  Episode identification details
+    :param episode_part:  Episode identification subplot information
+    :param episode_offset:  Episode identification offset
+    :param min_filesize:  Minimum file size(MB)
+    :param db:  Comprehensive database
+    :param _: Token Calibration
     """
     in_path = Path(path)
     if target:
         target = Path(target)
         if not target.exists():
-            return schemas.Response(success=False, message=f"目标路径不存在")
-    # 类型
+            return schemas.Response(success=False, message=f" Target path does not exist")
+    #  Typology
     mtype = MediaType(type_name) if type_name else None
-    # 自定义格式
+    #  Custom formatting
     epformat = None
     if episode_offset or episode_part or episode_detail or episode_format:
         epformat = schemas.EpisodeFormat(
@@ -59,7 +59,7 @@ def manual_transfer(path: str,
             part=episode_part,
             offset=episode_offset,
         )
-    # 开始转移
+    #  Commencement of transfer
     state, errormsg = TransferChain(db).manual_transfer(
         in_path=in_path,
         target=target,
@@ -70,10 +70,10 @@ def manual_transfer(path: str,
         epformat=epformat,
         min_filesize=min_filesize
     )
-    # 失败
+    #  Fail (e.g. experiments)
     if not state:
         if isinstance(errormsg, list):
-            errormsg = f"整理完成，{len(errormsg)} 个文件转移失败！"
+            errormsg = f" Finishing，{len(errormsg)}  Failed transfer of documents！"
         return schemas.Response(success=False, message=errormsg)
-    # 成功
+    #  Successes
     return schemas.Response(success=True)

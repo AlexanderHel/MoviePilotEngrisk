@@ -5,22 +5,22 @@ class RuleParser:
 
     def __init__(self):
         """
-        定义语法规则
+        Defining grammar rules
         """
-        # 表达式
+        #  Displayed formula
         expr: Forward = Forward()
-        # 原子
+        #  Atomic
         atom: Combine = Combine(Word(alphas, alphanums) | Word(nums) + Word(alphas, alphanums))
-        # 逻辑非操作符
+        #  Logical nonoperator
         operator_not: Literal = Literal('!').setParseAction(lambda: 'not')
-        # 逻辑或操作符
+        #  Logical or operator (math.)
         operator_or: Literal = Literal('|').setParseAction(lambda: 'or')
-        # 逻辑与操作符
+        #  Logic and operators (math.)
         operator_and: Literal = Literal('&').setParseAction(lambda: 'and')
-        # 定义表达式的语法规则
+        #  Syntax rules for defining expressions
         expr <<= operator_not + expr | operator_or | operator_and | atom | ('(' + expr + ')')
 
-        # 运算符优先级
+        #  Operator priority
         self.expr = infixNotation(expr,
                                   [(operator_not, 1, opAssoc.RIGHT),
                                    (operator_and, 2, opAssoc.LEFT),
@@ -28,19 +28,19 @@ class RuleParser:
 
     def parse(self, expression: str) -> ParseResults:
         """
-        解析给定的表达式。
+        Parses the given expression。
 
-        参数:
-        expression -- 要解析的表达式
+        Parameters:
+        expression --  The expression to be parsed
 
-        返回:
-        解析结果
+        Come (or go) back:
+        Parsing result
         """
         return self.expr.parseString(expression)
 
 
 if __name__ == '__main__':
-    # 测试代码
+    #  Test code
     expression_str = "!BLU & 4K & CN > !BLU & 1080P & CN > !BLU & 4K > !BLU & 1080P"
     for exp in expression_str.split('>'):
         parsed_expr = RuleParser().parse(exp)

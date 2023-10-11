@@ -20,7 +20,7 @@ class ProgressHelper(metaclass=Singleton):
         self._process_detail[key] = {
             "enable": False,
             "value": 0,
-            "text": "请稍候..."
+            "text": " Please wait...."
         }
 
     def start(self, key: Union[ProgressKey, str]):

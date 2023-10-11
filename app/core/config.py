@@ -9,49 +9,49 @@ from app.utils.system import SystemUtils
 
 
 class Settings(BaseSettings):
-    # 项目名称
+    #  Project name
     PROJECT_NAME = "MoviePilot"
-    # API路径
+    # API Trails
     API_V1_STR: str = "/api/v1"
-    # 密钥
+    #  Keys
     SECRET_KEY: str = secrets.token_urlsafe(32)
-    # 允许的域名
+    #  Allowed domains
     ALLOWED_HOSTS: list = ["*"]
-    # TOKEN过期时间
+    # TOKEN Expiration date (of document)
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
-    # 时区
+    #  Time zones
     TZ: str = "Asia/Shanghai"
-    # API监听地址
+    # API Listening address
     HOST: str = "0.0.0.0"
-    # API监听端口
+    # API Listening port
     PORT: int = 3001
-    # 前端监听端口
+    #  Front-end listening port
     NGINX_PORT: int = 3000
-    # 是否调试模式
+    #  Debug mode or not
     DEBUG: bool = False
-    # 是否开发模式
+    #  Whether to develop a model
     DEV: bool = False
-    # 配置文件目录
+    #  Configuration file directory
     CONFIG_DIR: str = None
-    # 超级管理员
+    #  Super-administrator
     SUPERUSER: str = "admin"
-    # 超级管理员初始密码
+    #  Super-administrator初始密码
     SUPERUSER_PASSWORD: str = "password"
-    # API密钥，需要更换
+    # API Keys， Need to be replaced
     API_TOKEN: str = "moviepilot"
-    # 网络代理 IP:PORT
+    #  Network agent IP:PORT
     PROXY_HOST: str = None
-    # 媒体信息搜索来源
+    #  Media information search sources
     SEARCH_SOURCE: str = "themoviedb"
-    # 刮削入库的媒体文件
+    #  Scraping incoming media files
     SCRAP_METADATA: bool = True
-    # 新增已入库媒体是否跟随TMDB信息变化
+    #  Add whether or not the deposited media followsTMDB Changes in information
     SCRAP_FOLLOW_TMDB: bool = True
-    # 刮削来源
+    #  Scraping sources
     SCRAP_SOURCE: str = "themoviedb"
-    # TMDB图片地址
+    # TMDB Image address
     TMDB_IMAGE_DOMAIN: str = "image.tmdb.org"
-    # TMDB API地址
+    # TMDB API Address
     TMDB_API_DOMAIN: str = "api.themoviedb.org"
     # TMDB API Key
     TMDB_API_KEY: str = "db55323b8d3e4154498498a75642b381"
@@ -59,150 +59,150 @@ class Settings(BaseSettings):
     TVDB_API_KEY: str = "6b481081-10aa-440c-99f2-21d17717ee02"
     # Fanart API Key
     FANART_API_KEY: str = "d2d31f9ecabea050fc7d68aa3146015f"
-    # 支持的后缀格式
+    #  Supported suffix formats
     RMT_MEDIAEXT: list = ['.mp4', '.mkv', '.ts', '.iso',
                           '.rmvb', '.avi', '.mov', '.mpeg',
                           '.mpg', '.wmv', '.3gp', '.asf',
                           '.m4v', '.flv', '.m2ts', '.strm',
                           '.tp']
-    # 支持的字幕文件后缀格式
+    #  Supported subtitle file suffix formats
     RMT_SUBEXT: list = ['.srt', '.ass', '.ssa']
-    # 支持的音轨文件后缀格式
+    #  Supported audio track file suffix formats
     RMT_AUDIO_TRACK_EXT: list = ['.mka']
-    # 索引器
+    #  Indexer
     INDEXER: str = "builtin"
-    # 订阅模式
+    #  Subscription model
     SUBSCRIBE_MODE: str = "spider"
-    # RSS订阅模式刷新时间间隔（分钟）
+    # RSS Subscription mode refresh interval（ Minutes）
     SUBSCRIBE_RSS_INTERVAL: int = 30
-    # 订阅搜索开关
+    #  Subscribe to search switch
     SUBSCRIBE_SEARCH: bool = False
-    # 用户认证站点
+    #  User authentication site
     AUTH_SITE: str = ""
-    # 交互搜索自动下载用户ID，使用,分割
+    #  Interactive search automatically downloads usersID， Utilization, Demerger
     AUTO_DOWNLOAD_USER: str = None
-    # 消息通知渠道 telegram/wechat/slack，多个通知渠道用,分隔
+    #  Message notification channels telegram/wechat/slack， For multiple notification channels, Segregation
     MESSAGER: str = "telegram"
-    # WeChat企业ID
+    # WeChat CorporationsID
     WECHAT_CORPID: str = None
-    # WeChat应用Secret
+    # WeChat ApplianceSecret
     WECHAT_APP_SECRET: str = None
-    # WeChat应用ID
+    # WeChat ApplianceID
     WECHAT_APP_ID: str = None
-    # WeChat代理服务器
+    # WeChat Proxy server
     WECHAT_PROXY: str = "https://qyapi.weixin.qq.com"
     # WeChat Token
     WECHAT_TOKEN: str = None
     # WeChat EncodingAESKey
     WECHAT_ENCODING_AESKEY: str = None
-    # WeChat 管理员
+    # WeChat  Janitors
     WECHAT_ADMINS: str = None
     # Telegram Bot Token
     TELEGRAM_TOKEN: str = None
     # Telegram Chat ID
     TELEGRAM_CHAT_ID: str = None
-    # Telegram 用户ID，使用,分隔
+    # Telegram  SubscribersID， Utilization, Segregation
     TELEGRAM_USERS: str = ""
-    # Telegram 管理员ID，使用,分隔
+    # Telegram  JanitorsID， Utilization, Segregation
     TELEGRAM_ADMINS: str = ""
     # Slack Bot User OAuth Token
     SLACK_OAUTH_TOKEN: str = ""
     # Slack App-Level Token
     SLACK_APP_TOKEN: str = ""
-    # Slack 频道名称
+    # Slack  Channel name
     SLACK_CHANNEL: str = ""
     # SynologyChat Webhook
     SYNOLOGYCHAT_WEBHOOK: str = ""
     # SynologyChat Token
     SYNOLOGYCHAT_TOKEN: str = ""
-    # 下载器 qbittorrent/transmission
+    #  Downloader qbittorrent/transmission
     DOWNLOADER: str = "qbittorrent"
-    # 下载器监控开关
+    #  Downloader monitor switch
     DOWNLOADER_MONITOR: bool = True
-    # Qbittorrent地址，IP:PORT
+    # Qbittorrent Address，IP:PORT
     QB_HOST: str = None
-    # Qbittorrent用户名
+    # Qbittorrent User id
     QB_USER: str = None
-    # Qbittorrent密码
+    # Qbittorrent Cryptographic
     QB_PASSWORD: str = None
-    # Qbittorrent分类自动管理
+    # Qbittorrent Automatic management of classifications
     QB_CATEGORY: bool = False
-    # Transmission地址，IP:PORT
+    # Transmission Address，IP:PORT
     TR_HOST: str = None
-    # Transmission用户名
+    # Transmission User id
     TR_USER: str = None
-    # Transmission密码
+    # Transmission Cryptographic
     TR_PASSWORD: str = None
-    # 种子标签
+    #  Seed labels
     TORRENT_TAG: str = "MOVIEPILOT"
-    # 下载保存目录，容器内映射路径需要一致
+    #  Download save directory， Mapped paths need to be consistent within containers
     DOWNLOAD_PATH: str = "/downloads"
-    # 电影下载保存目录，容器内映射路径需要一致
+    #  Movie download save directory， Mapped paths need to be consistent within containers
     DOWNLOAD_MOVIE_PATH: str = None
-    # 电视剧下载保存目录，容器内映射路径需要一致
+    #  Tv show download save directory， Mapped paths need to be consistent within containers
     DOWNLOAD_TV_PATH: str = None
-    # 动漫下载保存目录，容器内映射路径需要一致
+    #  Anime download save directory， Mapped paths need to be consistent within containers
     DOWNLOAD_ANIME_PATH: str = None
-    # 下载目录二级分类
+    #  Download catalog secondary categories
     DOWNLOAD_CATEGORY: bool = False
-    # 下载站点字幕
+    #  Download site subtitles
     DOWNLOAD_SUBTITLE: bool = True
-    # 媒体服务器 emby/jellyfin/plex，多个媒体服务器,分割
+    #  Media server emby/jellyfin/plex， Multiple media servers, Demerger
     MEDIASERVER: str = "emby"
-    # 入库刷新媒体库
+    #  Inbound refresh media library
     REFRESH_MEDIASERVER: bool = True
-    # 媒体服务器同步间隔（小时）
+    #  Media server synchronization interval（ Hourly）
     MEDIASERVER_SYNC_INTERVAL: int = 6
-    # 媒体服务器同步黑名单，多个媒体库名称,分割
+    #  Media server synchronization blacklist， Multiple media library names, Demerger
     MEDIASERVER_SYNC_BLACKLIST: str = None
-    # EMBY服务器地址，IP:PORT
+    # EMBY Server address，IP:PORT
     EMBY_HOST: str = None
     # EMBY Api Key
     EMBY_API_KEY: str = None
-    # Jellyfin服务器地址，IP:PORT
+    # Jellyfin Server address，IP:PORT
     JELLYFIN_HOST: str = None
     # Jellyfin Api Key
     JELLYFIN_API_KEY: str = None
-    # Plex服务器地址，IP:PORT
+    # Plex Server address，IP:PORT
     PLEX_HOST: str = None
     # Plex Token
     PLEX_TOKEN: str = None
-    # 转移方式 link/copy/move/softlink
+    #  Migration pattern link/copy/move/softlink
     TRANSFER_TYPE: str = "copy"
-    # CookieCloud服务器地址
+    # CookieCloud Server address
     COOKIECLOUD_HOST: str = "https://movie-pilot.org/cookiecloud"
-    # CookieCloud用户KEY
+    # CookieCloud SubscribersKEY
     COOKIECLOUD_KEY: str = None
-    # CookieCloud端对端加密密码
+    # CookieCloud End-to-end encrypted passwords
     COOKIECLOUD_PASSWORD: str = None
-    # CookieCloud同步间隔（分钟）
+    # CookieCloud Synchronization interval（ Minutes）
     COOKIECLOUD_INTERVAL: int = 60 * 24
-    # OCR服务器地址
+    # OCR Server address
     OCR_HOST: str = "https://movie-pilot.org"
-    # CookieCloud对应的浏览器UA
+    # CookieCloud Corresponding browserUA
     USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36 Edg/113.0.1774.57"
-    # 媒体库目录，多个目录使用,分隔
+    #  Media library catalog， Multiple directory use, Segregation
     LIBRARY_PATH: str = None
-    # 电影媒体库目录名，默认"电影"
+    #  Movie media library catalog name， Default (setting)" Cinematic"
     LIBRARY_MOVIE_NAME: str = None
-    # 电视剧媒体库目录名，默认"电视剧"
+    #  Tv series media library catalog name， Default (setting)" Dramas"
     LIBRARY_TV_NAME: str = None
-    # 动漫媒体库目录名，默认"电视剧/动漫"
+    #  Anime media library catalog name， Default (setting)" Dramas/ Cartoons and comics"
     LIBRARY_ANIME_NAME: str = None
-    # 二级分类
+    #  Secondary classification
     LIBRARY_CATEGORY: bool = True
-    # 电视剧动漫的分类genre_ids
+    #  Classification of tv series and animegenre_ids
     ANIME_GENREIDS = [16]
-    # 电影重命名格式
+    #  Movie renaming format
     MOVIE_RENAME_FORMAT: str = "{{title}}{% if year %} ({{year}}){% endif %}" \
                                "/{{title}}{% if year %} ({{year}}){% endif %}{% if part %}-{{part}}{% endif %}{% if videoFormat %} - {{videoFormat}}{% endif %}" \
                                "{{fileExt}}"
-    # 电视剧重命名格式
+    #  Tv series renaming format
     TV_RENAME_FORMAT: str = "{{title}}{% if year %} ({{year}}){% endif %}" \
                             "/Season {{season}}" \
-                            "/{{title}} - {{season_episode}}{% if part %}-{{part}}{% endif %}{% if episode %} - 第 {{episode}} 集{% endif %}" \
+                            "/{{title}} - {{season_episode}}{% if part %}-{{part}}{% endif %}{% if episode %} -  (prefix indicating ordinal number, e.g. first, number two etc) {{episode}}  Classifier for sections of a tv series e.g. episode{% endif %}" \
                             "{{fileExt}}"
-    # 大内存模式
+    #  Large memory mode
     BIG_MEMORY_MODE: bool = False
 
     @property

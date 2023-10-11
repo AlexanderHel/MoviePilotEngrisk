@@ -17,36 +17,36 @@ from app.schemas.types import EventType
 router = APIRouter()
 
 
-@router.get("/download", summary="查询下载历史记录", response_model=List[schemas.DownloadHistory])
+@router.get("/download", summary=" Check download history", response_model=List[schemas.DownloadHistory])
 def download_history(page: int = 1,
                      count: int = 30,
                      db: Session = Depends(get_db),
                      _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    查询下载历史记录
+    Check download history
     """
     return DownloadHistory.list_by_page(db, page, count)
 
 
-@router.delete("/download", summary="删除下载历史记录", response_model=schemas.Response)
+@router.delete("/download", summary=" Delete download history", response_model=schemas.Response)
 def delete_download_history(history_in: schemas.DownloadHistory,
                             db: Session = Depends(get_db),
                             _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    删除下载历史记录
+    Delete download history
     """
     DownloadHistory.delete(db, history_in.id)
     return schemas.Response(success=True)
 
 
-@router.get("/transfer", summary="查询转移历史记录", response_model=schemas.Response)
+@router.get("/transfer", summary=" Query transfer history", response_model=schemas.Response)
 def transfer_history(title: str = None,
                      page: int = 1,
                      count: int = 30,
                      db: Session = Depends(get_db),
                      _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    查询转移历史记录
+    Query transfer history
     """
     if title:
         total = TransferHistory.count_by_title(db, title)
@@ -62,44 +62,44 @@ def transfer_history(title: str = None,
                             })
 
 
-@router.delete("/transfer", summary="删除转移历史记录", response_model=schemas.Response)
+@router.delete("/transfer", summary=" Delete transfer history", response_model=schemas.Response)
 def delete_transfer_history(history_in: schemas.TransferHistory,
                             deletesrc: bool = False,
                             deletedest: bool = False,
                             db: Session = Depends(get_db),
                             _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    删除转移历史记录
+    Delete transfer history
     """
     history = TransferHistory.get(db, history_in.id)
     if not history:
-        return schemas.Response(success=False, msg="记录不存在")
-    # 册除媒体库文件
+        return schemas.Response(success=False, msg=" Record does not exist")
+    #  Excluding media library files
     if deletedest and history.dest:
         TransferChain(db).delete_files(Path(history.dest))
-    # 删除源文件
+    #  Deleting source files
     if deletesrc and history.src:
         TransferChain(db).delete_files(Path(history.src))
-        # 发送事件
+        #  Send event
         eventmanager.send_event(
             EventType.DownloadFileDeleted,
             {
                 "src": history.src
             }
         )
-    # 删除记录
+    #  Deletion of records
     TransferHistory.delete(db, history_in.id)
     return schemas.Response(success=True)
 
 
-@router.post("/transfer", summary="历史记录重新转移", response_model=schemas.Response)
+@router.post("/transfer", summary=" History re-transfer", response_model=schemas.Response)
 def redo_transfer_history(history_in: schemas.TransferHistory,
                           mtype: str = None,
                           new_tmdbid: int = None,
                           db: Session = Depends(get_db),
                           _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    历史记录重新转移，不输入 mtype 和 new_tmdbid 时，自动使用文件名重新识别
+    History re-transfer， Non-input mtype  Cap (a poem) new_tmdbid  Hour， Automatic re-recognition using file names
     """
     if mtype and new_tmdbid:
         state, errmsg = TransferChain(db).re_transfer(logid=history_in.id,

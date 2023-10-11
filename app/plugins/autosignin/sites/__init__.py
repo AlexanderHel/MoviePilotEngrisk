@@ -15,40 +15,40 @@ from app.utils.string import StringUtils
 
 class _ISiteSigninHandler(metaclass=ABCMeta):
     """
-    实现站点签到的基类，所有站点签到类都需要继承此类，并实现match和signin方法
-    实现类放置到sitesignin目录下将会自动加载
+    Base class that implements site check-in， All site check-in classes need to inherit this class， Realizationmatch Cap (a poem)signin Methodologies
+    The implementation class is placed into thesitesignin Directory will automatically load the
     """
-    # 匹配的站点Url，每一个实现类都需要设置为自己的站点Url
+    #  Matching sitesUrl， Each implementation class needs to be set up as its own siteUrl
     site_url = ""
 
     @abstractmethod
     def match(self, url: str) -> bool:
         """
-        根据站点Url判断是否匹配当前站点签到类，大部分情况使用默认实现即可
-        :param url: 站点Url
-        :return: 是否匹配，如匹配则会调用该类的signin方法
+        Based on siteUrl Determine if the current site check-in class matches， In most cases it is sufficient to use the default implementation
+        :param url:  WebsiteUrl
+        :return:  Whether or not it matches， If a match is made then the class'ssignin Methodologies
         """
         return True if StringUtils.url_equal(url, self.site_url) else False
 
     @abstractmethod
     def signin(self, site_info: CommentedMap) -> Tuple[bool, str]:
         """
-        执行签到操作
-        :param site_info: 站点信息，含有站点Url、站点Cookie、UA等信息
-        :return: True|False,签到结果信息
+        Perform check-in operations
+        :param site_info:  Site information， Contains siteUrl、 WebsiteCookie、UA And other information
+        :return: True|False, Check-in results information
         """
         pass
 
     @staticmethod
     def get_page_source(url: str, cookie: str, ua: str, proxy: bool, render: bool) -> str:
         """
-        获取页面源码
-        :param url: Url地址
+        Get page source code
+        :param url: Url Address
         :param cookie: Cookie
         :param ua: UA
-        :param proxy: 是否使用代理
-        :param render: 是否渲染
-        :return: 页面源码，错误信息
+        :param proxy:  Whether to use a proxy
+        :param render:  Whether to render
+        :return:  Page source code， Error message
         """
         if render:
             return PlaywrightHelper().get_page_source(url=url,
@@ -61,16 +61,16 @@ class _ISiteSigninHandler(metaclass=ABCMeta):
                                proxies=settings.PROXY if proxy else None
                                ).get_res(url=url)
             if res is not None:
-                # 使用chardet检测字符编码
+                #  Utilizationchardet Detecting character encoding
                 raw_data = res.content
                 if raw_data:
                     try:
                         result = chardet.detect(raw_data)
                         encoding = result['encoding']
-                        # 解码为字符串
+                        #  Decode to string
                         return raw_data.decode(encoding)
                     except Exception as e:
-                        logger.error(f"chardet解码失败：{e}")
+                        logger.error(f"chardet Failed to decode：{e}")
                         return res.text
                 else:
                     return res.text
@@ -79,7 +79,7 @@ class _ISiteSigninHandler(metaclass=ABCMeta):
     @staticmethod
     def sign_in_result(html_res: str, regexs: list) -> bool:
         """
-        判断是否签到成功
+        Determine if sign-in is successful
         """
         html_text = re.sub(r"#\d+", "", re.sub(r"\d+px", "", html_res))
         for regex in regexs:

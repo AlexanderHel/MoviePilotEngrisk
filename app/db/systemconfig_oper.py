@@ -9,12 +9,12 @@ from app.utils.singleton import Singleton
 
 
 class SystemConfigOper(DbOper, metaclass=Singleton):
-    # 配置对象
+    #  Configuration objects
     __SYSTEMCONF: dict = {}
 
     def __init__(self):
         """
-        加载配置到内存
+        Load configuration into memory
         """
         self._db = SessionFactory()
         super().__init__(self._db)
@@ -26,13 +26,13 @@ class SystemConfigOper(DbOper, metaclass=Singleton):
 
     def set(self, key: Union[str, SystemConfigKey], value: Any):
         """
-        设置系统设置
+        Setting up system settings
         """
         if isinstance(key, SystemConfigKey):
             key = key.value
-        # 更新内存
+        #  Update memory
         self.__SYSTEMCONF[key] = value
-        # 写入数据库
+        #  Write to database
         if ObjectUtils.is_obj(value):
             value = json.dumps(value)
         elif value is None:
@@ -49,7 +49,7 @@ class SystemConfigOper(DbOper, metaclass=Singleton):
 
     def get(self, key: Union[str, SystemConfigKey] = None) -> Any:
         """
-        获取系统设置
+        Getting system settings
         """
         if isinstance(key, SystemConfigKey):
             key = key.value

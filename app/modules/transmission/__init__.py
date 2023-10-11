@@ -30,36 +30,36 @@ class TransmissionModule(_ModuleBase):
 
     def scheduler_job(self) -> None:
         """
-        定时任务，每10分钟调用一次
+        Timed task， Each10 One call per minute
         """
-        # 定时重连
+        #  Scheduled reconnection
         if not self.transmission.is_inactive():
             self.transmission.reconnect()
 
     def download(self, content: Union[Path, str], download_dir: Path, cookie: str,
                  episodes: Set[int] = None, category: str = None) -> Optional[Tuple[Optional[str], str]]:
         """
-        根据种子文件，选择并添加下载任务
-        :param content:  种子文件地址或者磁力链接
-        :param download_dir:  下载目录
+        Based on seed documents， Select and add a download task
+        :param content:   Seed file address or magnet link
+        :param download_dir:   Download catalog
         :param cookie:  cookie
-        :param episodes:  需要下载的集数
-        :param category:  分类，TR中未使用
-        :return: 种子Hash
+        :param episodes:   Number of episodes to download
+        :param category:   Categorization，TR Not used in
+        :return:  TorrentHash
         """
         if not content:
             return
         if isinstance(content, Path) and not content.exists():
-            return None, f"种子文件不存在：{content}"
+            return None, f" Seed file does not exist：{content}"
 
-        # 如果要选择文件则先暂停
+        #  Pause if you want to select a file
         is_paused = True if episodes else False
-        # 标签
+        #  Tab (of a window) (computing)
         if settings.TORRENT_TAG:
             labels = [settings.TORRENT_TAG]
         else:
             labels = None
-        # 添加任务
+        #  Add tasks
         torrent = self.transmission.add_torrent(
             content=content.read_bytes() if isinstance(content, Path) else content,
             download_dir=str(download_dir),
@@ -68,15 +68,15 @@ class TransmissionModule(_ModuleBase):
             cookie=cookie
         )
         if not torrent:
-            return None, f"添加种子任务失败：{content}"
+            return None, f" Failed to add seed task：{content}"
         else:
             torrent_hash = torrent.hashString
             if is_paused:
-                # 选择文件
+                #  Select file
                 torrent_files = self.transmission.get_files(torrent_hash)
                 if not torrent_files:
-                    return torrent_hash, "获取种子文件失败，下载任务可能在暂停状态"
-                # 需要的文件信息
+                    return torrent_hash, " Failed to get seed file， The download task may be in a suspended state"
+                #  Required documentation information
                 file_ids = []
                 for torrent_file in torrent_files:
                     file_id = torrent_file.id
@@ -88,24 +88,24 @@ class TransmissionModule(_ModuleBase):
                     if not selected:
                         continue
                     file_ids.append(file_id)
-                # 选择文件
+                #  Select file
                 self.transmission.set_files(torrent_hash, file_ids)
-                # 开始任务
+                #  Commencement of mission
                 self.transmission.start_torrents(torrent_hash)
             else:
-                return torrent_hash, "添加下载任务成功"
+                return torrent_hash, " Add download task successfully"
 
     def list_torrents(self, status: TorrentStatus = None,
                       hashs: Union[list, str] = None) -> Optional[List[Union[TransferTorrent, DownloadingTorrent]]]:
         """
-        获取下载器种子列表
-        :param status:  种子状态
-        :param hashs:  种子Hash
-        :return: 下载器中符合状态的种子列表
+        Get downloader seed list
+        :param status:   Seed state
+        :param hashs:   TorrentHash
+        :return:  List of seeds in the downloader that match the status
         """
         ret_torrents = []
         if hashs:
-            # 按Hash获取
+            #  Check or refer toHash Gain
             torrents, _ = self.transmission.get_torrents(ids=hashs, tags=settings.TORRENT_TAG)
             for torrent in torrents or []:
                 ret_torrents.append(TransferTorrent(
@@ -115,17 +115,17 @@ class TransmissionModule(_ModuleBase):
                     tags=",".join(torrent.labels or [])
                 ))
         elif status == TorrentStatus.TRANSFER:
-            # 获取已完成且未整理的
+            #  Get the completed and unorganized
             torrents = self.transmission.get_completed_torrents(tags=settings.TORRENT_TAG)
             for torrent in torrents or []:
-                # 含"已整理"tag的不处理
-                if "已整理" in torrent.labels or []:
+                #  Suck (keep in your mouth without chewing)" Collated"tag Failure to deal with
+                if " Collated" in torrent.labels or []:
                     continue
-                # 下载路径
+                #  Download path
                 path = torrent.download_dir
-                # 无法获取下载路径的不处理
+                #  Unable to get download path not handled
                 if not path:
-                    logger.debug(f"未获取到 {torrent.name} 下载保存路径")
+                    logger.debug(f" Not available {torrent.name}  Download save path")
                     continue
                 ret_torrents.append(TransferTorrent(
                     title=torrent.name,
@@ -134,7 +134,7 @@ class TransmissionModule(_ModuleBase):
                     tags=",".join(torrent.labels or [])
                 ))
         elif status == TorrentStatus.DOWNLOADING:
-            # 获取正在下载的任务
+            #  Get the task being downloaded
             torrents = self.transmission.get_downloading_torrents(tags=settings.TORRENT_TAG)
             for torrent in torrents or []:
                 meta = MetaInfo(torrent.name)
@@ -159,56 +159,56 @@ class TransmissionModule(_ModuleBase):
     def transfer_completed(self, hashs: Union[str, list],
                            path: Path = None) -> None:
         """
-        转移完成后的处理
-        :param hashs:  种子Hash
-        :param path:  源目录
+        Disposal upon completion of the transfer
+        :param hashs:   TorrentHash
+        :param path:   Source catalog
         :return: None
         """
-        self.transmission.set_torrent_tag(ids=hashs, tags=['已整理'])
-        # 移动模式删除种子
+        self.transmission.set_torrent_tag(ids=hashs, tags=[' Collated'])
+        #  Remove seeds in mobile mode
         if settings.TRANSFER_TYPE == "move":
             if self.remove_torrents(hashs):
-                logger.info(f"移动模式删除种子成功：{hashs} ")
-            # 删除残留文件
+                logger.info(f" Mobile mode deletes seeds successfully：{hashs} ")
+            #  Delete residual files
             if path and path.exists():
                 files = SystemUtils.list_files(path, settings.RMT_MEDIAEXT)
                 if not files:
-                    logger.warn(f"删除残留文件夹：{path}")
+                    logger.warn(f" Delete residual folders：{path}")
                     shutil.rmtree(path, ignore_errors=True)
 
     def remove_torrents(self, hashs: Union[str, list]) -> bool:
         """
-        删除下载器种子
-        :param hashs:  种子Hash
+        Delete downloader seeds
+        :param hashs:   TorrentHash
         :return: bool
         """
         return self.transmission.delete_torrents(delete_file=True, ids=hashs)
 
     def start_torrents(self, hashs: Union[list, str]) -> bool:
         """
-        开始下载
-        :param hashs:  种子Hash
+        Start download
+        :param hashs:   TorrentHash
         :return: bool
         """
         return self.transmission.start_torrents(ids=hashs)
 
     def stop_torrents(self, hashs: Union[list, str]) -> bool:
         """
-        停止下载
-        :param hashs:  种子Hash
+        Stop downloading
+        :param hashs:   TorrentHash
         :return: bool
         """
         return self.transmission.start_torrents(ids=hashs)
 
     def torrent_files(self, tid: str) -> Optional[List[File]]:
         """
-        获取种子文件列表
+        Get a list of seed files
         """
         return self.transmission.get_files(tid=tid)
 
     def downloader_info(self) -> schemas.DownloaderInfo:
         """
-        下载器信息
+        Downloader information
         """
         info = self.transmission.transfer_info()
         if not info:

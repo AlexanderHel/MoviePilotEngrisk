@@ -13,40 +13,40 @@ from app.utils.string import StringUtils
 
 
 class DownloadingMsg(_PluginBase):
-    # 插件名称
-    plugin_name = "下载进度推送"
-    # 插件描述
-    plugin_desc = "定时推送正在下载进度。"
-    # 插件图标
+    #  Plug-in name
+    plugin_name = " Download progress push"
+    #  Plugin description
+    plugin_desc = " Push the progress of ongoing downloads at regular intervals。"
+    #  Plug-in icons
     plugin_icon = "downloadmsg.png"
-    # 主题色
+    #  Theme color
     plugin_color = "#3DE75D"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "thsrite"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/thsrite"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "downloading_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 22
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 2
 
-    # 私有属性
+    #  Private property
     _enabled = False
-    # 任务执行间隔
+    #  Task execution interval
     _seconds = None
     _type = None
     _adminuser = None
     _downloadhis = None
 
-    # 定时器
+    #  Timers
     _scheduler: Optional[BackgroundScheduler] = None
 
     def init_plugin(self, config: dict = None):
-        # 停止现有任务
+        #  Discontinuation of existing mandates
         self.stop_service()
 
         if config:
@@ -55,10 +55,10 @@ class DownloadingMsg(_PluginBase):
             self._type = config.get("type") or 'admin'
             self._adminuser = config.get("adminuser")
 
-            # 加载模块
+            #  Load modules
         if self._enabled:
             self._downloadhis = DownloadHistoryOper(self.db)
-            # 定时服务
+            #  Time service
             self._scheduler = BackgroundScheduler(timezone=settings.TZ)
 
             if self._seconds:
@@ -66,28 +66,28 @@ class DownloadingMsg(_PluginBase):
                     self._scheduler.add_job(func=self.__downloading,
                                             trigger='interval',
                                             seconds=int(self._seconds),
-                                            name="下载进度推送")
+                                            name=" Download progress push")
                 except Exception as err:
-                    logger.error(f"定时任务配置错误：{err}")
+                    logger.error(f" Timed task configuration error：{err}")
 
-            # 启动任务
+            #  Initiate tasks
             if self._scheduler.get_jobs():
                 self._scheduler.print_jobs()
                 self._scheduler.start()
 
     def __downloading(self):
         """
-        定时推送正在下载进度
+        Push the progress of ongoing downloads at regular intervals
         """
-        # 正在下载种子
+        #  Downloading seeds now.
         torrents = DownloadChain(self.db).list_torrents(status=TorrentStatus.DOWNLOADING)
         if not torrents:
-            logger.info("当前没有正在下载的任务！")
+            logger.info(" There are currently no tasks being downloaded！")
             return
-            # 推送用户
+            #  Push user
         if self._type == "admin" or self._type == "both":
             if not self._adminuser:
-                logger.error("未配置管理员用户")
+                logger.error(" No administrator user configured")
                 return
 
             for userid in str(self._adminuser).split(","):
@@ -95,36 +95,36 @@ class DownloadingMsg(_PluginBase):
 
         if self._type == "user" or self._type == "both":
             user_torrents = {}
-            # 根据正在下载种子hash获取下载历史
+            #  Based on the seeds being downloadedhash Get download history
             for torrent in torrents:
                 downloadhis = self._downloadhis.get_by_hash(download_hash=torrent.hash)
                 if not downloadhis:
-                    logger.warn(f"种子 {torrent.hash} 未获取到MoviePilot下载历史，无法推送下载进度")
+                    logger.warn(f" Torrent {torrent.hash}  Not availableMoviePilot Download history， Unable to push download progress")
                     continue
                 if not downloadhis.userid:
-                    logger.debug(f"种子 {torrent.hash} 未获取到下载用户记录，无法推送下载进度")
+                    logger.debug(f" Torrent {torrent.hash}  Downloaded user records not captured， Unable to push download progress")
                     continue
                 user_torrent = user_torrents.get(downloadhis.userid) or []
                 user_torrent.append(torrent)
                 user_torrents[downloadhis.userid] = user_torrent
 
             if not user_torrents or not user_torrents.keys():
-                logger.warn("未获取到用户下载记录，无法推送下载进度")
+                logger.warn(" User download history not captured， Unable to push download progress")
                 return
 
-            # 推送用户下载任务进度
+            #  Push user下载任务进度
             for userid in list(user_torrents.keys()):
                 if not userid:
                     continue
-                # 如果用户是管理员，无需重复推送
+                #  If the user is an administrator， No need for repeat pushes
                 if self._type == "admin" or self._type == "both" and self._adminuser and userid in str(
                         self._adminuser).split(","):
-                    logger.debug("管理员已推送")
+                    logger.debug(" Administrator has pushed")
                     continue
 
                 user_torrent = user_torrents.get(userid)
                 if not user_torrent:
-                    logger.warn(f"未获取到用户 {userid} 下载任务")
+                    logger.warn(f" No users acquired {userid}  Download tasks")
                     continue
                 self.__send_msg(torrents=user_torrent,
                                 userid=userid)
@@ -134,9 +134,9 @@ class DownloadingMsg(_PluginBase):
 
     def __send_msg(self, torrents: Optional[List[Union[TransferTorrent, DownloadingTorrent]]], userid: str = None):
         """
-        发送消息
+        Send a message
         """
-        title = f"共 {len(torrents)} 个任务正在下载："
+        title = f" Common {len(torrents)}  Tasks are being downloaded.："
         messages = []
         index = 1
         channel_value = None
@@ -145,7 +145,7 @@ class DownloadingMsg(_PluginBase):
             name = None
             se = None
             ep = None
-            # 先查询下载记录，没有再识别
+            #  Check the download history first， No further identification
             downloadhis = self._downloadhis.get_by_hash(download_hash=torrent.hash)
             if downloadhis:
                 name = downloadhis.title
@@ -169,7 +169,7 @@ class DownloadingMsg(_PluginBase):
                 except Exception as e:
                     print(str(e))
 
-            # 拼装标题
+            #  Assembled title
             if year:
                 media_name = "%s (%s) %s%s" % (name, year, se, ep)
             elif name:
@@ -183,7 +183,7 @@ class DownloadingMsg(_PluginBase):
                             f"{round(torrent.progress, 1)}%")
             index += 1
 
-        # 用户消息渠道
+        #  User messaging channels
         if channel_value:
             channel = next(
                 (channel for channel in MessageChannel.__members__.values() if channel.value == channel_value), None)
@@ -207,7 +207,7 @@ class DownloadingMsg(_PluginBase):
 
     def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
         """
-        拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
+        Assembly plugin configuration page， Two pieces of data need to be returned：1、 Page configuration；2、 Data structure
         """
         return [
                    {
@@ -226,7 +226,7 @@ class DownloadingMsg(_PluginBase):
                                                'component': 'VSwitch',
                                                'props': {
                                                    'model': 'enabled',
-                                                   'label': '启用插件',
+                                                   'label': ' Enabling plug-ins',
                                                }
                                            }
                                        ]
@@ -247,8 +247,8 @@ class DownloadingMsg(_PluginBase):
                                                'component': 'VTextField',
                                                'props': {
                                                    'model': 'seconds',
-                                                   'label': '执行间隔',
-                                                   'placeholder': '单位（秒）'
+                                                   'label': ' Execution interval',
+                                                   'placeholder': ' Work unit (one's workplace)（ Unit of angle or arc equivalent one sixtieth of a degree）'
                                                }
                                            }
                                        ]
@@ -264,8 +264,8 @@ class DownloadingMsg(_PluginBase):
                                                'component': 'VTextField',
                                                'props': {
                                                    'model': 'adminuser',
-                                                   'label': '管理员用户',
-                                                   'placeholder': '多个用户,分割'
+                                                   'label': ' Administrator',
+                                                   'placeholder': ' Multi-user, Demerger'
                                                }
                                            }
                                        ]
@@ -281,12 +281,12 @@ class DownloadingMsg(_PluginBase):
                                                'component': 'VSelect',
                                                'props': {
                                                    'model': 'type',
-                                                   'label': '推送类型',
+                                                   'label': ' Push type',
                                                    'items': [
-                                                       {'title': '管理员', 'value': 'admin'},
-                                                       {'title': '下载用户', 'value': 'user'},
-                                                       {'title': '管理员和下载用户', 'value': 'both'},
-                                                       {'title': '所有用户', 'value': 'all'}
+                                                       {'title': ' Janitors', 'value': 'admin'},
+                                                       {'title': ' Download users', 'value': 'user'},
+                                                       {'title': ' Administrators and download users', 'value': 'both'},
+                                                       {'title': ' All users', 'value': 'all'}
                                                    ]
                                                }
                                            }
@@ -308,7 +308,7 @@ class DownloadingMsg(_PluginBase):
 
     def stop_service(self):
         """
-        退出插件
+        Exit plugin
         """
         try:
             if self._scheduler:
@@ -317,4 +317,4 @@ class DownloadingMsg(_PluginBase):
                     self._scheduler.shutdown()
                 self._scheduler = None
         except Exception as e:
-            logger.error("退出插件失败：%s" % str(e))
+            logger.error("Exit plugin失败：%s" % str(e))

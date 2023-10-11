@@ -16,7 +16,7 @@ from app.utils.string import StringUtils
 
 class IndexerModule(_ModuleBase):
     """
-    索引模块
+    Indexing module
     """
 
     def init_module(self) -> None:
@@ -33,34 +33,34 @@ class IndexerModule(_ModuleBase):
                         mtype: MediaType = None,
                         page: int = 0) -> List[TorrentInfo]:
         """
-        搜索一个站点
-        :param site:  站点
-        :param keywords:  搜索关键词列表
-        :param mtype:  媒体类型
-        :param page:  页码
-        :return: 资源列表
+        Search a site
+        :param site:   Website
+        :param keywords:   Search keyword list
+        :param mtype:   Media type
+        :param page:   Pagination
+        :return:  Resource list
         """
-        # 确认搜索的名字
+        #  Confirm the name of the search
         if not keywords:
-            # 浏览种子页
+            #  View seed page
             keywords = [None]
 
-        # 开始索引
+        #  Start indexing
         result_array = []
-        # 开始计时
+        #  Start counting
         start_time = datetime.now()
 
-        # 搜索多个关键字
+        #  Search for multiple keywords
         for search_word in keywords:
-            # 可能为关键字或ttxxxx
+            #  May be a keyword orttxxxx
             if search_word \
                     and site.get('language') == "en" \
                     and StringUtils.is_chinese(search_word):
-                # 不支持中文
-                logger.warn(f"{site.get('name')} 不支持中文搜索")
+                #  No chinese support
+                logger.warn(f"{site.get('name')}  Chinese search is not supported")
                 continue
 
-            # 去除搜索关键字中的特殊字符
+            #  Remove special characters from search keywords
             if search_word:
                 search_word = StringUtils.clear(search_word, replace_word=" ", allow_space=True)
 
@@ -88,22 +88,22 @@ class IndexerModule(_ModuleBase):
                         mtype=mtype,
                         page=page
                     )
-                # 有结果后停止
+                #  Stop when results are available
                 if result_array:
                     break
             except Exception as err:
-                logger.error(f"{site.get('name')} 搜索出错：{err}")
+                logger.error(f"{site.get('name')}  Search error：{err}")
 
-        # 索引花费的时间
+        #  Time spent indexing
         seconds = round((datetime.now() - start_time).seconds, 1)
 
-        # 返回结果
+        #  Return results
         if not result_array or len(result_array) == 0:
-            logger.warn(f"{site.get('name')} 未搜索到数据，耗时 {seconds} 秒")
+            logger.warn(f"{site.get('name')}  No data searched， Take a period of (x amount of time) {seconds}  Unit of angle or arc equivalent one sixtieth of a degree")
             return []
         else:
-            logger.info(f"{site.get('name')} 搜索完成，耗时 {seconds} 秒，返回数据：{len(result_array)}")
-            # 合并站点信息，以TorrentInfo返回
+            logger.info(f"{site.get('name')}  Search complete， Take a period of (x amount of time) {seconds}  Unit of angle or arc equivalent one sixtieth of a degree， Return data：{len(result_array)}")
+            #  Consolidation of site information， In order toTorrentInfo Come (or go) back
             return [TorrentInfo(site=site.get("id"),
                                 site_name=site.get("name"),
                                 site_cookie=site.get("cookie"),
@@ -118,13 +118,13 @@ class IndexerModule(_ModuleBase):
                         mtype: MediaType = None,
                         page: int = 0) -> (bool, List[dict]):
         """
-        根据关键字搜索单个站点
-        :param: indexer: 站点配置
-        :param: search_word: 关键字
-        :param: page: 页码
-        :param: mtype: 媒体类型
-        :param: timeout: 超时时间
-        :return: 是否发生错误, 种子列表
+        Search individual sites by keywords
+        :param: indexer:  Site configuration
+        :param: search_word:  Keywords.
+        :param: page:  Pagination
+        :param: mtype:  Media type
+        :param: timeout:  Timeout
+        :return:  Whether an error has occurred,  Seed list
         """
         _spider = TorrentSpider(indexer=indexer,
                                 mtype=mtype,
@@ -135,8 +135,8 @@ class IndexerModule(_ModuleBase):
 
     def refresh_torrents(self, site: CommentedMap) -> Optional[List[TorrentInfo]]:
         """
-        获取站点最新一页的种子，多个站点需要多线程处理
-        :param site:  站点
-        :reutrn: 种子资源列表
+        Get seeds for the latest page of the site， Multiple sites require multithreading
+        :param site:   Website
+        :reutrn:  List of seed resources
         """
         return self.search_torrents(site=site)

@@ -7,23 +7,23 @@ from app.schemas.types import EventType
 
 class EventManager(metaclass=Singleton):
     """
-    事件管理器
+    Event manager
     """
 
-    # 事件队列
+    #  Event queue
     _eventQueue: Queue = None
-    # 事件响应函数字典
+    #  Event response function dictionary
     _handlers: dict = {}
 
     def __init__(self):
-        # 事件队列
+        #  Event queue
         self._eventQueue = Queue()
-        # 事件响应函数字典
+        #  Event response function dictionary
         self._handlers = {}
 
     def get_event(self):
         """
-        获取事件
+        Getting events
         """
         try:
             event = self._eventQueue.get(block=True, timeout=1)
@@ -34,7 +34,7 @@ class EventManager(metaclass=Singleton):
 
     def add_event_listener(self, etype: EventType, handler: type):
         """
-        注册事件处理
+        Register event handling
         """
         try:
             handlerList = self._handlers[etype.value]
@@ -47,7 +47,7 @@ class EventManager(metaclass=Singleton):
 
     def remove_event_listener(self, etype: EventType, handler: type):
         """
-        移除监听器的处理函数
+        Remove the listener's handler function
         """
         try:
             handlerList = self._handlers[etype.value]
@@ -60,19 +60,19 @@ class EventManager(metaclass=Singleton):
 
     def send_event(self, etype: EventType, data: dict = None):
         """
-        发送事件
+        Send event
         """
         if etype not in EventType:
             return
         event = Event(etype.value)
         event.event_data = data or {}
-        logger.debug(f"发送事件：{etype.value} - {event.event_data}")
+        logger.debug(f"Send event：{etype.value} - {event.event_data}")
         self._eventQueue.put(event)
 
     def register(self, etype: [EventType, list]):
         """
-        事件注册
-        :param etype: 事件类型
+        Event registration
+        :param etype:  Event type
         """
 
         def decorator(f):
@@ -91,15 +91,15 @@ class EventManager(metaclass=Singleton):
 
 class Event(object):
     """
-    事件对象
+    Event object
     """
 
     def __init__(self, event_type=None):
-        # 事件类型
+        #  Event type
         self.event_type = event_type
-        # 字典用于保存具体的事件数据
+        #  Dictionaries are used to hold specific event data
         self.event_data = {}
 
 
-# 实例引用，用于注册事件
+#  Instance reference， For registering events
 eventmanager = EventManager()

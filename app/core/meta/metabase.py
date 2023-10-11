@@ -11,61 +11,61 @@ from app.schemas.types import MediaType
 @dataclass
 class MetaBase(object):
     """
-    媒体信息基类
+    Media information base class
     """
-    # 是否处理的文件
+    #  Documents processed or not
     isfile: bool = False
-    # 原标题字符串（未经过识别词处理）
+    #  Original title string（ Not processed for identifiers）
     title: str = ""
-    # 识别用字符串（经过识别词处理后）
+    #  String for identification（ After identifier processing）
     org_string: Optional[str] = None
-    # 副标题
+    #  Subheading
     subtitle: Optional[str] = None
-    # 类型 电影、电视剧
+    #  Typology  Cinematic、 Dramas
     type: MediaType = MediaType.UNKNOWN
-    # 识别的中文名
+    #  Recognized chinese names
     cn_name: Optional[str] = None
-    # 识别的英文名
+    #  Recognizable english names
     en_name: Optional[str] = None
-    # 年份
+    #  Particular year
     year: Optional[str] = None
-    # 总季数
+    #  Total number of quarters
     total_season: int = 0
-    # 识别的开始季 数字
+    #  The beginning of the identification season  Digital (electronics etc)
     begin_season: Optional[int] = None
-    # 识别的结束季 数字
+    #  End of season for identification  Digital (electronics etc)
     end_season: Optional[int] = None
-    # 总集数
+    #  Total episodes
     total_episode: int = 0
-    # 识别的开始集
+    #  Identified starting set
     begin_episode: Optional[int] = None
-    # 识别的结束集
+    #  Identified end sets
     end_episode: Optional[int] = None
     # Partx Cd Dvd Disk Disc
     part: Optional[str] = None
-    # 识别的资源类型
+    #  Types of resources identified
     resource_type: Optional[str] = None
-    # 识别的效果
+    #  Effectiveness of identification
     resource_effect: Optional[str] = None
-    # 识别的分辨率
+    #  Recognized resolution
     resource_pix: Optional[str] = None
-    # 识别的制作组/字幕组
+    #  Identified production team/ Subtitling team
     resource_team: Optional[str] = None
-    # 识别的自定义占位符
+    #  Recognized custom placeholders
     customization: Optional[str] = None
-    # 视频编码
+    #  Video encoding
     video_encode: Optional[str] = None
-    # 音频编码
+    #  Audio encoding
     audio_encode: Optional[str] = None
-    # 应用的识别词信息
+    #  Identifier information for the application
     apply_words: Optional[List[str]] = None
 
-    # 副标题解析
+    #  Subheading解析
     _subtitle_flag = False
-    _subtitle_season_re = r"(?<![全共]\s*)[第\s]+([0-9一二三四五六七八九十S\-]+)\s*季(?!\s*[全共])"
-    _subtitle_season_all_re = r"[全共]\s*([0-9一二三四五六七八九十]+)\s*季|([0-9一二三四五六七八九十]+)\s*季\s*全"
-    _subtitle_episode_re = r"(?<![全共]\s*)[第\s]+([0-9一二三四五六七八九十百零EP\-]+)\s*[集话話期](?!\s*[全共])"
-    _subtitle_episode_all_re = r"([0-9一二三四五六七八九十百零]+)\s*集\s*全|[全共]\s*([0-9一二三四五六七八九十百零]+)\s*[集话話期]"
+    _subtitle_season_re = r"(?<![ Altogether]\s*)[ (prefix indicating ordinal number, e.g. first, number two etc)\s]+([0-9 One, two, three, four, five, six, seven, eight, nine, ten.S\-]+)\s* Classifier for seasonal crop yield or seasons of a tv series(?!\s*[ Altogether])"
+    _subtitle_season_all_re = r"[ Altogether]\s*([0-9 One, two, three, four, five, six, seven, eight, nine, ten.]+)\s* Classifier for seasonal crop yield or seasons of a tv series|([0-9 One, two, three, four, five, six, seven, eight, nine, ten.]+)\s* Classifier for seasonal crop yield or seasons of a tv series\s* Surname quan"
+    _subtitle_episode_re = r"(?<![ Altogether]\s*)[ (prefix indicating ordinal number, e.g. first, number two etc)\s]+([0-9 One, two, three, four, five, six, seven, eight, nine, ten, zero.EP\-]+)\s*[ Talking period](?!\s*[ Altogether])"
+    _subtitle_episode_all_re = r"([0-9 One, two, three, four, five, six, seven, eight, nine, ten, zero.]+)\s* Classifier for sections of a tv series e.g. episode\s* Surname quan|[ Altogether]\s*([0-9 One, two, three, four, five, six, seven, eight, nine, ten, zero.]+)\s*[ Talking period]"
 
     def __init__(self, title: str, subtitle: str = None, isfile: bool = False):
         if not title:
@@ -77,7 +77,7 @@ class MetaBase(object):
     @property
     def name(self) -> str:
         """
-        返回名称
+        Return name
         """
         if self.cn_name and StringUtils.is_all_chinese(self.cn_name):
             return self.cn_name
@@ -89,13 +89,13 @@ class MetaBase(object):
 
     def init_subtitle(self, title_text: str):
         """
-        副标题识别
+        Subtitle recognition
         """
         if not title_text:
             return
         title_text = f" {title_text} "
-        if re.search(r'[全第季集话話期]', title_text, re.IGNORECASE):
-            # 第x季
+        if re.search(r'[ All season episodes]', title_text, re.IGNORECASE):
+            #  (prefix indicating ordinal number, e.g. first, number two etc)x Classifier for seasonal crop yield or seasons of a tv series
             season_str = re.search(r'%s' % self._subtitle_season_re, title_text, re.IGNORECASE)
             if season_str:
                 seasons = season_str.group(1)
@@ -126,7 +126,7 @@ class MetaBase(object):
                     self.total_season = (self.end_season - self.begin_season) + 1
                 self.type = MediaType.TV
                 self._subtitle_flag = True
-            # 第x集
+            #  (prefix indicating ordinal number, e.g. first, number two etc)x Classifier for sections of a tv series e.g. episode
             episode_str = re.search(r'%s' % self._subtitle_episode_re, title_text, re.IGNORECASE)
             if episode_str:
                 episodes = episode_str.group(1)
@@ -157,7 +157,7 @@ class MetaBase(object):
                     self.total_episode = (self.end_episode - self.begin_episode) + 1
                 self.type = MediaType.TV
                 self._subtitle_flag = True
-            # x集全
+            # x Holistic
             episode_all_str = re.search(r'%s' % self._subtitle_episode_all_re, title_text, re.IGNORECASE)
             if episode_all_str:
                 episode_all = episode_all_str.group(1)
@@ -173,7 +173,7 @@ class MetaBase(object):
                     self.end_episode = None
                     self.type = MediaType.TV
                     self._subtitle_flag = True
-            # 全x季 x季全
+            #  Surname quanx Classifier for seasonal crop yield or seasons of a tv series x Final round number (i.e. third quarter of a year)
             season_all_str = re.search(r"%s" % self._subtitle_season_all_re, title_text, re.IGNORECASE)
             if season_all_str:
                 season_all = season_all_str.group(1)
@@ -193,7 +193,7 @@ class MetaBase(object):
     @property
     def season(self) -> str:
         """
-        返回开始季、结束季字符串，确定是剧集没有季的返回S01
+        Return to the beginning of the season、 End of season string， Sure it's the return of episodes without seasonsS01
         """
         if self.begin_season is not None:
             return "S%s" % str(self.begin_season).rjust(2, "0") \
@@ -210,7 +210,7 @@ class MetaBase(object):
     @property
     def sea(self) -> str:
         """
-        返回开始季字符串，确定是剧集没有季的返回空
+        Returns the start of the season string， Surely the episodes are returning empty without seasons
         """
         if self.begin_season is not None:
             return self.season
@@ -220,7 +220,7 @@ class MetaBase(object):
     @property
     def season_seq(self) -> str:
         """
-        返回begin_season 的数字，电视剧没有季的返回1
+        Come (or go) backbegin_season  Figures， Return of the tv series without seasons1
         """
         if self.begin_season is not None:
             return str(self.begin_season)
@@ -233,7 +233,7 @@ class MetaBase(object):
     @property
     def season_list(self) -> List[int]:
         """
-        返回季的数组
+        Returns an array of seasons
         """
         if self.begin_season is None:
             if self.type == MediaType.TV:
@@ -248,7 +248,7 @@ class MetaBase(object):
     @property
     def episode(self) -> str:
         """
-        返回开始集、结束集字符串
+        Return to start set、 End-set string
         """
         if self.begin_episode is not None:
             return "E%s" % str(self.begin_episode).rjust(2, "0") \
@@ -263,7 +263,7 @@ class MetaBase(object):
     @property
     def episode_list(self) -> List[int]:
         """
-        返回集的数组
+        Array of return sets
         """
         if self.begin_episode is None:
             return []
@@ -275,18 +275,18 @@ class MetaBase(object):
     @property
     def episodes(self) -> str:
         """
-        返回集的并列表达方式，用于支持单文件多集
+        Juxtaposition expressions for return sets， Used to support single file multisets
         """
         return "E%s" % "E".join(str(episode).rjust(2, '0') for episode in self.episode_list)
 
     @property
     def episode_seqs(self) -> str:
         """
-        返回单文件多集的集数表达方式，用于支持单文件多集
+        Returns an expression for the number of episodes in a single file with multiple episodes， Used to support single file multisets
         """
         episodes = self.episode_list
         if episodes:
-            # 集 xx
+            #  Classifier for sections of a tv series e.g. episode xx
             if len(episodes) == 1:
                 return str(episodes[0])
             else:
@@ -297,7 +297,7 @@ class MetaBase(object):
     @property
     def episode_seq(self) -> str:
         """
-        返回begin_episode 的数字
+        Come (or go) backbegin_episode  Figures
         """
         episodes = self.episode_list
         if episodes:
@@ -308,7 +308,7 @@ class MetaBase(object):
     @property
     def season_episode(self) -> str:
         """
-        返回季集字符串
+        Returns the seasonal set string
         """
         if self.type == MediaType.TV:
             seaion = self.season
@@ -326,7 +326,7 @@ class MetaBase(object):
     @property
     def resource_term(self) -> str:
         """
-        返回资源类型字符串，含分辨率
+        Returns the resource type string， With resolution
         """
         ret_string = ""
         if self.resource_type:
@@ -340,7 +340,7 @@ class MetaBase(object):
     @property
     def edition(self) -> str:
         """
-        返回资源类型字符串，不含分辨率
+        Returns the resource type string， Without resolution
         """
         ret_string = ""
         if self.resource_type:
@@ -352,7 +352,7 @@ class MetaBase(object):
     @property
     def release_group(self) -> str:
         """
-        返回发布组/字幕组字符串
+        Return to publishing groups/ Subtitle strings
         """
         if self.resource_team:
             return self.resource_team
@@ -362,20 +362,20 @@ class MetaBase(object):
     @property
     def video_term(self) -> str:
         """
-        返回视频编码
+        Return to video encoding
         """
         return self.video_encode or ""
 
     @property
     def audio_term(self) -> str:
         """
-        返回音频编码
+        Returns the audio encoding
         """
         return self.audio_encode or ""
 
     def is_in_season(self, season: Union[list, int, str]) -> bool:
         """
-        是否包含季
+        Does it include seasons
         """
         if isinstance(season, list):
             if self.end_season is not None:
@@ -398,7 +398,7 @@ class MetaBase(object):
 
     def is_in_episode(self, episode: Union[list, int, str]) -> bool:
         """
-        是否包含集
+        Does it contain sets
         """
         if isinstance(episode, list):
             if self.end_episode is not None:
@@ -414,7 +414,7 @@ class MetaBase(object):
 
     def set_season(self, sea: Union[list, int, str]):
         """
-        更新季
+        Renewal season
         """
         if not sea:
             return
@@ -431,7 +431,7 @@ class MetaBase(object):
 
     def set_episode(self, ep: Union[list, int, str]):
         """
-        更新集
+        New episode
         """
         if not ep:
             return
@@ -449,7 +449,7 @@ class MetaBase(object):
 
     def set_episodes(self, begin: int, end: int):
         """
-        设置开始集结束集
+        Setting the start set end set
         """
         if begin:
             self.begin_episode = begin
@@ -460,50 +460,50 @@ class MetaBase(object):
             
     def merge(self, meta: Self):
         """
-        全并Meta信息
+        MergeMeta Text
         """
-        # 类型
+        #  Typology
         if self.type == MediaType.UNKNOWN \
                 and meta.type != MediaType.UNKNOWN:
             self.type = meta.type
-        # 名称
+        #  Name (of a thing)
         if not self.name:
             self.cn_name = meta.cn_name
             self.en_name = meta.en_name
-        # 年份
+        #  Particular year
         if not self.year:
             self.year = meta.year
-        # 季
+        #  Classifier for seasonal crop yield or seasons of a tv series
         if (self.type == MediaType.TV
                 and not self.season):
             self.begin_season = meta.begin_season
             self.end_season = meta.end_season
             self.total_season = meta.total_season
-        # 开始集
+        #  Initial set
         if (self.type == MediaType.TV
                 and not self.episode):
             self.begin_episode = meta.begin_episode
             self.end_episode = meta.end_episode
             self.total_episode = meta.total_episode
-        # 版本
+        #  Releases
         if not self.resource_type:
             self.resource_type = meta.resource_type
-        # 分辨率
+        #  Resolution (of a photo)
         if not self.resource_pix:
             self.resource_pix = meta.resource_pix
-        # 制作组/字幕组
+        #  Production team/ Subtitling team
         if not self.resource_team:
             self.resource_team = meta.resource_team
-        # 自定义占位符
+        #  Custom placeholders
         if not self.customization:
             self.customization = meta.customization
-        # 特效
+        #  Especially efficacious
         if not self.resource_effect:
             self.resource_effect = meta.resource_effect
-        # 视频编码
+        #  Video encoding
         if not self.video_encode:
             self.video_encode = meta.video_encode
-        # 音频编码
+        #  Audio encoding
         if not self.audio_encode:
             self.audio_encode = meta.audio_encode
         # Part
@@ -512,7 +512,7 @@ class MetaBase(object):
 
     def to_dict(self):
         """
-        转为字典
+        Convert to dictionary
         """
         dicts = asdict(self)
         dicts["type"] = self.type.value if self.type else None

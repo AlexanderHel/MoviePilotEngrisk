@@ -18,49 +18,49 @@ from app.schemas.types import MediaType
 
 
 class TorrentSpider:
-    # 是否出现错误
+    #  Is there an error
     is_error: bool = False
-    # 索引器ID
+    #  IndexerID
     indexerid: int = None
-    # 索引器名称
+    #  Indexer name
     indexername: str = None
-    # 站点域名
+    #  Site domain name
     domain: str = None
-    # 站点Cookie
+    #  WebsiteCookie
     cookie: str = None
-    # 站点UA
+    #  WebsiteUA
     ua: str = None
-    # Requests 代理
+    # Requests  Act on behalf of sb. in a responsible position
     proxies: dict = None
-    # playwright 代理
+    # playwright  Act on behalf of sb. in a responsible position
     proxy_server: dict = None
-    # 是否渲染
+    #  Whether to render
     render: bool = False
     # Referer
     referer: str = None
-    # 搜索关键字
+    #  Search keywords
     keyword: str = None
-    # 媒体类型
+    #  Media type
     mtype: MediaType = None
-    # 搜索路径、方式配置
+    #  Search path、 Mode configuration
     search: dict = {}
-    # 批量搜索配置
+    #  Batch search configuration
     batch: dict = {}
-    # 浏览配置
+    #  Browse configurations
     browse: dict = {}
-    # 站点分类配置
+    #  Site category configuration
     category: dict = {}
-    # 站点种子列表配置
+    #  Site seed list configuration
     list: dict = {}
-    # 站点种子字段配置
+    #  Site seed field configuration
     fields: dict = {}
-    # 页码
+    #  Pagination
     page: int = 0
-    # 搜索条数
+    #  Number of searches
     result_num: int = 100
-    # 单个种子信息
+    #  Individual seed information
     torrents_info: dict = {}
-    # 种子列表
+    #  Seed list
     torrents_info_array: list = []
 
     def __init__(self,
@@ -70,12 +70,12 @@ class TorrentSpider:
                  referer: str = None,
                  mtype: MediaType = None):
         """
-        设置查询参数
-        :param indexer: 索引器
-        :param keyword: 搜索关键字，如果数组则为批量搜索
-        :param page: 页码
+        Setting query parameters
+        :param indexer:  Indexer
+        :param keyword:  Search keywords， Batch search if array
+        :param page:  Pagination
         :param referer: Referer
-        :param mtype: 媒体类型
+        :param mtype:  Media type
         """
         if not indexer:
             return
@@ -109,12 +109,12 @@ class TorrentSpider:
 
     def get_torrents(self) -> List[dict]:
         """
-        开始请求
+        Starting a request
         """
         if not self.search or not self.domain:
             return []
 
-        # 种子搜索相对路径
+        #  Seed search relative path
         paths = self.search.get('paths', [])
         torrentspath = ""
         if len(paths) == 1:
@@ -131,11 +131,11 @@ class TorrentSpider:
                     torrentspath = path.get('path')
                     break
 
-        # 精确搜索
+        #  Precision search
         if self.keyword:
 
             if isinstance(self.keyword, list):
-                # 批量查询
+                #  Batch query
                 if self.batch:
                     delimiter = self.batch.get('delimiter') or ' '
                     space_replace = self.batch.get('space_replace') or ' '
@@ -143,40 +143,40 @@ class TorrentSpider:
                                                                  space_replace) for k in self.keyword])
                 else:
                     search_word = " ".join(self.keyword)
-                # 查询模式：或
+                #  Query mode： Maybe
                 search_mode = "1"
             else:
-                # 单个查询
+                #  Single search
                 search_word = self.keyword
-                # 查询模式与
+                #  The query pattern is similar to the
                 search_mode = "0"
 
-            # 搜索URL
+            #  Look for sth.URL
             indexer_params = self.search.get("params") or {}
             if indexer_params:
                 search_area = indexer_params.get('search_area')
-                # search_area非0表示支持imdbid搜索
+                # search_area In-0 Support sth.imdbid Look for sth.
                 if (search_area and
                         (not self.keyword or not self.keyword.startswith('tt'))):
-                    # 支持imdbid搜索，但关键字不是imdbid时，不启用imdbid搜索
+                    #  Be in favor ofimdbid Look for sth.， But the keyword is notimdbid Hour， Disableimdbid Look for sth.
                     indexer_params.pop('search_area')
-                # 变量字典
+                #  Variable dictionary
                 inputs_dict = {
                     "keyword": search_word
                 }
-                # 查询参数，默认查询标题
+                #  Query parameters， Default query title
                 params = {
                     "search_mode": search_mode,
                     "search_area": 0,
                     "page": self.page or 0,
                     "notnewword": 1
                 }
-                # 额外参数
+                #  Additional parameter
                 for key, value in indexer_params.items():
                     params.update({
                         "%s" % key: str(value).format(**inputs_dict)
                     })
-                # 分类条件
+                #  Classification criteria
                 if self.category:
                     if self.mtype == MediaType.TV:
                         cats = self.category.get("tv") or []
@@ -197,22 +197,22 @@ class TorrentSpider:
                             })
                 searchurl = self.domain + torrentspath + "?" + urlencode(params)
             else:
-                # 变量字典
+                #  Variable dictionary
                 inputs_dict = {
                     "keyword": quote(search_word),
                     "page": self.page or 0
                 }
-                # 无额外参数
+                #  No additional parameters
                 searchurl = self.domain + str(torrentspath).format(**inputs_dict)
 
-        # 列表浏览
+        #  List browsing
         else:
-            # 变量字典
+            #  Variable dictionary
             inputs_dict = {
                 "page": self.page or 0,
                 "keyword": ""
             }
-            # 有单独浏览路径
+            #  Separate browsing paths are available
             if self.browse:
                 torrentspath = self.browse.get("path")
                 if self.browse.get("start"):
@@ -222,13 +222,13 @@ class TorrentSpider:
                     })
             elif self.page:
                 torrentspath = torrentspath + f"?page={self.page}"
-            # 搜索Url
+            #  Look for sth.Url
             searchurl = self.domain + str(torrentspath).format(**inputs_dict)
 
-        logger.info(f"开始请求：{searchurl}")
+        logger.info(f"Starting a request：{searchurl}")
 
         if self.render:
-            # 浏览器仿真
+            #  Browser emulation
             page_source = PlaywrightHelper().get_page_source(
                 url=searchurl,
                 cookies=self.cookie,
@@ -236,7 +236,7 @@ class TorrentSpider:
                 proxies=self.proxy_server
             )
         else:
-            # requests请求
+            # requests Requesting
             ret = RequestUtils(
                 ua=self.ua,
                 cookies=self.cookie,
@@ -245,17 +245,17 @@ class TorrentSpider:
                 proxies=self.proxies
             ).get_res(searchurl, allow_redirects=True)
             if ret is not None:
-                # 使用chardet检测字符编码
+                #  Utilizationchardet Detecting character encoding
                 raw_data = ret.content
                 if raw_data:
                     try:
                         result = chardet.detect(raw_data)
                         encoding = result['encoding']
-                        # 解码为字符串
+                        #  Decode to string
                         page_source = raw_data.decode(encoding)
                     except Exception as e:
-                        logger.debug(f"chardet解码失败：{e}")
-                        # 探测utf-8解码
+                        logger.debug(f"chardet Failed to decode：{e}")
+                        #  Take readingsutf-8 Decoder
                         if re.search(r"charset=\"?utf-8\"?", ret.text, re.IGNORECASE):
                             ret.encoding = "utf-8"
                         else:
@@ -266,7 +266,7 @@ class TorrentSpider:
             else:
                 page_source = ""
 
-        # 解析
+        #  Analyze
         return self.parse(page_source)
 
     def __get_title(self, torrent):
@@ -549,7 +549,7 @@ class TorrentSpider:
 
     def get_info(self, torrent) -> dict:
         """
-        解析单条种子数据
+        Parsing single seed data
         """
         self.torrents_info = {}
         try:
@@ -568,13 +568,13 @@ class TorrentSpider:
             self.__get_date_elapsed(torrent)
             self.__get_labels(torrent)
         except Exception as err:
-            logger.error("%s 搜索出现错误：%s" % (self.indexername, str(err)))
+            logger.error("%s  Error in search：%s" % (self.indexername, str(err)))
         return self.torrents_info
 
     @staticmethod
     def __filter_text(text, filters):
         """
-        对文件进行处理
+        Processing of documents
         """
         if not text or not filters or not isinstance(filters, list):
             return text
@@ -605,7 +605,7 @@ class TorrentSpider:
     @staticmethod
     def __remove(item, selector):
         """
-        移除元素
+        Remove element
         """
         if selector and "remove" in selector:
             removelist = selector.get('remove', '').split(', ')
@@ -641,19 +641,19 @@ class TorrentSpider:
 
     def parse(self, html_text: str) -> List[dict]:
         """
-        解析整个页面
+        Parsing the entire page
         """
         if not html_text:
             self.is_error = True
             return []
-        # 清空旧结果
+        #  Clear old results
         self.torrents_info_array = []
         try:
-            # 解析站点文本对象
+            #  Analyze站点文本对象
             html_doc = PyQuery(html_text)
-            # 种子筛选器
+            #  Seed sifter
             torrents_selector = self.list.get('selector', '')
-            # 遍历种子html列表
+            #  Iteration of seedshtml Listings
             for torn in html_doc(torrents_selector):
                 self.torrents_info_array.append(copy.deepcopy(self.get_info(PyQuery(torn))))
                 if len(self.torrents_info_array) >= int(self.result_num):
@@ -661,4 +661,4 @@ class TorrentSpider:
             return self.torrents_info_array
         except Exception as err:
             self.is_error = True
-            logger.warn(f"错误：{self.indexername} {err}")
+            logger.warn(f" Incorrect：{self.indexername} {err}")

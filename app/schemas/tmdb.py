@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 class TmdbSeason(BaseModel):
     """
-    TMDB季信息
+    TMDB Quarterly information
     """
     air_date: Optional[str] = None
     episode_count: Optional[int] = None
@@ -18,7 +18,7 @@ class TmdbSeason(BaseModel):
 
 class TmdbEpisode(BaseModel):
     """
-    TMDB集信息
+    TMDB Collective information
     """
     air_date: Optional[str] = None
     episode_number: Optional[int] = None

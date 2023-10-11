@@ -41,7 +41,7 @@ class Unit3dSiteUserInfo(ISiteUserInfo):
 
     def _parse_user_detail_info(self, html_text: str):
         """
-        解析用户额外信息，加入时间，等级
+        Parsing additional user information， Joining time， Hierarchy
         :param html_text:
         :return:
         """
@@ -49,25 +49,25 @@ class Unit3dSiteUserInfo(ISiteUserInfo):
         if not html:
             return None
 
-        # 用户等级
+        #  User level
         user_levels_text = html.xpath('//div[contains(@class, "content")]//span[contains(@class, "badge-user")]/text()')
         if user_levels_text:
             self.user_level = user_levels_text[0].strip()
 
-        # 加入日期
-        join_at_text = html.xpath('//div[contains(@class, "content")]//h4[contains(text(), "注册日期") '
-                                  'or contains(text(), "註冊日期") '
+        #  Date of accession
+        join_at_text = html.xpath('//div[contains(@class, "content")]//h4[contains(text(), " Registration date") '
+                                  'or contains(text(), " Date of registration") '
                                   'or contains(text(), "Registration date")]/text()')
         if join_at_text:
             self.join_at = StringUtils.unify_datetime_str(
-                join_at_text[0].replace('注册日期', '').replace('註冊日期', '').replace('Registration date', ''))
+                join_at_text[0].replace(' Registration date', '').replace(' Date of registration', '').replace('Registration date', ''))
 
     def _parse_user_torrent_seeding_info(self, html_text: str, multi_page: bool = False) -> Optional[str]:
         """
-        做种相关信息
+        Seeding information
         :param html_text:
-        :param multi_page: 是否多页数据
-        :return: 下页地址
+        :param multi_page:  Whether multiple pages of data
+        :return:  Next page address
         """
         html = etree.HTML(html_text)
         if not html:
@@ -75,10 +75,10 @@ class Unit3dSiteUserInfo(ISiteUserInfo):
 
         size_col = 9
         seeders_col = 2
-        # 搜索size列
+        #  Look for sth.size Columns
         if html.xpath('//thead//th[contains(@class,"size")]'):
             size_col = len(html.xpath('//thead//th[contains(@class,"size")][1]/preceding-sibling::th')) + 1
-        # 搜索seeders列
+        #  Look for sth.seeders Columns
         if html.xpath('//thead//th[contains(@class,"seeders")]'):
             seeders_col = len(html.xpath('//thead//th[contains(@class,"seeders")]/preceding-sibling::th')) + 1
 
@@ -101,7 +101,7 @@ class Unit3dSiteUserInfo(ISiteUserInfo):
         self.seeding_size += page_seeding_size
         self.seeding_info.extend(page_seeding_info)
 
-        # 是否存在下页数据
+        #  Existence of next page data
         next_page = None
         next_pages = html.xpath('//ul[@class="pagination"]/li[contains(@class,"active")]/following-sibling::li')
         if next_pages and len(next_pages) > 1:
@@ -113,13 +113,13 @@ class Unit3dSiteUserInfo(ISiteUserInfo):
 
     def _parse_user_traffic_info(self, html_text: str):
         html_text = self._prepare_html_text(html_text)
-        upload_match = re.search(r"[^总]上[传傳]量?[:：_<>/a-zA-Z-=\"'\s#;]+([\d,.\s]+[KMGTPI]*B)", html_text,
+        upload_match = re.search(r"[^ Assemble] First (of multiple parts)[ Pass on] Measure word?[:：_<>/a-zA-Z-=\"'\s#;]+([\d,.\s]+[KMGTPI]*B)", html_text,
                                  re.IGNORECASE)
         self.upload = StringUtils.num_filesize(upload_match.group(1).strip()) if upload_match else 0
-        download_match = re.search(r"[^总子影力]下[载載]量?[:：_<>/a-zA-Z-=\"'\s#;]+([\d,.\s]+[KMGTPI]*B)", html_text,
+        download_match = re.search(r"[^ Total subshadow power] Arrive at (a decision, conclusion etc)[ Also] Measure word?[:：_<>/a-zA-Z-=\"'\s#;]+([\d,.\s]+[KMGTPI]*B)", html_text,
                                    re.IGNORECASE)
         self.download = StringUtils.num_filesize(download_match.group(1).strip()) if download_match else 0
-        ratio_match = re.search(r"分享率[:：_<>/a-zA-Z-=\"'\s#;]+([\d,.\s]+)", html_text)
+        ratio_match = re.search(r" Sharing rate[:：_<>/a-zA-Z-=\"'\s#;]+([\d,.\s]+)", html_text)
         self.ratio = StringUtils.str_float(ratio_match.group(1)) if (
                 ratio_match and ratio_match.group(1).strip()) else 0.0
 

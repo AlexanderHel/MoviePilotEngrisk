@@ -12,11 +12,11 @@ if settings.DEBUG:
 else:
     logger.setLevel(logging.INFO)
 
-# 创建终端输出Handler
+#  Creating terminal outputHandler
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.DEBUG)
 
-# 创建文件输出Handler
+#  Creating file outputHandler
 file_handler = RotatingFileHandler(filename=settings.LOG_PATH / 'moviepilot.log',
                                    mode='w',
                                    maxBytes=5 * 1024 * 1024,
@@ -34,7 +34,7 @@ level_name_colors = {
 }
 
 
-# 定义日志输出格式
+#  Defining the log output format
 class CustomFormatter(logging.Formatter):
     def format(self, record):
         seperator = " " * (8 - len(record.levelname))
@@ -42,12 +42,12 @@ class CustomFormatter(logging.Formatter):
         return super().format(record)
 
 
-# 终端日志
+#  Terminal log
 console_formatter = CustomFormatter("%(leveltext)s%(filename)s - %(message)s")
 console_handler.setFormatter(console_formatter)
 logger.addHandler(console_handler)
 
-# 文件日志
+#  File log
 file_formater = CustomFormatter("【%(levelname)s】%(asctime)s - %(filename)s - %(message)s")
 file_handler.setFormatter(file_formater)
 logger.addHandler(file_handler)

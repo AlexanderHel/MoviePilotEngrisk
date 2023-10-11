@@ -12,28 +12,28 @@ class TimerUtils:
                          min_interval: int = 20,
                          max_interval: int = 40) -> List[datetime.datetime]:
         """
-        按执行次数生成随机定时器
-        :param num_executions: 执行次数
-        :param begin_hour: 开始时间
-        :param end_hour: 结束时间
-        :param min_interval: 最小间隔分钟
-        :param max_interval: 最大间隔分钟
+        Generate random timers by number of executions
+        :param num_executions:  Number of executions
+        :param begin_hour:  Starting time
+        :param end_hour:  End time
+        :param min_interval:  Minimum interval minutes
+        :param max_interval:  Maximum interval minutes
         """
         trigger: list = []
-        # 当前时间
+        #  Current time
         now = datetime.datetime.now()
-        # 创建随机的时间触发器
+        #  Creating randomized time triggers
         random_trigger = now.replace(hour=begin_hour, minute=0, second=0, microsecond=0)
         for _ in range(num_executions):
-            # 随机生成下一个任务的时间间隔
+            #  Randomize the time interval for generating the next task
             interval_minutes = random.randint(min_interval, max_interval)
             random_interval = datetime.timedelta(minutes=interval_minutes)
-            # 更新当前时间为下一个任务的时间触发器
+            #  Time trigger to update the current time to the next task
             random_trigger += random_interval
-            # 达到结束时间时退出
+            #  Exit when end time is reached
             if random_trigger.hour > end_hour:
                 break
-            # 添加到队列
+            #  Add to queue
             trigger.append(random_trigger)
 
         return trigger
@@ -41,7 +41,7 @@ class TimerUtils:
     @staticmethod
     def time_difference(input_datetime: datetime) -> str:
         """
-        判断输入时间与当前的时间差，如果输入时间大于当前时间则返回时间差，否则返回空字符串
+        Determine the time difference between the input time and the current time， Returns the time difference if the input time is greater than the current time， Otherwise returns the empty string
         """
         if not input_datetime:
             return ""
@@ -57,18 +57,18 @@ class TimerUtils:
 
         time_difference_string = ""
         if days > 0:
-            time_difference_string += f"{days}天"
+            time_difference_string += f"{days} Sky"
         if hours > 0:
-            time_difference_string += f"{hours}小时"
+            time_difference_string += f"{hours} Hourly"
         if minutes > 0:
-            time_difference_string += f"{minutes}分钟"
+            time_difference_string += f"{minutes} Minutes"
 
         return time_difference_string
 
     @staticmethod
     def diff_minutes(input_datetime: datetime) -> int:
         """
-        计算当前时间与输入时间的分钟差
+        Calculate the minute difference between the current time and the entered time
         """
         if not input_datetime:
             return 0

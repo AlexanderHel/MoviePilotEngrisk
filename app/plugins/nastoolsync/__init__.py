@@ -13,28 +13,28 @@ from app.log import logger
 
 
 class NAStoolSync(_PluginBase):
-    # 插件名称
-    plugin_name = "历史记录同步"
-    # 插件描述
-    plugin_desc = "同步NAStool历史记录、下载记录、插件记录到MoviePilot。"
-    # 插件图标
+    #  Plug-in name
+    plugin_name = " History synchronization"
+    #  Plugin description
+    plugin_desc = " SynchronizationNAStool Historical record、 Download record、 The plugin logs to theMoviePilot。"
+    #  Plug-in icons
     plugin_icon = "sync.png"
-    # 主题色
+    #  Theme color
     plugin_color = "#53BA47"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "thsrite"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/thsrite"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "nastoolsync_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 15
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 1
 
-    # 私有属性
+    #  Private property
     _transferhistory = None
     _plugindata = None
     _downloadhistory = None
@@ -59,7 +59,7 @@ class NAStoolSync(_PluginBase):
             self._transfer = config.get("transfer")
 
             if self._nt_db_path and self._transfer:
-                # 读取sqlite数据
+                #  Retrievesqlite Digital
                 try:
                     gradedb = sqlite3.connect(self._nt_db_path)
                 except Exception as e:
@@ -73,28 +73,28 @@ class NAStoolSync(_PluginBase):
                             "site": self._site,
                         }
                     )
-                    logger.error(f"无法打开数据库文件 {self._nt_db_path}，请检查路径是否正确：{e}")
+                    logger.error(f" Unable to open database file {self._nt_db_path}， Please check if the path is correct：{e}")
                     return
 
-                # 创建游标cursor来执行executeＳＱＬ语句
+                #  Creating a cursorcursor To executeexecuteＳＱＬ Statement
                 cursor = gradedb.cursor()
 
                 download_history = self.get_nt_download_history(cursor)
                 plugin_history = self.get_nt_plugin_history(cursor)
                 transfer_history = self.get_nt_transfer_history(cursor)
 
-                # 关闭游标
+                #  Close cursor
                 cursor.close()
 
-                # 导入下载记录
+                #  Importing download logs
                 if download_history:
                     self.sync_download_history(download_history)
 
-                # 导入插件记录
+                #  Importing plug-in records
                 if plugin_history:
                     self.sync_plugin_history(plugin_history)
 
-                # 导入历史记录
+                #  Importing history
                 if transfer_history:
                     self.sync_transfer_history(transfer_history)
 
@@ -111,7 +111,7 @@ class NAStoolSync(_PluginBase):
 
     def sync_plugin_history(self, plugin_history):
         """
-        导入插件记录
+        Importing plug-in records
 
         NAStool
         {
@@ -125,12 +125,12 @@ class NAStoolSync(_PluginBase):
             "value": "[{"downloader": "2", "torrents": ["bd64a8edc5afe6b4beb8813bdbf6faedfb1d4cc4"]}]"
         }
         """
-        # 开始计时
+        #  Start counting
         start_time = datetime.now()
-        logger.info("开始同步NAStool插件历史记录到MoviePilot")
-        # 清空MoviePilot插件记录
+        logger.info(" Start synchronizationNAStool The plugin history goes toMoviePilot")
+        #  EmptyMoviePilot Plugin records
         if self._clear:
-            logger.info("MoviePilot插件记录已清空")
+            logger.info("MoviePilot Plugin record cleared")
             self._plugindata.truncate()
 
         cnt = 0
@@ -139,7 +139,7 @@ class NAStoolSync(_PluginBase):
             plugin_key = history[2]
             plugin_value = history[3]
 
-            # 处理下载器映射
+            #  Handling downloader mapping
             if self._downloader:
                 downloaders = self._downloader.split("\n")
                 for downloader in downloaders:
@@ -147,16 +147,16 @@ class NAStoolSync(_PluginBase):
                         continue
                     sub_downloaders = downloader.split(":")
                     if not str(sub_downloaders[0]).isdigit():
-                        logger.error(f"下载器映射配置错误：NAStool下载器id 应为数字！")
+                        logger.error(f" Downloader mapping configuration error：NAStool Downloaderid  Should be a number！")
                         continue
-                    # 替换转种记录
+                    #  Replacement of transfer records
                     if str(plugin_id) == "TorrentTransfer":
                         keys = str(plugin_key).split("-")
                         if keys[0].isdigit() and int(keys[0]) == int(sub_downloaders[0]):
-                            # 替换key
+                            #  Interchangeabilitykey
                             plugin_key = plugin_key.replace(keys[0], sub_downloaders[1])
 
-                        # 替换value
+                        #  Interchangeabilityvalue
                         if isinstance(plugin_value, str):
                             _value: dict = json.loads(plugin_value)
                         elif isinstance(plugin_value, dict):
@@ -164,7 +164,7 @@ class NAStoolSync(_PluginBase):
                                     plugin_value.get("to_download")) == int(sub_downloaders[0]):
                                 plugin_value["to_download"] = sub_downloaders[1]
 
-                    # 替换辅种记录
+                    #  Replacement of auxiliary species records
                     if str(plugin_id) == "IYUUAutoSeed":
                         if isinstance(plugin_value, str):
                             plugin_value: list = json.loads(plugin_value)
@@ -182,23 +182,23 @@ class NAStoolSync(_PluginBase):
                                   value=plugin_value)
             cnt += 1
             if cnt % 100 == 0:
-                logger.info(f"插件记录同步进度 {cnt} / {len(plugin_history)}")
+                logger.info(f" Plugin records synchronization progress {cnt} / {len(plugin_history)}")
 
-        # 计算耗时
+        #  Computational time
         end_time = datetime.now()
 
-        logger.info(f"插件记录已同步完成。总耗时 {(end_time - start_time).seconds} 秒")
+        logger.info(f" Plugin records have been synchronized to complete。 Total time consumption {(end_time - start_time).seconds}  Unit of angle or arc equivalent one sixtieth of a degree")
 
     def sync_download_history(self, download_history):
         """
-        导入下载记录
+        Importing download logs
         """
-        # 开始计时
+        #  Start counting
         start_time = datetime.now()
-        logger.info("开始同步NAStool下载历史记录到MoviePilot")
-        # 清空MoviePilot下载记录
+        logger.info(" Start synchronizationNAStool Download history toMoviePilot")
+        #  EmptyMoviePilot Download record
         if self._clear:
-            logger.info("MoviePilot下载记录已清空")
+            logger.info("MoviePilot The download history has been cleared")
             self._downloadhistory.truncate()
 
         cnt = 0
@@ -217,7 +217,7 @@ class NAStoolSync(_PluginBase):
             msite = history[11]
             mdate = history[12]
 
-            # 处理站点映射
+            #  Handling of site mapping
             if self._site:
                 sites = self._site.split("\n")
                 for site in sites:
@@ -243,27 +243,27 @@ class NAStoolSync(_PluginBase):
             )
             cnt += 1
             if cnt % 100 == 0:
-                logger.info(f"下载记录同步进度 {cnt} / {len(download_history)}")
+                logger.info(f" Download record synchronization progress {cnt} / {len(download_history)}")
 
-        # 计算耗时
+        #  Computational time
         end_time = datetime.now()
 
-        logger.info(f"下载记录已同步完成。总耗时 {(end_time - start_time).seconds} 秒")
+        logger.info(f" Download records have been synchronized。 Total time consumption {(end_time - start_time).seconds}  Unit of angle or arc equivalent one sixtieth of a degree")
 
     def sync_transfer_history(self, transfer_history):
         """
-        导入nt转移记录
+        Import (data)nt Transfer records
         """
-        # 开始计时
+        #  Start counting
         start_time = datetime.now()
-        logger.info("开始同步NAStool转移历史记录到MoviePilot")
+        logger.info(" Start synchronizationNAStool Transfer history toMoviePilot")
 
-        # 清空MoviePilot转移记录
+        #  EmptyMoviePilot Transfer records
         if self._clear:
-            logger.info("MoviePilot转移记录已清空")
+            logger.info("MoviePilot Transfer records have been cleared")
             self._transferhistory.truncate()
 
-        # 处理数据，存入mp数据库
+        #  Processing data， Deposit (e.g. in a bank account)mp Comprehensive database
         cnt = 0
         for history in transfer_history:
             msrc_path = history[0]
@@ -287,7 +287,7 @@ class NAStoolSync(_PluginBase):
             msrc = msrc_path + "/" + msrc_filename
             mdest = mdest_path + "/" + mdest_filename
 
-            # 处理路径映射
+            #  Handling path mapping
             if self._path:
                 paths = self._path.split("\n")
                 for path in paths:
@@ -295,7 +295,7 @@ class NAStoolSync(_PluginBase):
                     msrc = msrc.replace(sub_paths[0], sub_paths[1]).replace('\\', '/')
                     mdest = mdest.replace(sub_paths[0], sub_paths[1]).replace('\\', '/')
 
-            # 存库
+            #  Stockpile
             self._transferhistory.add(
                 src=msrc,
                 dest=mdest,
@@ -310,37 +310,37 @@ class NAStoolSync(_PluginBase):
                 image=mimage,
                 date=mdate
             )
-            logger.debug(f"{mtitle} {myear} {mtmdbid} {mseasons} {mepisodes} 已同步")
+            logger.debug(f"{mtitle} {myear} {mtmdbid} {mseasons} {mepisodes}  Synchronized")
 
             cnt += 1
             if cnt % 100 == 0:
-                logger.info(f"转移记录同步进度 {cnt} / {len(transfer_history)}")
+                logger.info(f" Synchronization of progress in transferring records {cnt} / {len(transfer_history)}")
 
-        # 计算耗时
+        #  Computational time
         end_time = datetime.now()
 
-        logger.info(f"转移记录已同步完成。总耗时 {(end_time - start_time).seconds} 秒")
+        logger.info(f" Transfer records have been synchronized。 Total time consumption {(end_time - start_time).seconds}  Unit of angle or arc equivalent one sixtieth of a degree")
 
     @staticmethod
     def get_nt_plugin_history(cursor):
         """
-        获取插件历史记录
+        Get plugin history
         """
         sql = 'select * from PLUGIN_HISTORY;'
         cursor.execute(sql)
         plugin_history = cursor.fetchall()
 
         if not plugin_history:
-            logger.error("未获取到NAStool数据库文件中的插件历史，请检查数据库路径是正确")
+            logger.error(" Not availableNAStool History of plug-ins in database files， Please check that the database path is correct")
             return
 
-        logger.info(f"获取到NAStool插件记录 {len(plugin_history)} 条")
+        logger.info(f" GetNAStool Plugin records {len(plugin_history)}  Clause (of law or treaty)")
         return plugin_history
 
     @staticmethod
     def get_nt_download_history(cursor):
         """
-        获取下载历史记录
+        Get download history
         """
         sql = '''
         SELECT
@@ -374,16 +374,16 @@ class NAStoolSync(_PluginBase):
         download_history = cursor.fetchall()
 
         if not download_history:
-            logger.error("未获取到NAStool数据库文件中的下载历史，请检查数据库路径是正确")
+            logger.error(" Not availableNAStool Download history in database files， Please check that the database path is correct")
             return
 
-        logger.info(f"获取到NAStool下载记录 {len(download_history)} 条")
+        logger.info(f" GetNAStool Download record {len(download_history)}  Clause (of law or treaty)")
         return download_history
 
     @staticmethod
     def get_nt_transfer_history(cursor):
         """
-        获取nt转移记录
+        Gainnt Transfer records
         """
         sql = '''
         SELECT
@@ -393,17 +393,17 @@ class NAStoolSync(_PluginBase):
             t.DEST_FILENAME AS dest_filename,
         CASE
                 t.MODE 
-                WHEN '硬链接' THEN
+                WHEN ' Hard link' THEN
                 'link' 
-                WHEN '移动' THEN
+                WHEN ' Mobility' THEN
                 'move' 
-                WHEN '复制' THEN
+                WHEN ' Make a copy of' THEN
                 'copy' 
             END AS mode,
         CASE
                 t.TYPE 
-                WHEN '动漫' THEN
-                '电视剧' ELSE t.TYPE 
+                WHEN ' Cartoons and comics' THEN
+                ' Dramas' ELSE t.TYPE 
             END AS type,
             t.CATEGORY AS category,
             t.TITLE AS title,
@@ -430,10 +430,10 @@ class NAStoolSync(_PluginBase):
         nt_historys = cursor.fetchall()
 
         if not nt_historys:
-            logger.error("未获取到NAStool数据库文件中的转移历史，请检查数据库路径是正确")
+            logger.error(" Not availableNAStool Transfer history in database files， Please check that the database path is correct")
             return
 
-        logger.info(f"获取到NAStool转移记录 {len(nt_historys)} 条")
+        logger.info(f" GetNAStool Transfer records {len(nt_historys)}  Clause (of law or treaty)")
         return nt_historys
 
     def get_state(self) -> bool:
@@ -448,7 +448,7 @@ class NAStoolSync(_PluginBase):
 
     def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
         """
-        拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
+        Assembly plugin configuration page， Two pieces of data need to be returned：1、 Page configuration；2、 Data structure
         """
         return [
             {
@@ -468,7 +468,7 @@ class NAStoolSync(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'transfer',
-                                            'label': '同步记录'
+                                            'label': ' Synchronized recording'
                                         }
                                     }
                                 ]
@@ -484,7 +484,7 @@ class NAStoolSync(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'clear',
-                                            'label': '清空记录'
+                                            'label': ' Empty records'
                                         }
                                     }
                                 ]
@@ -504,7 +504,7 @@ class NAStoolSync(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'nt_db_path',
-                                            'label': 'NAStool数据库user.db路径',
+                                            'label': 'NAStool Comprehensive databaseuser.db Trails',
                                         }
                                     }
                                 ]
@@ -525,8 +525,8 @@ class NAStoolSync(_PluginBase):
                                         'props': {
                                             'model': 'path',
                                             'rows': '2',
-                                            'label': '历史记录路径映射',
-                                            'placeholder': 'NAStool路径:MoviePilot路径（一行一个）'
+                                            'label': ' History path mapping',
+                                            'placeholder': 'NAStool Trails:MoviePilot Trails（ One in a row）'
                                         }
                                     }
                                 ]
@@ -547,8 +547,8 @@ class NAStoolSync(_PluginBase):
                                         'props': {
                                             'model': 'downloader',
                                             'rows': '2',
-                                            'label': '插件数据下载器映射',
-                                            'placeholder': 'NAStool下载器id:qbittorrent|transmission（一行一个）'
+                                            'label': ' Plugin data downloader mapping',
+                                            'placeholder': 'NAStool Downloaderid:qbittorrent|transmission（ One in a row）'
                                         }
                                     }
                                 ]
@@ -568,8 +568,8 @@ class NAStoolSync(_PluginBase):
                                         'component': 'VTextarea',
                                         'props': {
                                             'model': 'site',
-                                            'label': '下载历史站点映射',
-                                            'placeholder': 'NAStool站点名:MoviePilot站点名（一行一个）'
+                                            'label': ' Download historical site mapping',
+                                            'placeholder': 'NAStool Site name:MoviePilot Site name（ One in a row）'
                                         }
                                     }
                                 ]
@@ -588,9 +588,9 @@ class NAStoolSync(_PluginBase):
                                     {
                                         'component': 'VAlert',
                                         'props': {
-                                            'text': '开启清空记录时，会在导入历史数据之前删除MoviePilot之前的记录。'
-                                                    '如果转移记录很多，同步时间可能会长（3-10分钟），'
-                                                    '所以点击确定后页面没反应是正常现象，后台正在处理。'
+                                            'text': ' When clearing records is turned on， Will be deleted before importing historical dataMoviePilot Previous records。'
+                                                    ' If there are a lot of transfer records， Synchronization may take a long time（3-10 Minutes），'
+                                                    ' So it's normal that the page doesn't respond when you click ok.， It's being processed in the background.。'
                                         }
                                     }
                                 ]
@@ -614,6 +614,6 @@ class NAStoolSync(_PluginBase):
 
     def stop_service(self):
         """
-        退出插件
+        Exit plugin
         """
         pass

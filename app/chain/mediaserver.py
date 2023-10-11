@@ -16,7 +16,7 @@ lock = threading.Lock()
 
 class MediaServerChain(ChainBase):
     """
-    媒体服务器处理链
+    Media server processing chain
     """
 
     def __init__(self, db: Session = None):
@@ -24,80 +24,80 @@ class MediaServerChain(ChainBase):
 
     def librarys(self, server: str) -> List[schemas.MediaServerLibrary]:
         """
-        获取媒体服务器所有媒体库
+        Get all media libraries of the media server
         """
         return self.run_module("mediaserver_librarys", server=server)
 
     def items(self, server: str, library_id: Union[str, int]) -> List[schemas.MediaServerItem]:
         """
-        获取媒体服务器所有项目
+        Get all items of the media server
         """
         return self.run_module("mediaserver_items", server=server, library_id=library_id)
 
     def iteminfo(self, server: str, item_id: Union[str, int]) -> schemas.MediaServerItem:
         """
-        获取媒体服务器项目信息
+        Getting media server project information
         """
         return self.run_module("mediaserver_iteminfo", server=server, item_id=item_id)
 
     def episodes(self, server: str, item_id: Union[str, int]) -> List[schemas.MediaServerSeasonInfo]:
         """
-        获取媒体服务器剧集信息
+        Get media server episode information
         """
         return self.run_module("mediaserver_tv_episodes", server=server, item_id=item_id)
 
     def sync(self):
         """
-        同步媒体库所有数据到本地数据库
+        Synchronize all data from the media library to the local database
         """
         with lock:
-            # 媒体服务器同步使用独立的会话
+            #  Media server synchronization using separate sessions
             _db = SessionFactory()
             _dbOper = MediaServerOper(_db)
-            # 汇总统计
+            #  Summary statistics
             total_count = 0
-            # 清空登记薄
+            #  Empty the register
             _dbOper.empty(server=settings.MEDIASERVER)
-            # 同步黑名单
+            #  Synchronized blacklists
             sync_blacklist = settings.MEDIASERVER_SYNC_BLACKLIST.split(
                 ",") if settings.MEDIASERVER_SYNC_BLACKLIST else []
-            # 设置的媒体服务器
+            #  Media server setup
             if not settings.MEDIASERVER:
                 return
             mediaservers = settings.MEDIASERVER.split(",")
-            # 遍历媒体服务器
+            #  Traversing the media server
             for mediaserver in mediaservers:
-                logger.info(f"开始同步媒体库 {mediaserver} 的数据 ...")
+                logger.info(f" Starting to synchronize media libraries {mediaserver}  Data ...")
                 for library in self.librarys(mediaserver):
-                    # 同步黑名单 跳过
+                    #  Synchronized blacklists 跳过
                     if library.name in sync_blacklist:
                         continue
-                    logger.info(f"正在同步 {mediaserver} 媒体库 {library.name} ...")
+                    logger.info(f" Synchronizing. {mediaserver}  Media library {library.name} ...")
                     library_count = 0
                     for item in self.items(mediaserver, library.id):
                         if not item:
                             continue
                         if not item.item_id:
                             continue
-                        # 计数
+                        #  Reckoning
                         library_count += 1
                         seasoninfo = {}
-                        # 类型
-                        item_type = "电视剧" if item.item_type in ['Series', 'show'] else "电影"
-                        if item_type == "电视剧":
-                            # 查询剧集信息
+                        #  Typology
+                        item_type = " Dramas" if item.item_type in ['Series', 'show'] else " Cinematic"
+                        if item_type == " Dramas":
+                            #  Search for episode information
                             espisodes_info = self.episodes(mediaserver, item.item_id) or []
                             for episode in espisodes_info:
                                 seasoninfo[episode.season] = episode.episodes
-                        # 插入数据
+                        #  Insert data
                         item_dict = item.dict()
                         item_dict['seasoninfo'] = json.dumps(seasoninfo)
                         item_dict['item_type'] = item_type
                         _dbOper.add(**item_dict)
-                    logger.info(f"{mediaserver} 媒体库 {library.name} 同步完成，共同步数量：{library_count}")
-                    # 总数累加
+                    logger.info(f"{mediaserver}  Media library {library.name}  Synchronized completion， Number of common steps：{library_count}")
+                    #  Totals add up
                     total_count += library_count
-            # 关闭数据库连接
+            #  Close the database connection
             if _db:
                 _db.close()
-            logger.info("【MediaServer】媒体库数据同步完成，同步数量：%s" % total_count)
+            logger.info("【MediaServer】 Media library data synchronization completed， Number of synchronizations：%s" % total_count)

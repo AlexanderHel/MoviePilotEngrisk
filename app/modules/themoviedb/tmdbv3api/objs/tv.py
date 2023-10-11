@@ -133,7 +133,7 @@ class TV(TMDb):
 
     def group_episodes(self, group_id):
         """
-        查询剧集组所有剧集
+        Search all episodes of episodes group
         :param group_id: int
         :return:
         """

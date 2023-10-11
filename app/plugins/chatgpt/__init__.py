@@ -8,28 +8,28 @@ from app.schemas.types import EventType
 
 
 class ChatGPT(_PluginBase):
-    # 插件名称
+    #  Plug-in name
     plugin_name = "ChatGPT"
-    # 插件描述
-    plugin_desc = "消息交互支持与ChatGPT对话。"
-    # 插件图标
+    #  Plugin description
+    plugin_desc = " Message interaction support withChatGPT Dialogues。"
+    #  Plug-in icons
     plugin_icon = "chatgpt.png"
-    # 主题色
+    #  Theme color
     plugin_color = "#74AA9C"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "jxxghp"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/jxxghp"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "chatgpt_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 15
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 1
 
-    # 私有属性
+    #  Private property
     openai = None
     _enabled = False
     _proxy = False
@@ -57,7 +57,7 @@ class ChatGPT(_PluginBase):
 
     def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
         """
-        拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
+        Assembly plugin configuration page， Two pieces of data need to be returned：1、 Page configuration；2、 Data structure
         """
         return [
             {
@@ -77,7 +77,7 @@ class ChatGPT(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'enabled',
-                                            'label': '启用插件',
+                                            'label': ' Enabling plug-ins',
                                         }
                                     }
                                 ]
@@ -93,7 +93,7 @@ class ChatGPT(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'proxy',
-                                            'label': '使用代理',
+                                            'label': ' Using proxies',
                                         }
                                     }
                                 ]
@@ -153,7 +153,7 @@ class ChatGPT(_PluginBase):
     @eventmanager.register(EventType.UserMessage)
     def talk(self, event):
         """
-        监听用户消息，获取ChatGPT回复
+        Listening to user messages， GainChatGPT Return (to a previous condition)
         """
         if not self.openai:
             return
@@ -168,6 +168,6 @@ class ChatGPT(_PluginBase):
 
     def stop_service(self):
         """
-        退出插件
+        Exit plugin
         """
         pass

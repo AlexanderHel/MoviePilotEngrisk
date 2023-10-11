@@ -8,42 +8,42 @@ from app.db.models import Base
 
 class Site(Base):
     """
-    站点表
+    Site list
     """
     id = Column(Integer, Sequence('id'), primary_key=True, index=True)
-    # 站点名
+    #  Site name
     name = Column(String, nullable=False)
-    # 域名Key
+    #  Domain nameKey
     domain = Column(String, index=True)
-    # 站点地址
+    #  Site address
     url = Column(String, nullable=False)
-    # 站点优先级
+    #  Site prioritization
     pri = Column(Integer, default=1)
-    # RSS地址，未启用
+    # RSS Address， Not yet activated
     rss = Column(String)
     # Cookie
     cookie = Column(String)
     # User-Agent
     ua = Column(String)
-    # 是否使用代理 0-否，1-是
+    #  Whether to use a proxy 0- Clogged，1- Be
     proxy = Column(Integer)
-    # 过滤规则
+    #  Filter rules
     filter = Column(String)
-    # 是否渲染
+    #  Whether to render
     render = Column(Integer)
-    # 是否公开站点
+    #  Whether or not the site is public
     public = Column(Integer)
-    # 附加信息
+    #  Additional information
     note = Column(String)
-    # 流控单位周期
+    #  Flow control unit cycle
     limit_interval = Column(Integer, default=0)
-    # 流控次数
+    #  Number of flow control sessions
     limit_count = Column(Integer, default=0)
-    # 流控间隔
+    #  Flow control interval
     limit_seconds = Column(Integer, default=0)
-    # 是否启用
+    #  Enable or disable
     is_active = Column(Boolean(), default=True)
-    # 创建时间
+    #  Creation time
     lst_mod_date = Column(String, default=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     @staticmethod

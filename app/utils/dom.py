@@ -6,7 +6,7 @@ class DomUtils:
     @staticmethod
     def tag_value(tag_item, tag_name: str, attname: str = "", default: Union[str, int] = None):
         """
-        解析XML标签值
+        AnalyzeXML Tagged value
         """
         tagNames = tag_item.getElementsByTagName(tag_name)
         if tagNames:
@@ -23,7 +23,7 @@ class DomUtils:
     @staticmethod
     def add_node(doc, parent, name: str, value: str = None):
         """
-        添加一个DOM节点
+        Add aDOM Nodal
         """
         node = doc.createElement(name)
         parent.appendChild(node)

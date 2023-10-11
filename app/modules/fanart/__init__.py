@@ -304,7 +304,7 @@ class FanartModule(_ModuleBase):
     }
     """
 
-    # 代理
+    #  Act on behalf of sb. in a responsible position
     _proxies: dict = settings.PROXY
 
     # Fanart Api
@@ -322,9 +322,9 @@ class FanartModule(_ModuleBase):
 
     def obtain_images(self, mediainfo: MediaInfo) -> Optional[MediaInfo]:
         """
-        获取图片
-        :param mediainfo:  识别的媒体信息
-        :return: 更新后的媒体信息
+        Get picture
+        :param mediainfo:   Identified media messages
+        :return:  Updated media information
         """
         if mediainfo.type == MediaType.MOVIE:
             result = self.__request_fanart(mediainfo.type, mediainfo.tmdb_id)
@@ -332,30 +332,30 @@ class FanartModule(_ModuleBase):
             if mediainfo.tvdb_id:
                 result = self.__request_fanart(mediainfo.type, mediainfo.tvdb_id)
             else:
-                logger.info(f"{mediainfo.title_year} 没有tvdbid，无法获取Fanart图片")
+                logger.info(f"{mediainfo.title_year}  Hasn'ttvdbid， UnavailableFanart Photograph")
                 return
         if not result or result.get('status') == 'error':
-            logger.warn(f"没有获取到 {mediainfo.title_year} 的Fanart图片数据")
+            logger.warn(f" There is no access to the {mediainfo.title_year}  (used form a nominal expression)Fanart Image data")
             return
-        # 获取所有图片
+        #  Get all images
         for name, images in result.items():
             if not images:
                 continue
             if not isinstance(images, list):
                 continue
-            # 按欢迎程度倒排
+            #  Reverse order of popularity
             images.sort(key=lambda x: int(x.get('likes', 0)), reverse=True)
-            # 取第一张图片
+            #  Take the first picture
             image_obj = images[0]
-            # 图片属性xx_path
+            #  Image propertiesxx_path
             image_name = self.__name(name)
             image_season = image_obj.get('season')
-            # 设置图片
+            #  Setting up pictures
             if image_name.startswith("season") and image_season:
-                # 季图片格式 seasonxx-poster
+                #  Quarterly picture format seasonxx-poster
                 image_name = f"season{str(image_season).rjust(2, '0')}-{image_name[6:]}"
             if not mediainfo.get_image(image_name):
-                # 没有图片才设置
+                #  No picture before setting
                 mediainfo.set_image(image_name, image_obj.get('url'))
 
         return mediainfo
@@ -363,7 +363,7 @@ class FanartModule(_ModuleBase):
     @staticmethod
     def __name(fanart_name: str) -> str:
         """
-        转换Fanart图片的名字
+        ConversionsFanart Name of the picture
         """
         words_to_remove = r'tv|movie|hdmovie|hdtv|show|hd'
         pattern = re.compile(words_to_remove, re.IGNORECASE)
@@ -382,5 +382,5 @@ class FanartModule(_ModuleBase):
             if ret:
                 return ret.json()
         except Exception as err:
-            logger.error(f"获取{queryid}的Fanart图片失败：{err}")
+            logger.error(f" Gain{queryid} (used form a nominal expression)Fanart Image failure：{err}")
         return None

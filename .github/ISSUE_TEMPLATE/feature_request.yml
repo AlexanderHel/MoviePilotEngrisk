@@ -1,4 +1,4 @@
-name: 功能改进
+name:  Functionality improvement
 description: Feature Request
 title: "[Feature Request]: "
 labels: ["feature request"]
@@ -6,37 +6,37 @@ body:
   - type: markdown
     attributes:
       value: |
-        请说明你希望添加的功能。
+        Please describe the features you would like to add。
   - type: input
     id: version
     attributes:
-      label: 当前程序版本
-      description: 目前使用的程序版本
+      label:  Current program version
+      description:  Version of the program currently in use
     validations:
       required: true
   - type: dropdown
     id: type
     attributes:
-      label: 功能改进类型
-      description: 你需要在下面哪个方面改进功能
+      label:  Type of functional improvement
+      description:  Which of the following areas do you need to improve functionality
       options:
-        - 主程序
-        - 插件
+        -  Main program
+        -  Plug-in (software component)
         - Docker
-        - 其他
+        -  (sth. or sb) else
     validations:
       required: true
   - type: textarea
     id: feature-request
     attributes:
-      label: 功能改进
-      description: 请详细描述需要改进或者添加的功能。
-      placeholder: "功能改进"
+      label:  Functionality improvement
+      description:  Please describe in detail the features that need to be improved or added。
+      placeholder: " Functionality improvement"
     validations:
       required: true
   - type: textarea
     id: references
     attributes:
-      label: 参考资料
-      description: 可以列举一些参考资料，但是不要引用同类但商业化软件的任何内容。
-      placeholder: "参考资料"
+      label:  Bibliography
+      description:  Some references can be listed， But don't quote anything from similar but commercialized software。
+      placeholder: " Bibliography"

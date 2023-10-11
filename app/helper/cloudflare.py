@@ -7,7 +7,7 @@ from app.log import logger
 CHALLENGE_TITLES = [
     # Cloudflare
     'Just a moment...',
-    '请稍候…',
+    ' Please wait.…',
     # DDoS-GUARD
     'DDOS-GUARD',
 ]

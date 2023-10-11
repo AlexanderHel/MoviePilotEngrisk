@@ -8,7 +8,7 @@ class WebUtils:
     @staticmethod
     def get_location(ip: str):
         """
-        查询IP所属地
+        Consult (a document etc)IP Belonging to
         """
         return WebUtils.get_location1(ip) or WebUtils.get_location2(ip)
 
@@ -22,18 +22,18 @@ class WebUtils:
             "data": {
                 "ip": "240e:97c:2f:1::5c",
                 "dec": "47925092370311863177116789888333643868",
-                "country": "中国",
+                "country": " Sino",
                 "countryCode": "CN",
-                "province": "广东省",
-                "city": "广州市",
+                "province": " Guangdong province",
+                "city": " Guangzhou subprovincial city and capital of guangdong",
                 "districts": "",
                 "idc": "",
-                "isp": "中国电信",
-                "net": "数据中心",
+                "isp": " China telecom (chinese company providing mobile phone service)",
+                "net": " Data center",
                 "zipcode": "510000",
                 "areacode": "020",
                 "protocol": "IPv6",
-                "location": "中国[CN] 广东省 广州市",
+                "location": " Sino[CN]  Guangdong province  Guangzhou subprovincial city and capital of guangdong",
                 "myip": "125.89.7.89",
                 "time": "2023-09-01 17:28:23"
             }
@@ -53,13 +53,13 @@ class WebUtils:
         https://whois.pconline.com.cn/ipJson.jsp?json=true&ip=
         {
           "ip": "122.8.12.22",
-          "pro": "上海市",
+          "pro": " Shanghai",
           "proCode": "310000",
-          "city": "上海市",
+          "city": " Shanghai",
           "cityCode": "310000",
           "region": "",
           "regionCode": "0",
-          "addr": "上海市 铁通",
+          "addr": " Shanghai  Tietong",
           "regionNames": "",
           "err": ""
         }
@@ -75,7 +75,7 @@ class WebUtils:
     @staticmethod
     def get_bing_wallpaper() -> Optional[str]:
         """
-        获取Bing每日壁纸
+        GainBing Daily wallpaper
         """
         url = "https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1"
         resp = RequestUtils(timeout=5).get_res(url)

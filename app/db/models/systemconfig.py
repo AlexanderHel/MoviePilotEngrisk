@@ -6,12 +6,12 @@ from app.db.models import Base
 
 class SystemConfig(Base):
     """
-    配置表
+    Configuration table
     """
     id = Column(Integer, Sequence('id'), primary_key=True, index=True)
-    # 主键
+    #  Primary key
     key = Column(String, index=True)
-    # 值
+    #  (be) worth
     value = Column(String, nullable=True)
 
     @staticmethod

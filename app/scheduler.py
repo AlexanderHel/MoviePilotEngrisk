@@ -19,10 +19,10 @@ from app.log import logger
 from app.utils.singleton import Singleton
 from app.utils.timer import TimerUtils
 
-# 获取 apscheduler 的日志记录器
+#  Gain apscheduler  The logger of the
 scheduler_logger = logging.getLogger('apscheduler')
 
-# 设置日志级别为 WARNING
+#  Set the log level to WARNING
 scheduler_logger.setLevel(logging.WARNING)
 
 
@@ -32,18 +32,18 @@ class SchedulerChain(ChainBase):
 
 class Scheduler(metaclass=Singleton):
     """
-    定时任务管理
+    Scheduled task management
     """
-    # 定时服务
+    #  Time service
     _scheduler = BackgroundScheduler(timezone=settings.TZ,
                                      executors={
                                          'default': ThreadPoolExecutor(20)
                                      })
 
     def __init__(self):
-        # 数据库连接
+        #  Database connection
         self._db = SessionFactory()
-        # 各服务的运行状态
+        #  Operational status of each service
         self._jobs = {
             "cookiecloud": {
                 "func": CookieCloudChain(self._db).process,
@@ -71,17 +71,17 @@ class Scheduler(metaclass=Singleton):
             }
         }
 
-        # 调试模式不启动定时服务
+        #  Debug mode does not start the timing service
         if settings.DEV:
             return
 
-        # CookieCloud定时同步
+        # CookieCloud Timing synchronization
         if settings.COOKIECLOUD_INTERVAL:
             self._scheduler.add_job(
                 self.start,
                 "interval",
                 id="cookiecloud",
-                name="同步CookieCloud站点",
+                name=" SynchronizationCookieCloud Website",
                 minutes=settings.COOKIECLOUD_INTERVAL,
                 next_run_time=datetime.now(pytz.timezone(settings.TZ)) + timedelta(minutes=1),
                 kwargs={
@@ -89,13 +89,13 @@ class Scheduler(metaclass=Singleton):
                 }
             )
 
-        # 媒体服务器同步
+        #  Media server synchronization
         if settings.MEDIASERVER_SYNC_INTERVAL:
             self._scheduler.add_job(
                 self.start,
                 "interval",
                 id="mediaserver_sync",
-                name="同步媒体服务器",
+                name=" Synchronous media server",
                 hours=settings.MEDIASERVER_SYNC_INTERVAL,
                 next_run_time=datetime.now(pytz.timezone(settings.TZ)) + timedelta(minutes=5),
                 kwargs={
@@ -103,7 +103,7 @@ class Scheduler(metaclass=Singleton):
                 }
             )
 
-        # 新增订阅时搜索（5分钟检查一次）
+        #  Add search on subscription（5 Check every minute.）
         self._scheduler.add_job(
             self.start,
             "interval",
@@ -114,25 +114,25 @@ class Scheduler(metaclass=Singleton):
             }
         )
 
-        # 检查更新订阅TMDB数据（每隔6小时）
+        #  Check for updated subscriptionsTMDB Digital（ At intervals of6 Hourly）
         self._scheduler.add_job(
             self.start,
             "interval",
             id="subscribe_tmdb",
-            name="订阅元数据更新",
+            name=" Subscribe to metadata updates",
             hours=6,
             kwargs={
                 'job_id': 'subscribe_tmdb'
             }
         )
 
-        # 订阅状态每隔24小时搜索一次
+        #  The subscription status is set every24 Hourly searches
         if settings.SUBSCRIBE_SEARCH:
             self._scheduler.add_job(
                 self.start,
                 "interval",
                 id="subscribe_search",
-                name="订阅搜索",
+                name=" Subscribe to search",
                 hours=24,
                 kwargs={
                     'job_id': 'subscribe_search',
@@ -141,21 +141,21 @@ class Scheduler(metaclass=Singleton):
             )
 
         if settings.SUBSCRIBE_MODE == "spider":
-            # 站点首页种子定时刷新模式
+            #  Site home seed timed refresh mode
             triggers = TimerUtils.random_scheduler(num_executions=30)
             for trigger in triggers:
                 self._scheduler.add_job(
                     self.start,
                     "cron",
                     id=f"subscribe_refresh|{trigger.hour}:{trigger.minute}",
-                    name="订阅刷新",
+                    name=" Subscription refresh",
                     hour=trigger.hour,
                     minute=trigger.minute,
                     kwargs={
                         'job_id': 'subscribe_refresh'
                     })
         else:
-            # RSS订阅模式
+            # RSS Subscription model
             if not settings.SUBSCRIBE_RSS_INTERVAL:
                 settings.SUBSCRIBE_RSS_INTERVAL = 30
             elif settings.SUBSCRIBE_RSS_INTERVAL < 5:
@@ -164,27 +164,27 @@ class Scheduler(metaclass=Singleton):
                 self.start,
                 "interval",
                 id="subscribe_refresh",
-                name="RSS订阅刷新",
+                name="RSS Subscription refresh",
                 minutes=settings.SUBSCRIBE_RSS_INTERVAL,
                 kwargs={
                     'job_id': 'subscribe_refresh'
                 }
             )
 
-        # 下载器文件转移（每5分钟）
+        #  Downloader file transfer（ Each5 Minutes）
         if settings.DOWNLOADER_MONITOR:
             self._scheduler.add_job(
                 self.start,
                 "interval",
                 id="transfer",
-                name="下载文件整理",
+                name=" Download file organization",
                 minutes=5,
                 kwargs={
                     'job_id': 'transfer'
                 }
             )
 
-        # 后台刷新TMDB壁纸
+        #  Backstage refreshTMDB Wallpapers
         self._scheduler.add_job(
             TmdbChain(self._db).get_random_wallpager,
             "interval",
@@ -192,47 +192,47 @@ class Scheduler(metaclass=Singleton):
             next_run_time=datetime.now(pytz.timezone(settings.TZ)) + timedelta(seconds=3)
         )
 
-        # 公共定时服务
+        #  Public timing service
         self._scheduler.add_job(
             SchedulerChain(self._db).scheduler_job,
             "interval",
             minutes=10
         )
 
-        # 打印服务
+        #  Printing service
         logger.debug(self._scheduler.print_jobs())
 
-        # 启动定时服务
+        #  Start timing service
         self._scheduler.start()
 
     def start(self, job_id: str, *args, **kwargs):
         """
-        启动定时服务
+        Start timing service
         """
-        # 处理job_id格式
+        #  Deal withjob_id Specification
         job = self._jobs.get(job_id)
         if not job:
             return
         if job.get("running"):
-            logger.warning(f"定时任务 {job_id} 正在运行 ...")
+            logger.warning(f" Timed task {job_id}  Running ...")
             return
         self._jobs[job_id]["running"] = True
         try:
             job["func"](*args, **kwargs)
         except Exception as e:
-            logger.error(f"定时任务 {job_id} 执行失败：{e}")
+            logger.error(f" Timed task {job_id}  Failure of execution：{e}")
         self._jobs[job_id]["running"] = False
 
     def list(self) -> List[schemas.ScheduleInfo]:
         """
-        当前所有任务
+        All current tasks
         """
-        # 返回计时任务
+        #  Return to timing tasks
         schedulers = []
-        # 去重
+        #  De-emphasize
         added = []
         jobs = self._scheduler.get_jobs()
-        # 按照下次运行时间排序
+        #  Sort by next run time
         jobs.sort(key=lambda x: x.next_run_time)
         for job in jobs:
             if job.name not in added:
@@ -242,9 +242,9 @@ class Scheduler(metaclass=Singleton):
             job_id = job.id.split("|")[0]
             if not self._jobs.get(job_id):
                 continue
-            # 任务状态
-            status = "正在运行" if self._jobs[job_id].get("running") else "等待"
-            # 下次运行时间
+            #  Mission status
+            status = " Running" if self._jobs[job_id].get("running") else " Wait for"
+            #  Next run time
             next_run = TimerUtils.time_difference(job.next_run_time)
             schedulers.append(schemas.ScheduleInfo(
                 id=job_id,
@@ -256,7 +256,7 @@ class Scheduler(metaclass=Singleton):
 
     def stop(self):
         """
-        关闭定时服务
+        Turning off the timing service
         """
         if self._scheduler.running:
             self._scheduler.shutdown()

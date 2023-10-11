@@ -24,28 +24,28 @@ lock = Lock()
 
 
 class DoubanSync(_PluginBase):
-    # 插件名称
-    plugin_name = "豆瓣想看"
-    # 插件描述
-    plugin_desc = "同步豆瓣想看数据，自动添加订阅。"
-    # 插件图标
+    #  Plug-in name
+    plugin_name = " Douban wants to see"
+    #  Plugin description
+    plugin_desc = " Synchronized douban wants to see the data， Automatically add subscriptions。"
+    #  Plug-in icons
     plugin_icon = "douban.png"
-    # 主题色
+    #  Theme color
     plugin_color = "#05B711"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "jxxghp"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/jxxghp"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "doubansync_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 3
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 2
 
-    # 私有变量
+    #  Private variable
     _interests_url: str = "https://www.douban.com/feed/people/%s/interests"
     _scheduler: Optional[BackgroundScheduler] = None
     _cache_path: Optional[Path] = None
@@ -54,7 +54,7 @@ class DoubanSync(_PluginBase):
     searchchain = None
     subscribechain = None
 
-    # 配置属性
+    #  Configuration properties
     _enabled: bool = False
     _onlyonce: bool = False
     _cron: str = ""
@@ -70,10 +70,10 @@ class DoubanSync(_PluginBase):
         self.searchchain = SearchChain(self.db)
         self.subscribechain = SubscribeChain(self.db)
 
-        # 停止现有任务
+        #  Discontinuation of existing mandates
         self.stop_service()
 
-        # 配置
+        #  Configure
         if config:
             self._enabled = config.get("enabled")
             self._cron = config.get("cron")
@@ -90,32 +90,32 @@ class DoubanSync(_PluginBase):
                 try:
                     self._scheduler.add_job(func=self.sync,
                                             trigger=CronTrigger.from_crontab(self._cron),
-                                            name="豆瓣想看")
+                                            name=" Douban wants to see")
                 except Exception as err:
-                    logger.error(f"定时任务配置错误：{err}")
-                    # 推送实时消息
-                    self.systemmessage.put(f"执行周期配置错误：{err}")
+                    logger.error(f" Timed task configuration error：{err}")
+                    #  Push real-time messages
+                    self.systemmessage.put(f" Execution cycle misconfiguration：{err}")
             else:
-                self._scheduler.add_job(self.sync, "interval", minutes=30, name="豆瓣想看")
+                self._scheduler.add_job(self.sync, "interval", minutes=30, name=" Douban wants to see")
 
             if self._onlyonce:
-                logger.info(f"豆瓣想看服务启动，立即运行一次")
+                logger.info(f" Douban wants to see the service launched， Run one immediately")
                 self._scheduler.add_job(func=self.sync, trigger='date',
                                         run_date=datetime.datetime.now(
                                             tz=pytz.timezone(settings.TZ)) + datetime.timedelta(seconds=3)
                                         )
 
             if self._onlyonce or self._clear:
-                # 关闭一次性开关
+                #  Turn off the disposable switch
                 self._onlyonce = False
-                # 记录缓存清理标志
+                #  Logging cache cleanup flags
                 self._clearflag = self._clear
-                # 关闭清理缓存
+                #  Close clear cache
                 self._clear = False
-                # 保存配置
+                #  Save configuration
                 self.__update_config()
 
-            # 启动任务
+            #  Initiate tasks
             if self._scheduler.get_jobs():
                 self._scheduler.print_jobs()
                 self._scheduler.start()
@@ -126,32 +126,32 @@ class DoubanSync(_PluginBase):
     @staticmethod
     def get_command() -> List[Dict[str, Any]]:
         """
-        定义远程控制命令
-        :return: 命令关键字、事件、描述、附带数据
+        Defining remote control commands
+        :return:  Command keywords、 Event、 Descriptive、 Accompanying data
         """
         return [{
             "cmd": "/douban_sync",
             "event": EventType.DoubanSync,
-            "desc": "同步豆瓣想看",
-            "category": "订阅",
+            "desc": " Synchronized douban wants to see",
+            "category": " Subscribe to",
             "data": {}
         }]
 
     def get_api(self) -> List[Dict[str, Any]]:
         """
-        获取插件API
+        Get pluginsAPI
         [{
             "path": "/xx",
             "endpoint": self.xxx,
             "methods": ["GET", "POST"],
-            "summary": "API说明"
+            "summary": "API Clarification"
         }]
         """
         pass
 
     def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
         """
-        拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
+        Assembly plugin configuration page， Two pieces of data need to be returned：1、 Page configuration；2、 Data structure
         """
         return [
             {
@@ -171,7 +171,7 @@ class DoubanSync(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'enabled',
-                                            'label': '启用插件',
+                                            'label': ' Enabling plug-ins',
                                         }
                                     }
                                 ]
@@ -187,7 +187,7 @@ class DoubanSync(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'notify',
-                                            'label': '发送通知',
+                                            'label': ' Send notification',
                                         }
                                     }
                                 ]
@@ -203,7 +203,7 @@ class DoubanSync(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'onlyonce',
-                                            'label': '立即运行一次',
+                                            'label': ' Run one immediately',
                                         }
                                     }
                                 ]
@@ -224,8 +224,8 @@ class DoubanSync(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'cron',
-                                            'label': '执行周期',
-                                            'placeholder': '5位cron表达式，留空自动'
+                                            'label': ' Implementation period',
+                                            'placeholder': '5 Classifier for honorific peoplecron Displayed formula， Leave blank spaces in writing'
                                         }
                                     }
                                 ]
@@ -241,7 +241,7 @@ class DoubanSync(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'days',
-                                            'label': '同步天数'
+                                            'label': ' Number of days of synchronization'
                                         }
                                     }
                                 ]
@@ -258,8 +258,8 @@ class DoubanSync(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'users',
-                                            'label': '用户列表',
-                                            'placeholder': '豆瓣用户ID，多个用英文逗号分隔'
+                                            'label': ' User list',
+                                            'placeholder': ' Douban userID， Separate more than one by english commas'
                                         }
                                     }
                                 ]
@@ -280,7 +280,7 @@ class DoubanSync(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'clear',
-                                            'label': '清理历史记录',
+                                            'label': ' Clear history',
                                         }
                                     }
                                 ]
@@ -301,23 +301,23 @@ class DoubanSync(_PluginBase):
 
     def get_page(self) -> List[dict]:
         """
-        拼装插件详情页面，需要返回页面配置，同时附带数据
+        Patchwork plug-in detail page， Need to return to page configuration， Also with data
         """
-        # 查询同步详情
+        #  Query synchronization details
         historys = self.get_data('history')
         if not historys:
             return [
                 {
                     'component': 'div',
-                    'text': '暂无数据',
+                    'text': ' No data available',
                     'props': {
                         'class': 'text-center',
                     }
                 }
             ]
-        # 数据按时间降序排序
+        #  Data is sorted in descending chronological order
         historys = sorted(historys, key=lambda x: x.get('time'), reverse=True)
-        # 拼装页面
+        #  Assembly page
         contents = []
         for history in historys:
             title = history.get("title")
@@ -375,14 +375,14 @@ class DoubanSync(_PluginBase):
                                             'props': {
                                                 'class': 'pa-0 px-2'
                                             },
-                                            'text': f'类型：{mtype}'
+                                            'text': f' Typology：{mtype}'
                                         },
                                         {
                                             'component': 'VCardText',
                                             'props': {
                                                 'class': 'pa-0 px-2'
                                             },
-                                            'text': f'时间：{time_str}'
+                                            'text': f' Timing：{time_str}'
                                         }
                                     ]
                                 }
@@ -404,7 +404,7 @@ class DoubanSync(_PluginBase):
 
     def __update_config(self):
         """
-        更新配置
+        Updating the configuration
         """
         self.update_config({
             "enabled": self._enabled,
@@ -418,7 +418,7 @@ class DoubanSync(_PluginBase):
 
     def stop_service(self):
         """
-        退出插件
+        Exit plugin
         """
         try:
             if self._scheduler:
@@ -427,108 +427,108 @@ class DoubanSync(_PluginBase):
                     self._scheduler.shutdown()
                 self._scheduler = None
         except Exception as e:
-            logger.error("退出插件失败：%s" % str(e))
+            logger.error("Exit plugin失败：%s" % str(e))
 
     def sync(self):
         """
-        通过用户RSS同步豆瓣想看数据
+        Via the userRSS Synchronized douban wants to see the data
         """
         if not self._users:
             return
-        # 读取历史记录
+        #  Read history
         if self._clearflag:
             history = []
         else:
             history: List[dict] = self.get_data('history') or []
         for user_id in self._users.split(","):
-            # 同步每个用户的豆瓣数据
+            #  Synchronize each user's douban data
             if not user_id:
                 continue
-            logger.info(f"开始同步用户 {user_id} 的豆瓣想看数据 ...")
+            logger.info(f" Starting to synchronize users {user_id}  The douban wants to see the data ...")
             url = self._interests_url % user_id
             results = self.rsshelper.parse(url)
             if not results:
-                logger.error(f"未获取到用户 {user_id} 豆瓣RSS数据：{url}")
+                logger.error(f" No users acquired {user_id}  Douban, prc social networking websiteRSS Digital：{url}")
                 continue
             else:
-                logger.info(f"获取到用户 {user_id} 豆瓣RSS数据：{len(results)}")
-            # 解析数据
+                logger.info(f"Get user {user_id} Douban RSS data: {len(results)}")
+            #  Parsing data
             for result in results:
                 try:
                     dtype = result.get("title", "")[:2]
                     title = result.get("title", "")[2:]
-                    if dtype not in ["想看"]:
-                        logger.info(f'标题：{title}，非想看数据，跳过')
+                    if dtype not in [" Want to see"]:
+                        logger.info(f'Title: {title}, if you don’t want to see the data, skip')
                         continue
                     if not result.get("link"):
-                        logger.warn(f'标题：{title}，未获取到链接，跳过')
+                        logger.warn(f'Title: {title}, link not obtained, skip')
                         continue
-                    # 判断是否在天数范围
+                    #  Determine if it is in the range of days
                     pubdate: Optional[datetime.datetime] = result.get("pubdate")
                     if pubdate:
                         if (datetime.datetime.now(datetime.timezone.utc) - pubdate).days > float(self._days):
-                            logger.info(f'已超过同步天数，标题：{title}，发布时间：{pubdate}')
+                            logger.info(f' Days of synchronization exceeded， Caption：{title}， Release time：{pubdate}')
                             continue
                     douban_id = result.get("link", "").split("/")[-2]
-                    # 检查是否处理过
+                    #  Check to see if it's been handled
                     if not douban_id or douban_id in [h.get("doubanid") for h in history]:
-                        logger.info(f'标题：{title}，豆瓣ID：{douban_id} 已处理过')
+                        logger.info(f'Title: {title}, Douban ID: {douban_id} has been processed')
                         continue
-                    # 根据豆瓣ID获取豆瓣数据
+                    #  According to doubanID Get douban data
                     doubaninfo: Optional[dict] = self.chain.douban_info(doubanid=douban_id)
                     if not doubaninfo:
-                        logger.warn(f'未获取到豆瓣信息，标题：{title}，豆瓣ID：{douban_id}')
+                        logger.warn(f' No doujinshi information obtained， Caption：{title}， Douban, prc social networking websiteID：{douban_id}')
                         continue
-                    logger.info(f'获取到豆瓣信息，标题：{title}，豆瓣ID：{douban_id}')
-                    # 识别媒体信息
+                    logger.info(f' Get the doujinshi information， Caption：{title}， Douban, prc social networking websiteID：{douban_id}')
+                    #  Identify media messages
                     meta = MetaInfo(doubaninfo.get("original_title") or doubaninfo.get("title"))
                     if doubaninfo.get("year"):
                         meta.year = doubaninfo.get("year")
                     mediainfo: MediaInfo = self.chain.recognize_media(meta=meta)
                     if not mediainfo:
-                        logger.warn(f'未识别到媒体信息，标题：{title}，豆瓣ID：{douban_id}')
+                        logger.warn(f' No media messages recognized， Caption：{title}， Douban, prc social networking websiteID：{douban_id}')
                         continue
-                    # 查询缺失的媒体信息
+                    #  Querying missing media information
                     exist_flag, no_exists = self.downloadchain.get_no_exists_info(meta=meta, mediainfo=mediainfo)
                     if exist_flag:
-                        logger.info(f'{mediainfo.title_year} 媒体库中已存在')
+                        logger.info(f'{mediainfo.title_year}  Already exists in the media library')
                         action = "exist"
                     else:
-                        logger.info(f'{mediainfo.title_year} 媒体库中不存在，开始搜索 ...')
-                        # 搜索
+                        logger.info(f'{mediainfo.title_year}  Not available in the media library， Start searching ...')
+                        #  Look for sth.
                         contexts = self.searchchain.process(mediainfo=mediainfo,
                                                             no_exists=no_exists)
                         if not contexts:
-                            logger.warn(f'{mediainfo.title_year} 未搜索到资源')
-                            # 添加订阅
+                            logger.warn(f'{mediainfo.title_year}  No resources searched')
+                            #  Add subscription
                             self.subscribechain.add(title=mediainfo.title,
                                                     year=mediainfo.year,
                                                     mtype=mediainfo.type,
                                                     tmdbid=mediainfo.tmdb_id,
                                                     season=meta.begin_season,
                                                     exist_ok=True,
-                                                    username="豆瓣想看")
+                                                    username=" Douban wants to see")
                             action = "subscribe"
                         else:
-                            # 自动下载
+                            #  Automatic download
                             downloads, lefts = self.downloadchain.batch_download(contexts=contexts, no_exists=no_exists)
                             if downloads and not lefts:
-                                # 全部下载完成
-                                logger.info(f'{mediainfo.title_year} 下载完成')
+                                #  All downloads complete
+                                logger.info(f'{mediainfo.title_year}  Download complete')
                                 action = "download"
                             else:
-                                # 未完成下载
-                                logger.info(f'{mediainfo.title_year} 未下载未完整，添加订阅 ...')
-                                # 添加订阅
+                                #  Unfinished downloads
+                                logger.info(f'{mediainfo.title_year}  Not downloaded not complete， Add subscription ...')
+                                #  Add subscription
                                 self.subscribechain.add(title=mediainfo.title,
                                                         year=mediainfo.year,
                                                         mtype=mediainfo.type,
                                                         tmdbid=mediainfo.tmdb_id,
                                                         season=meta.begin_season,
                                                         exist_ok=True,
-                                                        username="豆瓣想看")
+                                                        username=" Douban wants to see")
                                 action = "subscribe"
-                    # 存储历史记录
+                    #  Storing history
                     history.append({
                         "action": action,
                         "title": doubaninfo.get("title") or mediainfo.title,
@@ -541,25 +541,25 @@ class DoubanSync(_PluginBase):
                         "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     })
                 except Exception as err:
-                    logger.error(f'同步用户 {user_id} 豆瓣想看数据出错：{err}')
-            logger.info(f"用户 {user_id} 豆瓣想看同步完成")
-        # 保存历史记录
+                    logger.error(f' Synchronized users {user_id}  Douban wants to see an error in the data：{err}')
+            logger.info(f" Subscribers {user_id}  Douban wants to see the synchronization completed")
+        #  Save history
         self.save_data('history', history)
-        # 缓存只清理一次
+        #  Cache is only cleared once
         self._clearflag = False
 
     @eventmanager.register(EventType.DoubanSync)
     def remote_sync(self, event: Event):
         """
-        豆瓣想看同步
+        Douban wants to see synchronization
         """
         if event:
-            logger.info("收到命令，开始执行豆瓣想看同步 ...")
+            logger.info("收到命令，开始执行Douban wants to see synchronization ...")
             self.post_message(channel=event.event_data.get("channel"),
-                              title="开始同步豆瓣想看 ...",
+                              title=" Started synchronizing with douban wanting to watch ...",
                               userid=event.event_data.get("user"))
         self.sync()
 
         if event:
             self.post_message(channel=event.event_data.get("channel"),
-                              title="同步豆瓣想看数据完成！", userid=event.event_data.get("user"))
+                              title=" Synchronized douban wants to see data completion！", userid=event.event_data.get("user"))

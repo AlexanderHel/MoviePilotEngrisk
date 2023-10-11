@@ -28,7 +28,7 @@ class Emby(metaclass=Singleton):
 
     def is_inactive(self) -> bool:
         """
-        判断是否需要重连
+        Determine if reconnection is required
         """
         if not self._host or not self._apikey:
             return False
@@ -36,14 +36,14 @@ class Emby(metaclass=Singleton):
 
     def reconnect(self):
         """
-        重连
+        Reconnect
         """
         self.user = self.get_user()
         self.folders = self.get_emby_folders()
 
     def get_emby_folders(self) -> List[dict]:
         """
-        获取Emby媒体库路径列表
+        GainEmby Media library path list
         """
         if not self._host or not self._apikey:
             return []
@@ -53,15 +53,15 @@ class Emby(metaclass=Singleton):
             if res:
                 return res.json()
             else:
-                logger.error(f"Library/SelectableMediaFolders 未获取到返回数据")
+                logger.error(f"Library/SelectableMediaFolders  Return data not obtained")
                 return []
         except Exception as e:
-            logger.error(f"连接Library/SelectableMediaFolders 出错：" + str(e))
+            logger.error(f" GroutLibrary/SelectableMediaFolders  Make a mistake：" + str(e))
             return []
 
     def __get_emby_librarys(self) -> List[dict]:
         """
-        获取Emby媒体库列表
+        GainEmby Media library list
         """
         if not self._host or not self._apikey:
             return []
@@ -71,15 +71,15 @@ class Emby(metaclass=Singleton):
             if res:
                 return res.json().get("Items")
             else:
-                logger.error(f"User/Views 未获取到返回数据")
+                logger.error(f"User/Views  Return data not obtained")
                 return []
         except Exception as e:
-            logger.error(f"连接User/Views 出错：" + str(e))
+            logger.error(f" GroutUser/Views  Make a mistake：" + str(e))
             return []
 
     def get_librarys(self) -> List[schemas.MediaServerLibrary]:
         """
-        获取媒体服务器所有媒体库列表
+        Get a list of all media libraries on the media server
         """
         if not self._host or not self._apikey:
             return []
@@ -105,7 +105,7 @@ class Emby(metaclass=Singleton):
 
     def get_user(self, user_name: str = None) -> Optional[Union[str, int]]:
         """
-        获得管理员用户
+        Getting the administrator user
         """
         if not self._host or not self._apikey:
             return None
@@ -114,27 +114,27 @@ class Emby(metaclass=Singleton):
             res = RequestUtils().get_res(req_url)
             if res:
                 users = res.json()
-                # 先查询是否有与当前用户名称匹配的
+                #  First check to see if there is a match to the current user name for the
                 if user_name:
                     for user in users:
                         if user.get("Name") == user_name:
                             return user.get("Id")
-                # 查询管理员
+                #  Query manager
                 for user in users:
                     if user.get("Policy", {}).get("IsAdministrator"):
                         return user.get("Id")
             else:
-                logger.error(f"Users 未获取到返回数据")
+                logger.error(f"Users  Return data not obtained")
         except Exception as e:
-            logger.error(f"连接Users出错：" + str(e))
+            logger.error(f" GroutUsers Make a mistake：" + str(e))
         return None
 
     def authenticate(self, username: str, password: str) -> Optional[str]:
         """
-        用户认证
-        :param username: 用户名
-        :param password: 密码
-        :return: 认证token
+        User authentication
+        :param username:  User id
+        :param password:  Cryptographic
+        :return:  Accreditationtoken
         """
         if not self._host or not self._apikey:
             return None
@@ -158,17 +158,17 @@ class Emby(metaclass=Singleton):
             if res:
                 auth_token = res.json().get("AccessToken")
                 if auth_token:
-                    logger.info(f"用户 {username} Emby认证成功")
+                    logger.info(f" Subscribers {username} Emby Certification success")
                     return auth_token
             else:
-                logger.error(f"Users/AuthenticateByName 未获取到返回数据")
+                logger.error(f"Users/AuthenticateByName  Return data not obtained")
         except Exception as e:
-            logger.error(f"连接Users/AuthenticateByName出错：" + str(e))
+            logger.error(f" GroutUsers/AuthenticateByName Make a mistake：" + str(e))
         return None
 
     def get_server_id(self) -> Optional[str]:
         """
-        获得服务器信息
+        Getting server information
         """
         if not self._host or not self._apikey:
             return None
@@ -178,15 +178,15 @@ class Emby(metaclass=Singleton):
             if res:
                 return res.json().get("Id")
             else:
-                logger.error(f"System/Info 未获取到返回数据")
+                logger.error(f"System/Info  Return data not obtained")
         except Exception as e:
 
-            logger.error(f"连接System/Info出错：" + str(e))
+            logger.error(f" GroutSystem/Info Make a mistake：" + str(e))
         return None
 
     def get_user_count(self) -> int:
         """
-        获得用户数量
+        Number of users acquired
         """
         if not self._host or not self._apikey:
             return 0
@@ -196,15 +196,15 @@ class Emby(metaclass=Singleton):
             if res:
                 return res.json().get("TotalRecordCount")
             else:
-                logger.error(f"Users/Query 未获取到返回数据")
+                logger.error(f"Users/Query  Return data not obtained")
                 return 0
         except Exception as e:
-            logger.error(f"连接Users/Query出错：" + str(e))
+            logger.error(f" GroutUsers/Query Make a mistake：" + str(e))
             return 0
 
     def get_medias_count(self) -> schemas.Statistic:
         """
-        获得电影、电视剧、动漫媒体数量
+        Get the movie、 Dramas、 Number of anime and manga media
         :return: MovieCount SeriesCount SongCount
         """
         if not self._host or not self._apikey:
@@ -220,18 +220,18 @@ class Emby(metaclass=Singleton):
                     episode_count=result.get("EpisodeCount") or 0
                 )
             else:
-                logger.error(f"Items/Counts 未获取到返回数据")
+                logger.error(f"Items/Counts  Return data not obtained")
                 return schemas.Statistic()
         except Exception as e:
-            logger.error(f"连接Items/Counts出错：" + str(e))
+            logger.error(f" GroutItems/Counts Make a mistake：" + str(e))
             return schemas.Statistic()
 
     def __get_emby_series_id_by_name(self, name: str, year: str) -> Optional[str]:
         """
-        根据名称查询Emby中剧集的SeriesId
-        :param name: 标题
-        :param year: 年份
-        :return: None 表示连不通，""表示未找到，找到返回ID
+        Search by nameEmby Mid-episodeSeriesId
+        :param name:  Caption
+        :param year:  Particular year
+        :return: None  Not connect，"" Indicates not found， Find returnsID
         """
         if not self._host or not self._apikey:
             return None
@@ -255,7 +255,7 @@ class Emby(metaclass=Singleton):
                                 not year or str(res_item.get('ProductionYear')) == str(year)):
                             return res_item.get('Id')
         except Exception as e:
-            logger.error(f"连接Items出错：" + str(e))
+            logger.error(f" GroutItems Make a mistake：" + str(e))
             return None
         return ""
 
@@ -264,11 +264,11 @@ class Emby(metaclass=Singleton):
                    year: str = None,
                    tmdb_id: int = None) -> Optional[List[schemas.MediaServerItem]]:
         """
-        根据标题和年份，检查电影是否在Emby中存在，存在则返回列表
-        :param title: 标题
-        :param year: 年份，可以为空，为空时不按年份过滤
+        By title and year， Check if the movie is onEmby Exist in， Returns the list if it exists
+        :param title:  Caption
+        :param year:  Particular year，可以为空，为空时不按年份过滤
         :param tmdb_id: TMDB ID
-        :return: 含title、year属性的字典列表
+        :return:  Suck (keep in your mouth without chewing)title、year Dictionary list of attributes
         """
         if not self._host or not self._apikey:
             return None
@@ -307,7 +307,7 @@ class Emby(metaclass=Singleton):
                             ret_movies.append(mediaserver_item)
                     return ret_movies
         except Exception as e:
-            logger.error(f"连接Items出错：" + str(e))
+            logger.error(f" GroutItems Make a mistake：" + str(e))
             return None
         return []
 
@@ -319,30 +319,30 @@ class Emby(metaclass=Singleton):
                         season: int = None
                         ) -> Tuple[Optional[str], Optional[Dict[int, List[Dict[int, list]]]]]:
         """
-        根据标题和年份和季，返回Emby中的剧集列表
-        :param item_id: Emby中的ID
-        :param title: 标题
-        :param year: 年份
+        By title and year and season， Come (or go) backEmby List of episodes in
+        :param item_id: Emby Hit the nail on the headID
+        :param title:  Caption
+        :param year:  Particular year
         :param tmdb_id: TMDBID
-        :param season: 季
-        :return: 每一季的已有集数
+        :param season:  Classifier for seasonal crop yield or seasons of a tv series
+        :return:  Number of episodes available for each season
         """
         if not self._host or not self._apikey:
             return None, None
-        # 电视剧
+        #  Dramas
         if not item_id:
             item_id = self.__get_emby_series_id_by_name(title, year)
             if item_id is None:
                 return None, None
             if not item_id:
                 return None, {}
-        # 验证tmdbid是否相同
+        #  Validate (a theory)tmdbid Whether or not the same
         item_info = self.get_iteminfo(item_id)
         if item_info:
             if tmdb_id and item_info.tmdbid:
                 if str(tmdb_id) != str(item_info.tmdbid):
                     return None, {}
-        # 查集的信息
+        #  Information from chatset
         if not season:
             season = ""
         try:
@@ -365,19 +365,19 @@ class Emby(metaclass=Singleton):
                     if season_index not in season_episodes:
                         season_episodes[season_index] = []
                     season_episodes[season_index].append(episode_index)
-                # 返回
+                #  Come (or go) back
                 return tv_item.get("Id"), season_episodes
         except Exception as e:
-            logger.error(f"连接Shows/Id/Episodes出错：" + str(e))
+            logger.error(f" GroutShows/Id/Episodes Make a mistake：" + str(e))
             return None, None
         return None, {}
 
     def get_remote_image_by_id(self, item_id: str, image_type: str) -> Optional[str]:
         """
-        根据ItemId从Emby查询TMDB的图片地址
-        :param item_id: 在Emby中的ID
-        :param image_type: 图片的类弄地，poster或者backdrop等
-        :return: 图片对应在TMDB中的URL
+        According toItemId Through (a gap)Emby Consult (a document etc)TMDB The address of the picture
+        :param item_id:  ExistEmby Hit the nail on the headID
+        :param image_type:  Classes of pictures to get the ground，poster Orbackdrop Et al. (and other authors)
+        :return:  The image corresponds to an image in theTMDB Hit the nail on the headURL
         """
         if not self._host or not self._apikey:
             return None
@@ -390,16 +390,16 @@ class Emby(metaclass=Singleton):
                     if image.get("ProviderName") == "TheMovieDb" and image.get("Type") == image_type:
                         return image.get("Url")
             else:
-                logger.error(f"Items/RemoteImages 未获取到返回数据")
+                logger.error(f"Items/RemoteImages  Return data not obtained")
                 return None
         except Exception as e:
-            logger.error(f"连接Items/Id/RemoteImages出错：" + str(e))
+            logger.error(f" GroutItems/Id/RemoteImages Make a mistake：" + str(e))
             return None
         return None
 
     def __refresh_emby_library_by_id(self, item_id: str) -> bool:
         """
-        通知Emby刷新一个项目的媒体库
+        NotificationsEmby Refreshing a project's media library
         """
         if not self._host or not self._apikey:
             return False
@@ -409,15 +409,15 @@ class Emby(metaclass=Singleton):
             if res:
                 return True
             else:
-                logger.info(f"刷新媒体库对象 {item_id} 失败，无法连接Emby！")
+                logger.info(f" Refresh media library objects {item_id}  Fail (e.g. experiments)， ConnectionlessEmby！")
         except Exception as e:
-            logger.error(f"连接Items/Id/Refresh出错：" + str(e))
+            logger.error(f" GroutItems/Id/Refresh Make a mistake：" + str(e))
             return False
         return False
 
     def refresh_root_library(self) -> bool:
         """
-        通知Emby刷新整个媒体库
+        NotificationsEmby Refresh the entire media library
         """
         if not self._host or not self._apikey:
             return False
@@ -427,37 +427,37 @@ class Emby(metaclass=Singleton):
             if res:
                 return True
             else:
-                logger.info(f"刷新媒体库失败，无法连接Emby！")
+                logger.info(f" Failed to refresh media library， ConnectionlessEmby！")
         except Exception as e:
-            logger.error(f"连接Library/Refresh出错：" + str(e))
+            logger.error(f" GroutLibrary/Refresh Make a mistake：" + str(e))
             return False
         return False
 
     def refresh_library_by_items(self, items: List[schemas.RefreshMediaItem]) -> bool:
         """
-        按类型、名称、年份来刷新媒体库
-        :param items: 已识别的需要刷新媒体库的媒体信息列表
+        By type、 Name (of a thing)、 Year to refresh media library
+        :param items:  List of recognized media messages that need to be refreshed in the media library
         """
         if not items:
             return False
-        # 收集要刷新的媒体库信息
-        logger.info(f"开始刷新Emby媒体库...")
+        #  Gather information about the media library to be refreshed
+        logger.info(f" Start refreshingEmby Media library...")
         library_ids = []
         for item in items:
             library_id = self.__get_emby_library_id_by_item(item)
             if library_id and library_id not in library_ids:
                 library_ids.append(library_id)
-        # 开始刷新媒体库
+        #  Start refreshing the media library
         if "/" in library_ids:
             return self.refresh_root_library()
         for library_id in library_ids:
             if library_id != "/":
                 return self.__refresh_emby_library_by_id(library_id)
-        logger.info(f"Emby媒体库刷新完成")
+        logger.info(f"Emby Media library refresh complete")
 
     def __get_emby_library_id_by_item(self, item: schemas.RefreshMediaItem) -> Optional[str]:
         """
-        根据媒体信息查询在哪个媒体库，返回要刷新的位置的ID
+        Search in which media library according to media information， Returns the position of theID
         :param item: {title, year, type, category, target_path}
         """
         if not item.title or not item.year or not item.type:
@@ -465,36 +465,36 @@ class Emby(metaclass=Singleton):
         if item.type != MediaType.MOVIE.value:
             item_id = self.__get_emby_series_id_by_name(item.title, item.year)
             if item_id:
-                # 存在电视剧，则直接刷新这个电视剧就行
+                #  Presence tv series， Then just refresh the tv show.
                 return item_id
         else:
             if self.get_movies(item.title, item.year):
-                # 已存在，不用刷新
+                #  Pre-existing， No need to refresh.
                 return None
-        # 查找需要刷新的媒体库ID
+        #  Find media libraries that need to be refreshedID
         item_path = Path(item.target_path)
-        # 匹配子目录
+        #  Matching subdirectories
         for folder in self.folders:
             for subfolder in folder.get("SubFolders"):
                 try:
-                    # 匹配子目录
+                    #  Matching subdirectories
                     subfolder_path = Path(subfolder.get("Path"))
                     if item_path.is_relative_to(subfolder_path):
                         return folder.get("Id")
                 except Exception as err:
                     print(str(err))
-        # 如果找不到，只要路径中有分类目录名就命中
+        #  If you can't find， Hits as long as there is a category name in the path
         for folder in self.folders:
             for subfolder in folder.get("SubFolders"):
                 if subfolder.get("Path") and re.search(r"[/\\]%s" % item.category,
                                                        subfolder.get("Path")):
                     return folder.get("Id")
-        # 刷新根目录
+        #  Refresh the root directory
         return "/"
 
     def get_iteminfo(self, itemid: str) -> Optional[schemas.MediaServerItem]:
         """
-        获取单个项目详情
+        Get individual program details
         """
         if not itemid:
             return None
@@ -520,12 +520,12 @@ class Emby(metaclass=Singleton):
                     path=item.get("Path")
                 )
         except Exception as e:
-            logger.error(f"连接Items/Id出错：" + str(e))
+            logger.error(f" GroutItems/Id Make a mistake：" + str(e))
         return None
 
     def get_items(self, parent: str) -> Generator:
         """
-        获取媒体服务器所有媒体库列表
+        Get a list of all media libraries on the media server
         """
         if not parent:
             yield None
@@ -545,15 +545,15 @@ class Emby(metaclass=Singleton):
                         for item in self.get_items(parent=result.get('Id')):
                             yield item
         except Exception as e:
-            logger.error(f"连接Users/Items出错：" + str(e))
+            logger.error(f" GroutUsers/Items Make a mistake：" + str(e))
         yield None
 
     def get_webhook_message(self, form: any, args: dict) -> Optional[schemas.WebhookEventInfo]:
         """
-        解析Emby Webhook报文
-        电影：
+        AnalyzeEmby Webhook Telegram
+        Cinematic：
         {
-          "Title": "admin 在 Microsoft Edge Windows 上停止播放 蜘蛛侠：纵横宇宙",
+          "Title": "admin  Exist Microsoft Edge Windows  Stop playback on  Spiderman： Criss-cross the universe",
           "Date": "2023-08-19T00:49:07.8523469Z",
           "Event": "playback.stop",
           "User": {
@@ -561,13 +561,13 @@ class Emby(metaclass=Singleton):
             "Id": "e6a9dd89fd954d689870e7e0e3e72947"
           },
           "Item": {
-            "Name": "蜘蛛侠：纵横宇宙",
+            "Name": " Spiderman： Criss-cross the universe",
             "OriginalTitle": "Spider-Man: Across the Spider-Verse",
             "ServerId": "f40a5bd0c6b64051bdbed00580fa1118",
             "Id": "240270",
             "DateCreated": "2023-06-21T21:01:27.0000000Z",
             "Container": "mp4",
-            "SortName": "蜘蛛侠：纵横宇宙",
+            "SortName": " Spiderman： Criss-cross the universe",
             "PremiereDate": "2023-05-30T16:00:00.0000000Z",
             "ExternalUrls": [
               {
@@ -583,20 +583,20 @@ class Emby(metaclass=Singleton):
                 "Url": "https://trakt.tv/search/tmdb/569094?id_type=movie"
               }
             ],
-            "Path": "\\\\10.10.10.10\\Video\\电影\\动画电影\\蜘蛛侠：纵横宇宙 (2023)\\蜘蛛侠：纵横宇宙 (2023).mp4",
+            "Path": "\\\\10.10.10.10\\Video\\ Cinematic\\ Animated movie\\ Spiderman： Criss-cross the universe (2023)\\ Spiderman： Criss-cross the universe (2023).mp4",
             "OfficialRating": "PG",
-            "Overview": "讲述了新生代蜘蛛侠迈尔斯（沙梅克·摩尔 Shameik Moore 配音）携手蜘蛛格温（海莉·斯坦菲尔德 Hailee Steinfeld 配音），穿越多元宇宙踏上更宏大的冒险征程的故事。面临每个蜘蛛侠都会失去至亲的宿命，迈尔斯誓言打破命运魔咒，找到属于自己的英雄之路。而这个决定和蜘蛛侠2099（奥斯卡·伊萨克 Oscar Is aac 配音）所领军的蜘蛛联盟产生了极大冲突，一场以一敌百的蜘蛛侠大内战即将拉响！",
+            "Overview": " It tells the story of the new generation of spider-man, miles（ Shameik (name)· Moore or moor (name) Shameik Moore  Dubbing (filmmaking)） Together with spider gwen.（ Hayley· Stanfield (name) Hailee Steinfeld  Dubbing (filmmaking)）， The story of a journey through the multiverse on a larger adventure。 Facing the fate of every spider-man who has lost a loved one.， Miles vows to break fate's spell， Find your own path to heroism。 And that decision and spider-man2099（ Oscar· Isaac Oscar Is aac  Dubbing (filmmaking)） The spider alliance, which he leads, is in great conflict.， A great spider-man civil war of one against 100 is about to begin.！",
             "Taglines": [],
             "Genres": [
-              "动作",
-              "冒险",
-              "动画",
-              "科幻"
+              " Movements",
+              " Take chances",
+              " Anime",
+              " Sci-fi"
             ],
             "CommunityRating": 8.7,
             "RunTimeTicks": 80439590000,
             "Size": 3170164641,
-            "FileName": "蜘蛛侠：纵横宇宙 (2023).mp4",
+            "FileName": " Spiderman： Criss-cross the universe (2023).mp4",
             "Bitrate": 3152840,
             "PlayAccess": "Full",
             "ProductionYear": 2023,
@@ -648,19 +648,19 @@ class Emby(metaclass=Singleton):
             ],
             "GenreItems": [
               {
-                "Name": "动作",
+                "Name": " Movements",
                 "Id": 767
               },
               {
-                "Name": "冒险",
+                "Name": " Take chances",
                 "Id": 818
               },
               {
-                "Name": "动画",
+                "Name": " Anime",
                 "Id": 1382
               },
               {
-                "Name": "科幻",
+                "Name": " Sci-fi",
                 "Id": 709
               }
             ],
@@ -702,9 +702,9 @@ class Emby(metaclass=Singleton):
           }
         }
 
-        电视剧：
+        Dramas：
         {
-          "Title": "admin 在 Microsoft Edge Windows 上开始播放 长风渡 - S1, Ep11 - 第 11 集",
+          "Title": "admin  Exist Microsoft Edge Windows  Start playing on  Lit. ferry across the long wind - S1, Ep11 -  (prefix indicating ordinal number, e.g. first, number two etc) 11  Classifier for sections of a tv series e.g. episode",
           "Date": "2023-08-19T00:52:20.5200050Z",
           "Event": "playback.start",
           "User": {
@@ -712,12 +712,12 @@ class Emby(metaclass=Singleton):
             "Id": "e6a9dd89fd954d689870e7e0e3e72947"
           },
           "Item": {
-            "Name": "第 11 集",
+            "Name": " (prefix indicating ordinal number, e.g. first, number two etc) 11  Classifier for sections of a tv series e.g. episode",
             "ServerId": "f40a5bd0c6b64051bdbed00580fa1118",
             "Id": "240252",
             "DateCreated": "2023-06-21T10:51:06.0000000Z",
             "Container": "mp4",
-            "SortName": "第 11 集",
+            "SortName": " (prefix indicating ordinal number, e.g. first, number two etc) 11  Classifier for sections of a tv series e.g. episode",
             "PremiereDate": "2023-06-20T16:00:00.0000000Z",
             "ExternalUrls": [
               {
@@ -725,12 +725,12 @@ class Emby(metaclass=Singleton):
                 "Url": "https://trakt.tv/search/tmdb/4533239?id_type=episode"
               }
             ],
-            "Path": "\\\\10.10.10.10\\Video\\电视剧\\国产剧\\长风渡 (2023)\\Season 1\\长风渡 - S01E11 - 第 11 集.mp4",
+            "Path": "\\\\10.10.10.10\\Video\\ Dramas\\ Nationalized drama\\ Lit. ferry across the long wind (2023)\\Season 1\\ Lit. ferry across the long wind - S01E11 -  (prefix indicating ordinal number, e.g. first, number two etc) 11  Classifier for sections of a tv series e.g. episode.mp4",
             "Taglines": [],
             "Genres": [],
             "RunTimeTicks": 28021450000,
             "Size": 707122056,
-            "FileName": "长风渡 - S01E11 - 第 11 集.mp4",
+            "FileName": " Lit. ferry across the long wind - S01E11 -  (prefix indicating ordinal number, e.g. first, number two etc) 11  Classifier for sections of a tv series e.g. episode.mp4",
             "Bitrate": 2018802,
             "PlayAccess": "Full",
             "ProductionYear": 2023,
@@ -751,12 +751,12 @@ class Emby(metaclass=Singleton):
             "ParentBackdropImageTags": [
               "7dd568c67721c1f184b281001ced2f8e"
             ],
-            "SeriesName": "长风渡",
+            "SeriesName": " Lit. ferry across the long wind",
             "SeriesId": "240202",
             "SeasonId": "240203",
             "PrimaryImageAspectRatio": 2.4,
             "SeriesPrimaryImageTag": "e91c822173e9bcbf7a0efa7d1c16f6bd",
-            "SeasonName": "季 1",
+            "SeasonName": " Classifier for seasonal crop yield or seasons of a tv series 1",
             "ImageTags": {
               "Primary": "d6bf1d76150cd86fdff746e4353569ee"
             },
@@ -795,12 +795,12 @@ class Emby(metaclass=Singleton):
                 result = json.dumps(dict(args))
             message = json.loads(result)
         except Exception as e:
-            logger.debug(f"解析emby webhook报文出错：" + str(e))
+            logger.debug(f" Analyzeemby webhook Error in telegram：" + str(e))
             return None
         eventType = message.get('Event')
         if not eventType:
             return None
-        logger.info(f"接收到emby webhook：{message}")
+        logger.info(f" Receiveemby webhook：{message}")
         eventItem = schemas.WebhookEventInfo(event=eventType, channel="emby")
         if message.get('Item'):
             if message.get('Item', {}).get('Type') == 'Episode':
@@ -857,9 +857,9 @@ class Emby(metaclass=Singleton):
             eventItem.season_id = message.get("season_id")
             eventItem.episode_id = message.get("episode_id")
 
-        # 获取消息图片
+        #  Get message image
         if eventItem.item_id:
-            # 根据返回的item_id去调用媒体服务器获取
+            #  Based on the returneditem_id Go call the media server to get the
             eventItem.image_url = self.get_remote_image_by_id(item_id=eventItem.item_id,
                                                               image_type="Backdrop")
 
@@ -867,8 +867,8 @@ class Emby(metaclass=Singleton):
 
     def get_data(self, url: str) -> Optional[Response]:
         """
-        自定义URL从媒体服务器获取数据，其中[HOST]、[APIKEY]、[USER]会被替换成实际的值
-        :param url: 请求地址
+        CustomizableURL Getting data from the media server， Included among these[HOST]、[APIKEY]、[USER] Will be replaced with the actual value
+        :param url:  Request address
         """
         if not self._host or not self._apikey:
             return None
@@ -878,15 +878,15 @@ class Emby(metaclass=Singleton):
         try:
             return RequestUtils(content_type="application/json").get_res(url=url)
         except Exception as e:
-            logger.error(f"连接Emby出错：" + str(e))
+            logger.error(f" GroutEmby Make a mistake：" + str(e))
             return None
 
     def post_data(self, url: str, data: str = None, headers: dict = None) -> Optional[Response]:
         """
-        自定义URL从媒体服务器获取数据，其中[HOST]、[APIKEY]、[USER]会被替换成实际的值
-        :param url: 请求地址
-        :param data: 请求数据
-        :param headers: 请求头
+        CustomizableURL Getting data from the media server， Included among these[HOST]、[APIKEY]、[USER] Will be replaced with the actual value
+        :param url:  Request address
+        :param data:  Request data
+        :param headers:  Request header
         """
         if not self._host or not self._apikey:
             return None
@@ -898,5 +898,5 @@ class Emby(metaclass=Singleton):
                 headers=headers,
             ).post_res(url=url, data=data)
         except Exception as e:
-            logger.error(f"连接Emby出错：" + str(e))
+            logger.error(f" GroutEmby Make a mistake：" + str(e))
             return None

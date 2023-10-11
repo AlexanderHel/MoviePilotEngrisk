@@ -9,12 +9,12 @@ from app.utils.singleton import Singleton
 
 class ModuleManager(metaclass=Singleton):
     """
-    模块管理器
+    Module manager
     """
 
-    # 模块列表
+    #  Module list
     _modules: dict = {}
-    # 运行态模块列表
+    #  List of runtime modules
     _running_modules: dict = {}
 
     def __init__(self):
@@ -22,9 +22,9 @@ class ModuleManager(metaclass=Singleton):
 
     def load_modules(self):
         """
-        加载所有模块
+        Load all modules
         """
-        # 扫描模块目录
+        #  Scanning module catalog
         modules = ModuleHelper.load(
             "app.modules",
             filter_func=lambda _, obj: hasattr(obj, 'init_module') and hasattr(obj, 'init_setting')
@@ -34,18 +34,18 @@ class ModuleManager(metaclass=Singleton):
         for module in modules:
             module_id = module.__name__
             self._modules[module_id] = module
-            # 生成实例
+            #  Generating examples
             _module = module()
-            # 初始化模块
+            #  Initialization module
             if self.check_setting(_module.init_setting()):
-                # 通过模板开关控制加载
+                #  Load control via template switches
                 _module.init_module()
                 self._running_modules[module_id] = _module
                 logger.info(f"Moudle Loaded：{module_id}")
 
     def stop(self):
         """
-        停止所有模块
+        Stop all modules
         """
         for _, module in self._running_modules.items():
             if hasattr(module, "stop"):
@@ -54,7 +54,7 @@ class ModuleManager(metaclass=Singleton):
     @staticmethod
     def check_setting(setting: Optional[tuple]) -> bool:
         """
-        检查开关是否己打开，开关使用,分隔多个值，符合其中即代表开启
+        Check that the switch is turned on.， Switch use, Separate multiple values， Matching one of these means it's on.
         """
         if not setting:
             return True
@@ -67,7 +67,7 @@ class ModuleManager(metaclass=Singleton):
 
     def get_modules(self, method: str) -> Generator:
         """
-        获取实现了同一方法的模块列表
+        Get a list of modules that implement the same method
         """
         if not self._running_modules:
             return []

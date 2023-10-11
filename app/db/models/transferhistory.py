@@ -8,22 +8,22 @@ from app.db.models import Base
 
 class TransferHistory(Base):
     """
-    转移历史记录
+    Transfer history
     """
     id = Column(Integer, Sequence('id'), primary_key=True, index=True)
-    # 源目录
+    #  Source catalog
     src = Column(String, index=True)
-    # 目标目录
+    #  Target catalog
     dest = Column(String)
-    # 转移模式 move/copy/link...
+    #  Transfer mode move/copy/link...
     mode = Column(String)
-    # 类型 电影/电视剧
+    #  Typology  Cinematic/ Dramas
     type = Column(String)
-    # 二级分类
+    #  Secondary classification
     category = Column(String)
-    # 标题
+    #  Caption
     title = Column(String, index=True)
-    # 年份
+    #  Particular year
     year = Column(String)
     tmdbid = Column(Integer, index=True)
     imdbid = Column(String)
@@ -33,17 +33,17 @@ class TransferHistory(Base):
     seasons = Column(String)
     # Exx
     episodes = Column(String)
-    # 海报
+    #  Playbill
     image = Column(String)
-    # 下载器hash
+    #  Downloaderhash
     download_hash = Column(String, index=True)
-    # 转移成功状态
+    #  Transfer success status
     status = Column(Boolean(), default=True)
-    # 转移失败信息
+    #  Transfer failure message
     errmsg = Column(String)
-    # 时间
+    #  Timing
     date = Column(String, index=True)
-    # 文件清单，以JSON存储
+    #  List of documents， In order toJSON Stockpile
     files = Column(String)
 
     @staticmethod
@@ -72,7 +72,7 @@ class TransferHistory(Base):
     @staticmethod
     def statistic(db: Session, days: int = 7):
         """
-        统计最近days天的下载历史数量，按日期分组返回每日数量
+        Statistical updatedays Days of download history， Return daily quantities grouped by date
         """
         sub_query = db.query(func.substr(TransferHistory.date, 1, 10).label('date'),
                              TransferHistory.id.label('id')).filter(
@@ -92,55 +92,55 @@ class TransferHistory(Base):
     def list_by(db: Session, mtype: str = None, title: str = None, year: str = None, season: str = None,
                 episode: str = None, tmdbid: int = None, dest: str = None):
         """
-        据tmdbid、season、season_episode查询转移记录
-        tmdbid + mtype 或 title + year 必输
+        Act in accordance withtmdbid、season、season_episode Access to transfer records
+        tmdbid + mtype  Maybe title + year  Must lose
         """
-        # TMDBID + 类型
+        # TMDBID +  Typology
         if tmdbid and mtype:
-            # 电视剧某季某集
+            #  A certain season of a certain episode of a certain tv show
             if season and episode:
                 return db.query(TransferHistory).filter(TransferHistory.tmdbid == tmdbid,
                                                         TransferHistory.type == mtype,
                                                         TransferHistory.seasons == season,
                                                         TransferHistory.episodes == episode,
                                                         TransferHistory.dest == dest).all()
-            # 电视剧某季
+            #  A certain season of a tv series
             elif season:
                 return db.query(TransferHistory).filter(TransferHistory.tmdbid == tmdbid,
                                                         TransferHistory.type == mtype,
                                                         TransferHistory.seasons == season).all()
             else:
                 if dest:
-                    # 电影
+                    #  Cinematic
                     return db.query(TransferHistory).filter(TransferHistory.tmdbid == tmdbid,
                                                             TransferHistory.type == mtype,
                                                             TransferHistory.dest == dest).all()
                 else:
-                    # 电视剧所有季集
+                    #  All seasons of tv series
                     return db.query(TransferHistory).filter(TransferHistory.tmdbid == tmdbid,
                                                             TransferHistory.type == mtype).all()
-        # 标题 + 年份
+        #  Caption + 年份
         elif title and year:
-            # 电视剧某季某集
+            #  A certain season of a certain episode of a certain tv show
             if season and episode:
                 return db.query(TransferHistory).filter(TransferHistory.title == title,
                                                         TransferHistory.year == year,
                                                         TransferHistory.seasons == season,
                                                         TransferHistory.episodes == episode,
                                                         TransferHistory.dest == dest).all()
-            # 电视剧某季
+            #  A certain season of a tv series
             elif season:
                 return db.query(TransferHistory).filter(TransferHistory.title == title,
                                                         TransferHistory.year == year,
                                                         TransferHistory.seasons == season).all()
             else:
                 if dest:
-                    # 电影
+                    #  Cinematic
                     return db.query(TransferHistory).filter(TransferHistory.title == title,
                                                             TransferHistory.year == year,
                                                             TransferHistory.dest == dest).all()
                 else:
-                    # 电视剧所有季集
+                    #  All seasons of tv series
                     return db.query(TransferHistory).filter(TransferHistory.title == title,
                                                             TransferHistory.year == year).all()
         return []
@@ -148,7 +148,7 @@ class TransferHistory(Base):
     @staticmethod
     def get_by_type_tmdbid(db: Session, mtype: str = None, tmdbid: int = None):
         """
-        据tmdbid、type查询转移记录
+        Act in accordance withtmdbid、type Access to transfer records
         """
         return db.query(TransferHistory).filter(TransferHistory.tmdbid == tmdbid,
                                                 TransferHistory.type == mtype).first()

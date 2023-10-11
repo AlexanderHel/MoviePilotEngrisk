@@ -24,39 +24,39 @@ lock = threading.Lock()
 
 
 class BrushFlow(_PluginBase):
-    # 插件名称
-    plugin_name = "站点刷流"
-    # 插件描述
-    plugin_desc = "自动托管刷流，将会提高对应站点的访问频率。"
-    # 插件图标
+    #  Plug-in name
+    plugin_name = " Site brush flow"
+    #  Plugin description
+    plugin_desc = " Automatically hosted brush streams， Will increase the frequency of visits to the corresponding site。"
+    #  Plug-in icons
     plugin_icon = "brush.jpg"
-    # 主题色
+    #  Theme color
     plugin_color = "#FFD54E"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "jxxghp"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/jxxghp"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "brushflow_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 21
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 2
 
-    # 私有属性
+    #  Private property
     siteshelper = None
     siteoper = None
     torrents = None
     sites = None
     qb = None
     tr = None
-    # 添加种子定时
+    #  Add seed timing
     _cron = 10
-    # 检查种子定时
+    #  Check seed timing
     _check_interval = 5
-    # 退出事件
+    #  Logout event
     _event = Event()
     _scheduler = None
     _enabled = False
@@ -117,144 +117,144 @@ class BrushFlow(_PluginBase):
             self._save_path = config.get("save_path")
             self._clear_task = config.get("clear_task")
 
-            # 过滤掉已删除的站点
+            #  Filter out deleted sites
             self._brushsites = [site.get("id") for site in self.sites.get_indexers() if
                                 not site.get("public") and site.get("id") in self._brushsites]
 
-            # 保存配置
+            #  Save configuration
             self.__update_config()
 
             if self._clear_task:
-                # 清除统计数据
+                #  Clearing statistics
                 self.save_data("statistic", {})
-                # 清除种子记录
+                #  Clearing seed records
                 self.save_data("torrents", {})
-                # 关闭一次性开关
+                #  Turn off the disposable switch
                 self._clear_task = False
                 self.__update_config()
 
-            # 停止现有任务
+            #  Discontinuation of existing mandates
             self.stop_service()
 
-            # 启动定时任务 & 立即运行一次
+            #  Starting a timed task &  Run one immediately
             if self.get_state() or self._onlyonce:
                 self.qb = Qbittorrent()
                 self.tr = Transmission()
-                # 检查配置
+                #  Check configuration
                 if self._downloader == "qbittorrent":
                     if self.qb.is_inactive():
-                        logger.error("站点刷流任务出错：Qbittorrent未连接")
-                        self.systemmessage.put("站点刷流任务出错：Qbittorrent未连接")
+                        logger.error(" Error in site scrubbing task：Qbittorrent Unconnected")
+                        self.systemmessage.put(" Error in site scrubbing task：Qbittorrent Unconnected")
                         return
                 elif self._downloader == "transmission":
                     if self.tr.is_inactive():
-                        logger.error("站点刷流任务出错：Transmission未连接")
-                        self.systemmessage.put("站点刷流任务出错：Transmission未连接")
+                        logger.error(" Error in site scrubbing task：Transmission Unconnected")
+                        self.systemmessage.put(" Error in site scrubbing task：Transmission Unconnected")
                         return
                 if self._disksize and not StringUtils.is_number(self._disksize):
-                    logger.error(f"站点刷流任务出错，保种体积设置错误：{self._disksize}")
-                    self.systemmessage.put(f"站点刷流任务出错，保种体积设置错误：{self._disksize}")
+                    logger.error(f" Error in site scrubbing task， Incorrect setting of preservation volume：{self._disksize}")
+                    self.systemmessage.put(f" Error in site scrubbing task， Incorrect setting of preservation volume：{self._disksize}")
                     self._disksize = 0
                     return
                 if self._maxupspeed and not StringUtils.is_number(self._maxupspeed):
-                    logger.error(f"站点刷流任务出错，总上传带宽设置错误：{self._maxupspeed}")
-                    self.systemmessage.put(f"站点刷流任务出错，总上传带宽设置错误：{self._maxupspeed}")
+                    logger.error(f" Error in site scrubbing task， The total upload bandwidth is set incorrectly：{self._maxupspeed}")
+                    self.systemmessage.put(f" Error in site scrubbing task， The total upload bandwidth is set incorrectly：{self._maxupspeed}")
                     self._maxupspeed = 0
                     return
                 if self._maxdlspeed and not StringUtils.is_number(self._maxdlspeed):
-                    logger.error(f"站点刷流任务出错，总下载带宽设置错误：{self._maxdlspeed}")
-                    self.systemmessage.put(f"站点刷流任务出错，总下载带宽设置错误：{self._maxdlspeed}")
+                    logger.error(f" Error in site scrubbing task， The total download bandwidth is set incorrectly：{self._maxdlspeed}")
+                    self.systemmessage.put(f" Error in site scrubbing task， The total download bandwidth is set incorrectly：{self._maxdlspeed}")
                     self._maxdlspeed = 0
                     return
                 if self._maxdlcount and not StringUtils.is_number(self._maxdlcount):
-                    logger.error(f"站点刷流任务出错，同时下载任务数设置错误：{self._maxdlcount}")
-                    self.systemmessage.put(f"站点刷流任务出错，同时下载任务数设置错误：{self._maxdlcount}")
+                    logger.error(f" Error in site scrubbing task， Error in setting the number of simultaneous downloads：{self._maxdlcount}")
+                    self.systemmessage.put(f" Error in site scrubbing task， Error in setting the number of simultaneous downloads：{self._maxdlcount}")
                     self._maxdlcount = 0
                     return
                 if self._size:
                     size = str(self._size).split("-")[0]
                     if not StringUtils.is_number(size):
-                        logger.error(f"站点刷流任务出错，种子大小设置错误：{self._size}")
-                        self.systemmessage.put(f"站点刷流任务出错，种子大小设置错误：{self._size}")
+                        logger.error(f" Error in site scrubbing task， Seed size setting error：{self._size}")
+                        self.systemmessage.put(f" Error in site scrubbing task， Seed size setting error：{self._size}")
                         self._size = 0
                         return
                 if self._seeder:
                     seeder = str(self._seeder).split("-")[0]
                     if not StringUtils.is_number(seeder):
-                        logger.error(f"站点刷流任务出错，做种人数设置错误：{self._seeder}")
-                        self.systemmessage.put(f"站点刷流任务出错，做种人数设置错误：{self._seeder}")
+                        logger.error(f" Error in site scrubbing task， Incorrect setting of the number of breeders：{self._seeder}")
+                        self.systemmessage.put(f" Error in site scrubbing task， Incorrect setting of the number of breeders：{self._seeder}")
                         self._seeder = 0
                         return
                 if self._seed_time and not StringUtils.is_number(self._seed_time):
-                    logger.error(f"站点刷流任务出错，做种时间设置错误：{self._seed_time}")
-                    self.systemmessage.put(f"站点刷流任务出错，做种时间设置错误：{self._seed_time}")
+                    logger.error(f" Error in site scrubbing task， Incorrect setting of seeding time：{self._seed_time}")
+                    self.systemmessage.put(f" Error in site scrubbing task， Incorrect setting of seeding time：{self._seed_time}")
                     self._seed_time = 0
                     return
                 if self._seed_ratio and not StringUtils.is_number(self._seed_ratio):
-                    logger.error(f"站点刷流任务出错，分享率设置错误：{self._seed_ratio}")
-                    self.systemmessage.put(f"站点刷流任务出错，分享率设置错误：{self._seed_ratio}")
+                    logger.error(f" Error in site scrubbing task， Incorrect sharing rate setting：{self._seed_ratio}")
+                    self.systemmessage.put(f" Error in site scrubbing task， Incorrect sharing rate setting：{self._seed_ratio}")
                     self._seed_ratio = 0
                     return
                 if self._seed_size and not StringUtils.is_number(self._seed_size):
-                    logger.error(f"站点刷流任务出错，上传量设置错误：{self._seed_size}")
-                    self.systemmessage.put(f"站点刷流任务出错，上传量设置错误：{self._seed_size}")
+                    logger.error(f" Error in site scrubbing task， Upload volume setting error：{self._seed_size}")
+                    self.systemmessage.put(f" Error in site scrubbing task， Upload volume setting error：{self._seed_size}")
                     self._seed_size = 0
                     return
                 if self._download_time and not StringUtils.is_number(self._download_time):
-                    logger.error(f"站点刷流任务出错，下载超时时间设置错误：{self._download_time}")
-                    self.systemmessage.put(f"站点刷流任务出错，下载超时时间设置错误：{self._download_time}")
+                    logger.error(f" Error in site scrubbing task， Download timeout set incorrectly：{self._download_time}")
+                    self.systemmessage.put(f" Error in site scrubbing task， Download timeout set incorrectly：{self._download_time}")
                     self._download_time = 0
                     return
                 if self._seed_avgspeed and not StringUtils.is_number(self._seed_avgspeed):
-                    logger.error(f"站点刷流任务出错，平均上传速度设置错误：{self._seed_avgspeed}")
-                    self.systemmessage.put(f"站点刷流任务出错，平均上传速度设置错误：{self._seed_avgspeed}")
+                    logger.error(f" Error in site scrubbing task， Average upload speed set incorrectly：{self._seed_avgspeed}")
+                    self.systemmessage.put(f" Error in site scrubbing task， Average upload speed set incorrectly：{self._seed_avgspeed}")
                     self._seed_avgspeed = 0
                     return
                 if self._seed_inactivetime and not StringUtils.is_number(self._seed_inactivetime):
-                    logger.error(f"站点刷流任务出错，未活动时间设置错误：{self._seed_inactivetime}")
-                    self.systemmessage.put(f"站点刷流任务出错，未活动时间设置错误：{self._seed_inactivetime}")
+                    logger.error(f" Error in site scrubbing task， Inactive time setup error：{self._seed_inactivetime}")
+                    self.systemmessage.put(f" Error in site scrubbing task， Inactive time setup error：{self._seed_inactivetime}")
                     self._seed_inactivetime = 0
                     return
                 if self._up_speed and not StringUtils.is_number(self._up_speed):
-                    logger.error(f"站点刷流任务出错，单任务上传限速设置错误：{self._up_speed}")
-                    self.systemmessage.put(f"站点刷流任务出错，单任务上传限速设置错误：{self._up_speed}")
+                    logger.error(f" Error in site scrubbing task， Single task upload speed limit setting error：{self._up_speed}")
+                    self.systemmessage.put(f" Error in site scrubbing task， Single task upload speed limit setting error：{self._up_speed}")
                     self._up_speed = 0
                     return
                 if self._dl_speed and not StringUtils.is_number(self._dl_speed):
-                    logger.error(f"站点刷流任务出错，单任务下载限速设置错误：{self._dl_speed}")
-                    self.systemmessage.put(f"站点刷流任务出错，单任务下载限速设置错误：{self._dl_speed}")
+                    logger.error(f" Error in site scrubbing task， Error in setting speed limit for single-task downloads：{self._dl_speed}")
+                    self.systemmessage.put(f" Error in site scrubbing task， Error in setting speed limit for single-task downloads：{self._dl_speed}")
                     self._dl_speed = 0
                     return
 
-                # 检查必要条件
+                #  Checking the necessary conditions
                 if not self._brushsites or not self._downloader:
                     return
 
-                # 启动任务
+                #  Initiate tasks
                 self._scheduler = BackgroundScheduler(timezone=settings.TZ)
-                logger.info(f"站点刷流服务启动，周期：{self._cron}分钟")
+                logger.info(f" Site scrubbing service activated， Cyclicality：{self._cron} Minutes")
                 try:
                     self._scheduler.add_job(self.brush, 'interval', minutes=self._cron)
                 except Exception as e:
-                    logger.error(f"站点刷流服务启动失败：{e}")
-                    self.systemmessage.put(f"站点刷流服务启动失败：{e}")
+                    logger.error(f" Site scrubbing service failed to start：{e}")
+                    self.systemmessage.put(f" Site scrubbing service failed to start：{e}")
                     return
                 if self._onlyonce:
-                    logger.info(f"站点刷流服务启动，立即运行一次")
+                    logger.info(f" Site scrubbing service activated， Run one immediately")
                     self._scheduler.add_job(self.brush, 'date',
                                             run_date=datetime.now(
                                                 tz=pytz.timezone(settings.TZ)
                                             ) + timedelta(seconds=3),
-                                            name="站点刷流服务")
-                    # 关闭一次性开关
+                                            name=" Site streaming service")
+                    #  Turn off the disposable switch
                     self._onlyonce = False
                     self.__update_config()
                 if self._scheduler.get_jobs():
-                    # 增加检查任务
+                    #  Increased number of inspection missions
                     self._scheduler.add_job(self.check, 'interval',
                                             minutes=self._check_interval,
-                                            name="站点刷流检查服务")
-                    # 启动服务
+                                            name=" Site brush flow checking service")
+                    #  Starting services
                     self._scheduler.print_jobs()
                     self._scheduler.start()
 
@@ -270,9 +270,9 @@ class BrushFlow(_PluginBase):
 
     def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
         """
-        拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
+        Assembly plugin configuration page， Two pieces of data need to be returned：1、 Page configuration；2、 Data structure
         """
-        # 站点的可选项
+        #  Options for the site
         site_options = [{"title": site.get("name"), "value": site.get("id")}
                         for site in self.siteshelper.get_indexers()]
         return [
@@ -293,7 +293,7 @@ class BrushFlow(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'enabled',
-                                            'label': '启用插件',
+                                            'label': ' Enabling plug-ins',
                                         }
                                     }
                                 ]
@@ -309,7 +309,7 @@ class BrushFlow(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'notify',
-                                            'label': '发送通知',
+                                            'label': ' Send notification',
                                         }
                                     }
                                 ]
@@ -325,7 +325,7 @@ class BrushFlow(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'onlyonce',
-                                            'label': '立即运行一次',
+                                            'label': ' Run one immediately',
                                         }
                                     }
                                 ]
@@ -344,7 +344,7 @@ class BrushFlow(_PluginBase):
                                             'chips': True,
                                             'multiple': True,
                                             'model': 'brushsites',
-                                            'label': '刷流站点',
+                                            'label': ' Swipe site',
                                             'items': site_options
                                         }
                                     }
@@ -366,7 +366,7 @@ class BrushFlow(_PluginBase):
                                         'component': 'VSelect',
                                         'props': {
                                             'model': 'downloader',
-                                            'label': '下载器',
+                                            'label': ' Downloader',
                                             'items': [
                                                 {'title': 'Qbittorrent', 'value': 'qbittorrent'},
                                                 {'title': 'Transmission', 'value': 'transmission'}
@@ -386,8 +386,8 @@ class BrushFlow(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'disksize',
-                                            'label': '保种体积（GB）',
-                                            'placeholder': '达到后停止新增任务'
+                                            'label': ' Seed preservation volume（GB）',
+                                            'placeholder': ' Stop adding new tasks when reached'
                                         }
                                     }
                                 ]
@@ -403,11 +403,11 @@ class BrushFlow(_PluginBase):
                                         'component': 'VSelect',
                                         'props': {
                                             'model': 'freeleech',
-                                            'label': '促销',
+                                            'label': ' Promote',
                                             'items': [
-                                                {'title': '全部（包括普通）', 'value': ''},
-                                                {'title': '免费', 'value': 'free'},
-                                                {'title': '2X免费', 'value': '2xfree'},
+                                                {'title': ' Full（ Includes general）', 'value': ''},
+                                                {'title': ' Free (of charge)', 'value': 'free'},
+                                                {'title': '2X Free (of charge)', 'value': '2xfree'},
                                             ]
                                         }
                                     }
@@ -424,8 +424,8 @@ class BrushFlow(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'maxupspeed',
-                                            'label': '总上传带宽（KB/s）',
-                                            'placeholder': '达到后停止新增任务'
+                                            'label': ' Total upload bandwidth（KB/s）',
+                                            'placeholder': ' Stop adding new tasks when reached'
                                         }
                                     }
                                 ]
@@ -441,8 +441,8 @@ class BrushFlow(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'maxdlspeed',
-                                            'label': '总下载带宽（KB/s）',
-                                            'placeholder': '达到后停止新增任务'
+                                            'label': ' Total download bandwidth（KB/s）',
+                                            'placeholder': ' Stop adding new tasks when reached'
                                         }
                                     }
                                 ]
@@ -458,8 +458,8 @@ class BrushFlow(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'maxdlcount',
-                                            'label': '同时下载任务数',
-                                            'placeholder': '达到后停止新增任务'
+                                            'label': ' Number of simultaneous downloads',
+                                            'placeholder': ' Stop adding new tasks when reached'
                                         }
                                     }
                                 ]
@@ -475,8 +475,8 @@ class BrushFlow(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'include',
-                                            'label': '包含规则',
-                                            'placeholder': '支持正式表达式'
+                                            'label': ' Inclusion rules',
+                                            'placeholder': ' Support for formal expressions'
                                         }
                                     }
                                 ]
@@ -492,8 +492,8 @@ class BrushFlow(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'exclude',
-                                            'label': '排除规则',
-                                            'placeholder': '支持正式表达式'
+                                            'label': ' Exclusion rules',
+                                            'placeholder': ' Support for formal expressions'
                                         }
                                     }
                                 ]
@@ -509,8 +509,8 @@ class BrushFlow(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'size',
-                                            'label': '种子大小（GB）',
-                                            'placeholder': '如：5 或 5-10'
+                                            'label': ' Seed size（GB）',
+                                            'placeholder': ' As if：5  Maybe 5-10'
                                         }
                                     }
                                 ]
@@ -526,8 +526,8 @@ class BrushFlow(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'seeder',
-                                            'label': '做种人数',
-                                            'placeholder': '如：5 或 5-10'
+                                            'label': ' Number of vaccinations',
+                                            'placeholder': ' As if：5  Maybe 5-10'
                                         }
                                     }
                                 ]
@@ -543,8 +543,8 @@ class BrushFlow(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'pubtime',
-                                            'label': '发布时间（分钟）',
-                                            'placeholder': '如：5 或 5-10'
+                                            'label': ' Release time（ Minutes）',
+                                            'placeholder': ' As if：5  Maybe 5-10'
                                         }
                                     }
                                 ]
@@ -565,8 +565,8 @@ class BrushFlow(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'seed_time',
-                                            'label': '做种时间（小时）',
-                                            'placeholder': '达到后删除任务'
+                                            'label': ' Time of planting（ Hourly）',
+                                            'placeholder': ' Deletion of tasks after attainment'
                                         }
                                     }
                                 ]
@@ -582,8 +582,8 @@ class BrushFlow(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'seed_ratio',
-                                            'label': '分享率',
-                                            'placeholder': '达到后删除任务'
+                                            'label': ' Sharing rate',
+                                            'placeholder': ' Deletion of tasks after attainment'
                                         }
                                     }
                                 ]
@@ -599,8 +599,8 @@ class BrushFlow(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'seed_size',
-                                            'label': '上传量（GB）',
-                                            'placeholder': '达到后删除任务'
+                                            'label': ' Upload volume（GB）',
+                                            'placeholder': ' Deletion of tasks after attainment'
                                         }
                                     }
                                 ]
@@ -616,8 +616,8 @@ class BrushFlow(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'download_time',
-                                            'label': '下载超时时间（小时）',
-                                            'placeholder': '达到后删除任务'
+                                            'label': ' Download timeout（ Hourly）',
+                                            'placeholder': ' Deletion of tasks after attainment'
                                         }
                                     }
                                 ]
@@ -633,8 +633,8 @@ class BrushFlow(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'seed_avgspeed',
-                                            'label': '平均上传速度（KB/s）',
-                                            'placeholder': '低于时删除任务'
+                                            'label': ' Average upload speed（KB/s）',
+                                            'placeholder': ' Delete task if below'
                                         }
                                     }
                                 ]
@@ -650,8 +650,8 @@ class BrushFlow(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'seed_inactivetime',
-                                            'label': '未活动时间（分钟） ',
-                                            'placeholder': '超过时删除任务'
+                                            'label': ' Inactive time（ Minutes） ',
+                                            'placeholder': ' Delete tasks when exceeded'
                                         }
                                     }
                                 ]
@@ -672,8 +672,8 @@ class BrushFlow(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'up_speed',
-                                            'label': '单任务上传限速（KB/s）',
-                                            'placeholder': '种子上传限速'
+                                            'label': ' Single-task upload speed limit（KB/s）',
+                                            'placeholder': ' Seed upload speed limit'
                                         }
                                     }
                                 ]
@@ -689,8 +689,8 @@ class BrushFlow(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'dl_speed',
-                                            'label': '单任务下载限速（KB/s）',
-                                            'placeholder': '种子下载限速'
+                                            'label': ' Single-task download speed limit（KB/s）',
+                                            'placeholder': ' Speed limit for seed downloads'
                                         }
                                     }
                                 ]
@@ -706,8 +706,8 @@ class BrushFlow(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'save_path',
-                                            'label': '保存目录',
-                                            'placeholder': '留空自动'
+                                            'label': ' Save directory',
+                                            'placeholder': ' Leave blank spaces in writing'
                                         }
                                     }
                                 ]
@@ -728,7 +728,7 @@ class BrushFlow(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'clear_task',
-                                            'label': '清除统计数据',
+                                            'label': ' Clearing statistics',
                                         }
                                     }
                                 ]
@@ -746,9 +746,9 @@ class BrushFlow(_PluginBase):
         }
 
     def get_page(self) -> List[dict]:
-        # 种子明细
+        #  Seed breakdown
         data_list = self.get_data("torrents") or {}
-        # 统计数据
+        #  Statistical data
         stattistic_data: Dict[str, dict] = self.get_data("statistic") or {
             "count": 0,
             "deleted": 0,
@@ -759,7 +759,7 @@ class BrushFlow(_PluginBase):
             return [
                 {
                     'component': 'div',
-                    'text': '暂无数据',
+                    'text': ' No data available',
                     'props': {
                         'class': 'text-center',
                     }
@@ -767,15 +767,15 @@ class BrushFlow(_PluginBase):
             ]
         else:
             data_list = data_list.values()
-        # 总上传量格式化
+        #  Total uploads formatted
         total_upload = StringUtils.str_filesize(stattistic_data.get("uploaded") or 0)
-        # 总下载量格式化
+        #  Total downloads formatted
         total_download = StringUtils.str_filesize(stattistic_data.get("downloaded") or 0)
-        # 下载种子数
+        #  Number of seeds downloaded
         total_count = stattistic_data.get("count") or 0
-        # 删除种子数
+        #  Number of seeds deleted
         total_deleted = stattistic_data.get("deleted") or 0
-        # 种子数据明细
+        #  Breakdown of seed data
         torrent_trs = [
             {
                 'component': 'tr',
@@ -815,18 +815,18 @@ class BrushFlow(_PluginBase):
                         'props': {
                             'class': 'text-no-wrap'
                         },
-                        'text': "已删除" if data.get("deleted") else "正常"
+                        'text': " Deleted" if data.get("deleted") else " Normalcy"
                     }
                 ]
             } for data in data_list
         ]
 
-        # 拼装页面
+        #  Assembly page
         return [
             {
                 'component': 'VRow',
                 'content': [
-                    # 总上传量
+                    #  Total uploads
                     {
                         'component': 'VCol',
                         'props': {
@@ -871,7 +871,7 @@ class BrushFlow(_PluginBase):
                                                         'props': {
                                                             'class': 'text-caption'
                                                         },
-                                                        'text': '总上传量'
+                                                        'text': ' Total uploads'
                                                     },
                                                     {
                                                         'component': 'div',
@@ -896,7 +896,7 @@ class BrushFlow(_PluginBase):
                             },
                         ]
                     },
-                    # 总下载量
+                    #  Total downloads
                     {
                         'component': 'VCol',
                         'props': {
@@ -941,7 +941,7 @@ class BrushFlow(_PluginBase):
                                                         'props': {
                                                             'class': 'text-caption'
                                                         },
-                                                        'text': '总下载量'
+                                                        'text': ' Total downloads'
                                                     },
                                                     {
                                                         'component': 'div',
@@ -966,7 +966,7 @@ class BrushFlow(_PluginBase):
                             },
                         ]
                     },
-                    # 下载种子数
+                    #  Number of seeds downloaded
                     {
                         'component': 'VCol',
                         'props': {
@@ -1011,7 +1011,7 @@ class BrushFlow(_PluginBase):
                                                         'props': {
                                                             'class': 'text-caption'
                                                         },
-                                                        'text': '下载种子数'
+                                                        'text': ' Number of seeds downloaded'
                                                     },
                                                     {
                                                         'component': 'div',
@@ -1036,7 +1036,7 @@ class BrushFlow(_PluginBase):
                             },
                         ]
                     },
-                    # 删除种子数
+                    #  Number of seeds deleted
                     {
                         'component': 'VCol',
                         'props': {
@@ -1081,7 +1081,7 @@ class BrushFlow(_PluginBase):
                                                         'props': {
                                                             'class': 'text-caption'
                                                         },
-                                                        'text': '删除种子数'
+                                                        'text': ' Number of seeds deleted'
                                                     },
                                                     {
                                                         'component': 'div',
@@ -1106,7 +1106,7 @@ class BrushFlow(_PluginBase):
                             }
                         ]
                     },
-                    # 种子明细
+                    #  Seed breakdown
                     {
                         'component': 'VCol',
                         'props': {
@@ -1130,49 +1130,49 @@ class BrushFlow(_PluginBase):
                                                 'props': {
                                                     'class': 'text-start ps-4'
                                                 },
-                                                'text': '站点'
+                                                'text': ' Website'
                                             },
                                             {
                                                 'component': 'th',
                                                 'props': {
                                                     'class': 'text-start ps-4'
                                                 },
-                                                'text': '标题'
+                                                'text': ' Caption'
                                             },
                                             {
                                                 'component': 'th',
                                                 'props': {
                                                     'class': 'text-start ps-4'
                                                 },
-                                                'text': '大小'
+                                                'text': ' Adults and children'
                                             },
                                             {
                                                 'component': 'th',
                                                 'props': {
                                                     'class': 'text-start ps-4'
                                                 },
-                                                'text': '上传量'
+                                                'text': ' Upload volume'
                                             },
                                             {
                                                 'component': 'th',
                                                 'props': {
                                                     'class': 'text-start ps-4'
                                                 },
-                                                'text': '下载量'
+                                                'text': ' Downloads'
                                             },
                                             {
                                                 'component': 'th',
                                                 'props': {
                                                     'class': 'text-start ps-4'
                                                 },
-                                                'text': '分享率'
+                                                'text': ' Sharing rate'
                                             },
                                             {
                                                 'component': 'th',
                                                 'props': {
                                                     'class': 'text-start ps-4'
                                                 },
-                                                'text': '状态'
+                                                'text': ' State of affairs'
                                             }
                                         ]
                                     },
@@ -1190,7 +1190,7 @@ class BrushFlow(_PluginBase):
 
     def stop_service(self):
         """
-        退出插件
+        Exit plugin
         """
         try:
             if self._scheduler:
@@ -1205,7 +1205,7 @@ class BrushFlow(_PluginBase):
 
     def __update_config(self):
         """
-        更新配置
+        Updating the configuration
         """
         self.update_config({
             "onlyonce": self._onlyonce,
@@ -1237,60 +1237,60 @@ class BrushFlow(_PluginBase):
 
     def brush(self):
         """
-        执行刷流动作，添加下载任务
+        Implementation of the brush flow action， Add download tasks
         """
         if not self._brushsites or not self._downloader:
             return
 
         with lock:
-            logger.info(f"开始执行刷流任务 ...")
-            # 读取种子记录
+            logger.info(f" Beginning of the scrubbing task ...")
+            #  Read seed records
             task_info: Dict[str, dict] = self.get_data("torrents") or {}
             if task_info:
-                # 当前保种大小
+                #  Current insured size
                 torrents_size = sum([
                     task.get("size") or 0
                     for task in task_info.values() if not task.get("deleted")
                 ])
             else:
                 torrents_size = 0
-            # 读取统计数据
+            #  Read statistics
             statistic_info = self.get_data("statistic") or {
                 "count": 0,
                 "deleted": 0,
             }
-            # 处理所有站点
+            #  Processing of all sites
             for siteid in self._brushsites:
                 siteinfo = self.siteoper.get(siteid)
                 if not siteinfo:
-                    logger.warn(f"站点不存在：{siteid}")
+                    logger.warn(f" Site does not exist：{siteid}")
                     continue
-                logger.info(f"开始获取站点 {siteinfo.name} 的新种子 ...")
+                logger.info(f" Start acquiring sites {siteinfo.name}  New seed ...")
                 torrents = self.torrents.browse(domain=siteinfo.domain)
                 if not torrents:
-                    logger.info(f"站点 {siteinfo.name} 没有获取到种子")
+                    logger.info(f" Website {siteinfo.name}  No access to seeds")
                     continue
-                # 按pubdate降序排列
+                #  Check or refer topubdate Descending order
                 torrents.sort(key=lambda x: x.pubdate or '', reverse=True)
-                # 过滤种子
+                #  Filtering seeds
                 for torrent in torrents:
-                    # 控重
+                    #  Weight control
                     if f"{torrent.site_name}{torrent.title}" in [
                         f"{task.get('site_name')}{task.get('title')}" for task in task_info.values()
                     ]:
                         continue
-                    # 促销
+                    #  Promote
                     if self._freeleech and torrent.downloadvolumefactor != 0:
                         continue
                     if self._freeleech == "2xfree" and torrent.uploadvolumefactor != 2:
                         continue
-                    # 包含规则
+                    #  Inclusion rules
                     if self._include and not re.search(r"%s" % self._include, torrent.title, re.I):
                         continue
-                    # 排除规则
+                    #  Exclusion rules
                     if self._exclude and re.search(r"%s" % self._exclude, torrent.title, re.I):
                         continue
-                    # 种子大小（GB）
+                    #  Seed size（GB）
                     if self._size:
                         sizes = str(self._size).split("-")
                         begin_size = sizes[0]
@@ -1304,7 +1304,7 @@ class BrushFlow(_PluginBase):
                         elif begin_size and end_size \
                                 and not float(begin_size) * 1024 ** 3 <= torrent.size <= float(end_size) * 1024 ** 3:
                             continue
-                    # 做种人数
+                    #  Number of vaccinations
                     if self._seeder:
                         seeders = str(self._seeder).split("-")
                         begin_seeder = seeders[0]
@@ -1318,9 +1318,9 @@ class BrushFlow(_PluginBase):
                         elif begin_seeder and end_seeder \
                                 and not int(begin_seeder) <= torrent.seeders <= int(end_seeder):
                             continue
-                    # 计算发布时间，将字符串转换为时间
+                    #  Calculate release time， Converting strings to time
                     pubdate_minutes = self.__get_pubminutes(torrent.pubdate)
-                    # 发布时间（分钟）
+                    #  Release time（ Minutes）
                     if self._pubtime:
                         pubtimes = str(self._pubtime).split("-")
                         begin_pubtime = pubtimes[0]
@@ -1328,47 +1328,47 @@ class BrushFlow(_PluginBase):
                             end_pubtime = pubtimes[-1]
                         else:
                             end_pubtime = 0
-                        # 将种子发布日志转换为与当前时间的差
+                        #  Convert seed release logs to difference from current time
                         if begin_pubtime and not end_pubtime \
                                 and pubdate_minutes > int(begin_pubtime):
                             continue
                         elif begin_pubtime and end_pubtime \
                                 and not int(begin_pubtime) <= pubdate_minutes <= int(end_pubtime):
                             continue
-                    # 同时下载任务数
+                    #  Number of simultaneous downloads
                     downloads = self.__get_downloading_count()
                     if self._maxdlcount and downloads >= int(self._maxdlcount):
-                        logger.warn(f"当前同时下载任务数 {downloads} 已达到最大值 {self._maxdlcount}，停止新增任务")
+                        logger.warn(f" Current number of simultaneous downloads {downloads}  Maximum value reached {self._maxdlcount}， Discontinuation of additional mandates")
                         break
-                    # 获取下载器的下载信息
+                    #  Get download information from the downloader
                     downloader_info = self.__get_downloader_info()
                     if downloader_info:
                         current_upload_speed = downloader_info.upload_speed or 0
                         current_download_speed = downloader_info.download_speed or 0
-                        # 总上传带宽(KB/s)
+                        #  Total upload bandwidth(KB/s)
                         if self._maxupspeed \
                                 and current_upload_speed >= float(self._maxupspeed) * 1024:
-                            logger.warn(f"当前总上传带宽 {StringUtils.str_filesize(current_upload_speed)} "
-                                        f"已达到最大值 {self._maxupspeed} KB/s，暂时停止新增任务")
+                            logger.warn(f" Current total upload bandwidth {StringUtils.str_filesize(current_upload_speed)} "
+                                        f" Maximum value reached {self._maxupspeed} KB/s， Temporary suspension of additional mandates")
                             break
-                        # 总下载带宽(KB/s)
+                        #  Total download bandwidth(KB/s)
                         if self._maxdlspeed \
                                 and current_download_speed >= float(self._maxdlspeed) * 1024:
-                            logger.warn(f"当前总下载带宽 {StringUtils.str_filesize(current_download_speed)} "
-                                        f"已达到最大值 {self._maxdlspeed} KB/s，暂时停止新增任务")
+                            logger.warn(f" Current total download bandwidth {StringUtils.str_filesize(current_download_speed)} "
+                                        f" Maximum value reached {self._maxdlspeed} KB/s， Temporary suspension of additional mandates")
                             break
-                    # 保种体积（GB）
+                    #  Seed preservation volume（GB）
                     if self._disksize \
                             and (torrents_size + torrent.size) > float(self._disksize) * 1024 ** 3:
-                        logger.warn(f"当前做种体积 {StringUtils.str_filesize(torrents_size)} "
-                                    f"已超过保种体积 {self._disksize}，停止新增任务")
+                        logger.warn(f" Current seeding volume {StringUtils.str_filesize(torrents_size)} "
+                                    f" Has exceeded the preservation volume {self._disksize}， Discontinuation of additional mandates")
                         break
-                    # 添加下载任务
+                    #  Add download tasks
                     hash_string = self.__download(torrent=torrent)
                     if not hash_string:
-                        logger.warn(f"{torrent.title} 添加刷流任务失败！")
+                        logger.warn(f"{torrent.title}  Failed to add a streaming task！")
                         continue
-                    # 保存任务信息
+                    #  Saving task information
                     task_info[hash_string] = {
                         "site": siteinfo.id,
                         "site_name": siteinfo.name,
@@ -1380,21 +1380,21 @@ class BrushFlow(_PluginBase):
                         "uploaded": 0,
                         "deleted": False,
                     }
-                    # 统计数据
+                    #  Statistical data
                     torrents_size += torrent.size
                     statistic_info["count"] += 1
-                    # 发送消息
+                    #  Send a message
                     self.__send_add_message(torrent)
 
-            # 保存数据
+            #  Save data
             self.save_data("torrents", task_info)
-            # 保存统计数据
+            #  Save statistics
             self.save_data("statistic", statistic_info)
-            logger.info(f"刷流任务执行完成")
+            logger.info(f" Brush flow task execution completed")
 
     def check(self):
         """
-        定时检查，删除下载任务
+        Timing control， Delete download tasks
         {
             hash: {
                 site_name:
@@ -1406,42 +1406,42 @@ class BrushFlow(_PluginBase):
             return
 
         with lock:
-            logger.info(f"开始检查刷流下载任务 ...")
-            # 读取种子记录
+            logger.info(f" Start checking for swipe streaming download tasks ...")
+            #  Read seed records
             task_info: Dict[str, dict] = self.get_data("torrents") or {}
-            # 种子Hash
+            #  TorrentHash
             check_hashs = list(task_info.keys())
             if not task_info or not check_hashs:
-                logger.info(f"没有需要检查的刷流下载任务")
+                logger.info(f" There are no brush streaming download tasks that need to be checked")
                 return
-            logger.info(f"共有 {len(check_hashs)} 个任务正在刷流，开始检查任务状态")
-            # 获取下载器实例
+            logger.info(f" Have altogether {len(check_hashs)}  A mission is brushing the stream.， Start checking task status")
+            #  Get downloader example
             downloader = self.__get_downloader(self._downloader)
             if not downloader:
                 return
-            # 读取统计数据
+            #  Read statistics
             statistic_info = self.get_data("statistic") or {
                 "count": 0,
                 "deleted": 0,
                 "uploaded": 0,
                 "downloaded": 0
             }
-            # 获取下载器中的种子
+            #  Getting seeds from the downloader
             torrents, error = downloader.get_torrents(ids=check_hashs)
             if error:
-                logger.warn("连接下载器出错，将在下个时间周期重试")
+                logger.warn(" Error connecting to downloader， Will retry at next time cycle")
                 return
             if not torrents:
-                logger.warn(f"刷流任务在下载器中不存在，清除记录")
+                logger.warn(f" Swipe streaming task does not exist in the downloader， Clearing records")
                 self.save_data("hashs", {})
                 return
-            # 检查种子状态，判断是否要删种
+            #  Check seed status， Determine whether to delete seeds
             remove_torrents = []
             for torrent in torrents:
                 torrent_hash = self.__get_hash(torrent)
                 site_name = task_info.get(torrent_hash).get("site_name")
                 torrent_info = self.__get_torrent_info(torrent)
-                # 更新上传量、下载量
+                #  Update uploads、 Downloads
                 if not task_info.get(torrent_info.get("hash")):
                     task_info[torrent_hash] = {
                         "downloaded": torrent_info.get("downloaded"),
@@ -1452,103 +1452,103 @@ class BrushFlow(_PluginBase):
                     task_info[torrent_hash]["downloaded"] = torrent_info.get("downloaded")
                     task_info[torrent_hash]["uploaded"] = torrent_info.get("uploaded")
                     task_info[torrent_hash]["ratio"] = torrent_info.get("ratio")
-                # 做种时间（小时）
+                #  Time of planting（ Hourly）
                 if self._seed_time:
                     if torrent_info.get("seeding_time") >= float(self._seed_time) * 3600:
-                        logger.info(f"做种时间达到 {self._seed_time} 小时，删除种子：{torrent_info.get('title')}")
+                        logger.info(f" Seeding time up to {self._seed_time}  Hourly， Delete seeds：{torrent_info.get('title')}")
                         downloader.delete_torrents(ids=torrent_hash, delete_file=True)
                         remove_torrents.append(torrent_info)
                         self.__send_delete_message(site_name=site_name,
                                                    torrent_title=torrent_info.get("title"),
-                                                   reason=f"做种时间达到 {self._seed_time} 小时")
+                                                   reason=f" Seeding time up to {self._seed_time}  Hourly")
                         continue
-                # 分享率
+                #  Sharing rate
                 if self._seed_ratio:
                     if torrent_info.get("ratio") >= float(self._seed_ratio):
-                        logger.info(f"分享率达到 {self._seed_ratio}，删除种子：{torrent_info.get('title')}")
+                        logger.info(f" Sharing rate reached {self._seed_ratio}， Delete seeds：{torrent_info.get('title')}")
                         downloader.delete_torrents(ids=torrent_hash, delete_file=True)
                         remove_torrents.append(torrent_info)
                         self.__send_delete_message(site_name=site_name,
                                                    torrent_title=torrent_info.get("title"),
-                                                   reason=f"分享率达到 {self._seed_ratio}")
+                                                   reason=f" Sharing rate reached {self._seed_ratio}")
                         continue
-                # 上传量（GB）
+                #  Upload volume（GB）
                 if self._seed_size:
                     if torrent_info.get("uploaded") >= float(self._seed_size) * 1024 * 1024 * 1024:
-                        logger.info(f"上传量达到 {self._seed_size} GB，删除种子：{torrent_info.get('title')}")
+                        logger.info(f" Uploads reached {self._seed_size} GB， Delete seeds：{torrent_info.get('title')}")
                         downloader.delete_torrents(ids=torrent_hash, delete_file=True)
                         remove_torrents.append(torrent_info)
                         self.__send_delete_message(site_name=site_name,
                                                    torrent_title=torrent_info.get("title"),
-                                                   reason=f"上传量达到 {self._seed_size} GB")
+                                                   reason=f" Uploads reached {self._seed_size} GB")
                         continue
-                # 下载耗时（小时）
+                #  Download time（ Hourly）
                 if self._download_time \
                         and torrent_info.get("downloaded") < torrent_info.get("total_size"):
                     if torrent_info.get("dltime") >= float(self._download_time) * 3600:
-                        logger.info(f"下载耗时达到 {self._download_time} 小时，删除种子：{torrent_info.get('title')}")
+                        logger.info(f" The download takes up to {self._download_time}  Hourly， Delete seeds：{torrent_info.get('title')}")
                         downloader.delete_torrents(ids=torrent_hash, delete_file=True)
                         remove_torrents.append(torrent_info)
                         self.__send_delete_message(site_name=site_name,
                                                    torrent_title=torrent_info.get("title"),
-                                                   reason=f"下载耗时达到 {self._download_time} 小时")
+                                                   reason=f" The download takes up to {self._download_time}  Hourly")
                         continue
-                # 平均上传速度（KB / s），大于30分钟才有效
+                #  Average upload speed（KB / s）， More than30 It takes minutes to work.
                 if self._seed_avgspeed:
                     if torrent_info.get("avg_upspeed") <= float(self._seed_avgspeed) * 1024 and \
                             torrent_info.get("seeding_time") >= 30 * 60:
-                        logger.info(f"平均上传速度低于 {self._seed_avgspeed} KB/s，删除种子：{torrent_info.get('title')}")
+                        logger.info(f" Average upload speeds below {self._seed_avgspeed} KB/s， Delete seeds：{torrent_info.get('title')}")
                         downloader.delete_torrents(ids=torrent_hash, delete_file=True)
                         remove_torrents.append(torrent_info)
                         self.__send_delete_message(site_name=site_name,
                                                    torrent_title=torrent_info.get("title"),
-                                                   reason=f"平均上传速度低于 {self._seed_avgspeed} KB/s")
+                                                   reason=f" Average upload speeds below {self._seed_avgspeed} KB/s")
                         continue
-                # 未活动时间（分钟）
+                #  Inactive time（ Minutes）
                 if self._seed_inactivetime:
                     if torrent_info.get("iatime") >= float(self._seed_inactivetime) * 60:
                         logger.info(
-                            f"未活动时间达到 {self._seed_inactivetime} 分钟，删除种子：{torrent_info.get('title')}")
+                            f" Inactive time up to {self._seed_inactivetime}  Minutes， Delete seeds：{torrent_info.get('title')}")
                         downloader.delete_torrents(ids=torrent_hash, delete_file=True)
                         remove_torrents.append(torrent_info)
                         self.__send_delete_message(site_name=site_name,
                                                    torrent_title=torrent_info.get("title"),
-                                                   reason=f"未活动时间达到 {self._seed_inactivetime} 分钟")
+                                                   reason=f" Inactive time up to {self._seed_inactivetime}  Minutes")
                         continue
-            # 统计删除状态
+            #  Statistics on deletion status
             if remove_torrents:
                 if not statistic_info.get("deleted"):
                     statistic_info["deleted"] = 0
                 statistic_info["deleted"] += len(remove_torrents)
-                # 删除任务记录
+                #  Deletion of task records
                 for torrent in remove_torrents:
                     task_info[torrent.get("hash")].update({
                         "deleted": True,
                     })
-            # 统计总上传量、下载量
+            #  Statistical total uploads、 Downloads
             total_uploaded = 0
             total_downloaded = 0
             for hash_str, task in task_info.items():
                 total_downloaded += task.get("downloaded") or 0
                 total_uploaded += task.get("uploaded") or 0
-            # 更新统计数据
+            #  Updated statistics
             statistic_info["uploaded"] = total_uploaded
             statistic_info["downloaded"] = total_downloaded
-            # 打印统计数据
-            logger.info(f"刷流任务统计数据："
-                        f"总任务数：{len(task_info)}，"
-                        f"已删除：{statistic_info.get('deleted')}，"
-                        f"总上传量：{StringUtils.str_filesize(statistic_info.get('uploaded'))}，"
-                        f"总下载量：{StringUtils.str_filesize(statistic_info.get('downloaded'))}")
-            # 保存统计数据
+            #  Printing statistics
+            logger.info(f" Statistics on streaming tasks："
+                        f" Total number of assignments：{len(task_info)}，"
+                        f" Deleted：{statistic_info.get('deleted')}，"
+                        f" Total uploads：{StringUtils.str_filesize(statistic_info.get('uploaded'))}，"
+                        f" Total downloads：{StringUtils.str_filesize(statistic_info.get('downloaded'))}")
+            #  Save statistics
             self.save_data("statistic", statistic_info)
-            # 保存任务记录
+            #  Keeping a record of tasks
             self.save_data("torrents", task_info)
-            logger.info(f"刷流下载任务检查完成")
+            logger.info(f" Swipe streaming download task check complete")
 
     def __get_downloader(self, dtype: str) -> Optional[Union[Transmission, Qbittorrent]]:
         """
-        根据类型返回下载器实例
+        Returns downloader instances by type
         """
         if dtype == "qbittorrent":
             return self.qb
@@ -1559,43 +1559,43 @@ class BrushFlow(_PluginBase):
 
     def __download(self, torrent: TorrentInfo) -> Optional[str]:
         """
-        添加下载任务
+        Add download tasks
         """
-        # 上传限速
+        #  Upload speed limit
         up_speed = int(self._up_speed) if self._up_speed else None
-        # 下载限速
+        #  Download speed limit
         down_speed = int(self._dl_speed) if self._dl_speed else None
         if self._downloader == "qbittorrent":
             if not self.qb:
                 return None
-            # 限速值转为bytes
+            #  The speed limit value is shifted tobytes
             up_speed = up_speed * 1024 if up_speed else None
             down_speed = down_speed * 1024 if down_speed else None
-            # 生成随机Tag
+            #  Generate randomTag
             tag = StringUtils.generate_random_str(10)
             state = self.qb.add_torrent(content=torrent.enclosure,
                                         download_dir=self._save_path or None,
                                         cookie=torrent.site_cookie,
-                                        tag=["已整理", "刷流", tag],
+                                        tag=[" Collated", " Brush", tag],
                                         upload_limit=up_speed,
                                         download_limit=down_speed)
             if not state:
                 return None
             else:
-                # 获取种子Hash
+                #  Getting seedsHash
                 torrent_hash = self.qb.get_torrent_id_by_tag(tags=tag)
                 if not torrent_hash:
-                    logger.error(f"{self._downloader} 获取种子Hash失败")
+                    logger.error(f"{self._downloader}  Getting seedsHash Fail (e.g. experiments)")
                     return None
             return torrent_hash
         elif self._downloader == "transmission":
             if not self.tr:
                 return None
-            # 添加任务
+            #  Add tasks
             torrent = self.tr.add_torrent(content=torrent.enclosure,
                                           download_dir=self._save_path or None,
                                           cookie=torrent.site_cookie,
-                                          labels=["已整理", "刷流"])
+                                          labels=[" Collated", " Brush"])
             if not torrent:
                 return None
             else:
@@ -1608,7 +1608,7 @@ class BrushFlow(_PluginBase):
 
     def __get_hash(self, torrent: Any):
         """
-        获取种子hash
+        Getting seedshash
         """
         try:
             return torrent.get("hash") if self._downloader == "qbittorrent" else torrent.hashString
@@ -1618,7 +1618,7 @@ class BrushFlow(_PluginBase):
 
     def __get_label(self, torrent: Any):
         """
-        获取种子标签
+        Get seed label
         """
         try:
             return [str(tag).strip() for tag in torrent.get("tags").split(',')] \
@@ -1629,7 +1629,7 @@ class BrushFlow(_PluginBase):
 
     def __get_torrent_info(self, torrent: Any) -> dict:
 
-        # 当前时间戳
+        #  Current timestamp
         date_now = int(time.time())
         # QB
         if self._downloader == "qbittorrent":
@@ -1688,79 +1688,79 @@ class BrushFlow(_PluginBase):
             """
             # ID
             torrent_id = torrent.get("hash")
-            # 标题
+            #  Caption
             torrent_title = torrent.get("name")
-            # 下载时间
+            #  Download time
             if (not torrent.get("added_on")
                     or torrent.get("added_on") < 0):
                 dltime = 0
             else:
                 dltime = date_now - torrent.get("added_on")
-            # 做种时间
+            #  Time of planting
             if (not torrent.get("completion_on")
                     or torrent.get("completion_on") < 0):
                 seeding_time = 0
             else:
                 seeding_time = date_now - torrent.get("completion_on")
-            # 分享率
+            #  Sharing rate
             ratio = torrent.get("ratio") or 0
-            # 上传量
+            #  Upload volume
             uploaded = torrent.get("uploaded") or 0
-            # 平均上传速度 Byte/s
+            #  Average upload speed Byte/s
             if dltime:
                 avg_upspeed = int(uploaded / dltime)
             else:
                 avg_upspeed = uploaded
-            # 已未活动 秒
+            #  Inactive  Unit of angle or arc equivalent one sixtieth of a degree
             if (not torrent.get("last_activity")
                     or torrent.get("last_activity") < 0):
                 iatime = 0
             else:
                 iatime = date_now - torrent.get("last_activity")
-            # 下载量
+            #  Downloads
             downloaded = torrent.get("downloaded")
-            # 种子大小
+            #  Seed size
             total_size = torrent.get("total_size")
-            # 添加时间
+            #  Add time
             add_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(torrent.get("added_on") or 0))
         # TR
         else:
             # ID
             torrent_id = torrent.hashString
-            # 标题
+            #  Caption
             torrent_title = torrent.name
-            # 做种时间
+            #  Time of planting
             if (not torrent.date_done
                     or torrent.date_done.timestamp() < 1):
                 seeding_time = 0
             else:
                 seeding_time = date_now - int(torrent.date_done.timestamp())
-            # 下载耗时
+            #  Download time
             if (not torrent.date_added
                     or torrent.date_added.timestamp() < 1):
                 dltime = 0
             else:
                 dltime = date_now - int(torrent.date_added.timestamp())
-            # 下载量
+            #  Downloads
             downloaded = int(torrent.total_size * torrent.progress / 100)
-            # 分享率
+            #  Sharing rate
             ratio = torrent.ratio or 0
-            # 上传量
+            #  Upload volume
             uploaded = int(downloaded * torrent.ratio)
-            # 平均上传速度
+            #  Average upload speed
             if dltime:
                 avg_upspeed = int(uploaded / dltime)
             else:
                 avg_upspeed = uploaded
-            # 未活动时间
+            #  Inactive time
             if (not torrent.date_active
                     or torrent.date_active.timestamp() < 1):
                 iatime = 0
             else:
                 iatime = date_now - int(torrent.date_active.timestamp())
-            # 种子大小
+            #  Seed size
             total_size = torrent.total_size
-            # 添加时间
+            #  Add time
             add_time = time.strftime('%Y-%m-%d %H:%M:%S',
                                      time.localtime(torrent.date_added.timestamp() if torrent.date_added else 0))
 
@@ -1780,55 +1780,55 @@ class BrushFlow(_PluginBase):
 
     def __send_delete_message(self, site_name: str, torrent_title: str, reason: str):
         """
-        发送删除种子的消息
+        Send a message to delete the seed
         """
         if not self._notify:
             return
         self.chain.post_message(Notification(
             mtype=NotificationType.SiteMessage,
-            title=f"【刷流任务删种】",
-            text=f"站点：{site_name}\n"
-                 f"标题：{torrent_title}\n"
-                 f"原因：{reason}"
+            title=f"【 Brush streaming tasks to delete species】",
+            text=f" Website：{site_name}\n"
+                 f" Caption：{torrent_title}\n"
+                 f" Rationale：{reason}"
         ))
 
     def __send_add_message(self, torrent: TorrentInfo):
         """
-        发送添加下载的消息
+        Send message to add download
         """
         if not self._notify:
             return
         msg_text = ""
         if torrent.site_name:
-            msg_text = f"站点：{torrent.site_name}"
+            msg_text = f" Website：{torrent.site_name}"
         if torrent.title:
-            msg_text = f"{msg_text}\n标题：{torrent.title}"
+            msg_text = f"{msg_text}\n Caption：{torrent.title}"
         if torrent.size:
             if str(torrent.size).replace(".", "").isdigit():
                 size = StringUtils.str_filesize(torrent.size)
             else:
                 size = torrent.size
-            msg_text = f"{msg_text}\n大小：{size}"
+            msg_text = f"{msg_text}\n Adults and children：{size}"
         if torrent.pubdate:
-            msg_text = f"{msg_text}\n发布时间：{torrent.pubdate}"
+            msg_text = f"{msg_text}\n Release time：{torrent.pubdate}"
         if torrent.seeders:
-            msg_text = f"{msg_text}\n做种数：{torrent.seeders}"
+            msg_text = f"{msg_text}\n Determinant (math.)：{torrent.seeders}"
         if torrent.volume_factor:
-            msg_text = f"{msg_text}\n促销：{torrent.volume_factor}"
+            msg_text = f"{msg_text}\n Promote：{torrent.volume_factor}"
         if torrent.hit_and_run:
-            msg_text = f"{msg_text}\nHit&Run：是"
+            msg_text = f"{msg_text}\nHit&Run： Be"
 
         self.chain.post_message(Notification(
             mtype=NotificationType.SiteMessage,
-            title="【刷流任务种子下载】",
+            title="【 Brush streaming task seed download】",
             text=msg_text
         ))
 
     def __get_torrents_size(self) -> int:
         """
-        获取任务中的种子总大小
+        Get the total size of the seeds in the task
         """
-        # 读取种子记录
+        #  Read seed records
         task_info = self.get_data("torrents") or {}
         if not task_info:
             return 0
@@ -1837,7 +1837,7 @@ class BrushFlow(_PluginBase):
 
     def __get_downloader_info(self) -> schemas.DownloaderInfo:
         """
-        获取下载器实时信息（所有下载器）
+        Get real-time information about the downloader（ All downloaders）
         """
         ret_info = schemas.DownloaderInfo()
 
@@ -1863,7 +1863,7 @@ class BrushFlow(_PluginBase):
 
     def __get_downloading_count(self) -> int:
         """
-        获取正在下载的任务数量
+        Get the number of tasks being downloaded
         """
         downlader = self.__get_downloader(self._downloader)
         if not downlader:
@@ -1874,7 +1874,7 @@ class BrushFlow(_PluginBase):
     @staticmethod
     def __get_pubminutes(pubdate: str) -> int:
         """
-        将字符串转换为时间，并计算与当前时间差）（分钟）
+        Converting strings to time， And calculate the time difference from the current time）（ Minutes）
         """
         try:
             if not pubdate:

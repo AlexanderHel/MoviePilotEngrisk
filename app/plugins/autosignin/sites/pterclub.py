@@ -10,25 +10,25 @@ from app.utils.string import StringUtils
 
 class PTerClub(_ISiteSigninHandler):
     """
-    猫签到
+    Cat check-in
     """
-    # 匹配的站点Url，每一个实现类都需要设置为自己的站点Url
+    #  Matching sitesUrl， Each implementation class needs to be set up as its own siteUrl
     site_url = "pterclub.com"
 
     @classmethod
     def match(cls, url: str) -> bool:
         """
-        根据站点Url判断是否匹配当前站点签到类，大部分情况使用默认实现即可
-        :param url: 站点Url
-        :return: 是否匹配，如匹配则会调用该类的signin方法
+        Based on siteUrl Determine if the current site check-in class matches， In most cases it is sufficient to use the default implementation
+        :param url:  WebsiteUrl
+        :return:  Whether or not it matches， If a match is made then the class'ssignin Methodologies
         """
         return True if StringUtils.url_equal(url, cls.site_url) else False
 
     def signin(self, site_info: CommentedMap) -> Tuple[bool, str]:
         """
-        执行签到操作
-        :param site_info: 站点信息，含有站点Url、站点Cookie、UA等信息
-        :return: 签到结果信息
+        Perform check-in operations
+        :param site_info:  Site information， Contains siteUrl、 WebsiteCookie、UA And other information
+        :return:  Check-in results information
         """
         site = site_info.get("name")
         site_cookie = site_info.get("cookie")
@@ -36,26 +36,26 @@ class PTerClub(_ISiteSigninHandler):
         proxy = site_info.get("proxy")
         render = site_info.get("render")
 
-        # 签到
+        #  Sign in
         html_text = self.get_page_source(url='https://pterclub.com/attendance-ajax.php',
                                          cookie=site_cookie,
                                          ua=ua,
                                          proxy=proxy,
                                          render=render)
         if not html_text:
-            logger.error(f"{site} 签到失败，签到接口请求失败")
-            return False, '签到失败，请检查cookie是否失效'
+            logger.error(f"{site}  Failed to sign in， Check-in interface request failed")
+            return False, ' Failed to sign in， Please checkcookie Whether or not it has expired'
         try:
             sign_dict = json.loads(html_text)
         except Exception as e:
-            logger.error(f"{site} 签到失败，签到接口返回数据异常，错误信息：{e}")
-            return False, '签到失败，签到接口返回数据异常'
+            logger.error(f"{site}  Failed to sign in， Check-in interface return data exception， Error message：{e}")
+            return False, ' Failed to sign in， Check-in interface return data exception'
         if sign_dict['status'] == '1':
-            # {"status":"1","data":" (签到已成功300)","message":"<p>这是您的第<b>237</b>次签到，
-            # 已连续签到<b>237</b>天。</p><p>本次签到获得<b>300</b>克猫粮。</p>"}
-            logger.info(f"{site} 签到成功")
-            return True, '签到成功'
+            # {"status":"1","data":" ( Check-in has been successful300)","message":"<p> This is your first<b>237</b> Secondary check-in，
+            #  Signed in continuously<b>237</b> Sky。</p><p> This check-in gets<b>300</b> Grams of cat food。</p>"}
+            logger.info(f"{site}  Sign in successfully")
+            return True, ' Sign in successfully'
         else:
-            # {"status":"0","data":"抱歉","message":"您今天已经签到过了，请勿重复刷新。"}
-            logger.info(f"{site} 今日已签到")
-            return True, '今日已签到'
+            # {"status":"0","data":" Pardon me","message":" You've already signed in today.， Please do not refresh repeatedly。"}
+            logger.info(f"{site}  Signed in today")
+            return True, ' Signed in today'

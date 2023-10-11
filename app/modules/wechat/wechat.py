@@ -16,29 +16,29 @@ lock = threading.Lock()
 
 
 class WeChat(metaclass=Singleton):
-    # 企业微信Token
+    #  Enterprise wechatToken
     _access_token = None
-    # 企业微信Token过期时间
+    #  Enterprise wechatToken过期时间
     _expires_in: int = None
-    # 企业微信Token获取时间
+    #  Enterprise wechatToken获取时间
     _access_token_time: datetime = None
-    # 企业微信CorpID
+    #  Enterprise wechatCorpID
     _corpid = None
-    # 企业微信AppSecret
+    #  Enterprise wechatAppSecret
     _appsecret = None
-    # 企业微信AppID
+    #  Enterprise wechatAppID
     _appid = None
 
-    # 企业微信发送消息URL
+    #  Enterprise wechat send messageURL
     _send_msg_url = f"{settings.WECHAT_PROXY}/cgi-bin/message/send?access_token=%s"
-    # 企业微信获取TokenURL
+    #  Enterprise wechat getTokenURL
     _token_url = f"{settings.WECHAT_PROXY}/cgi-bin/gettoken?corpid=%s&corpsecret=%s"
-    # 企业微信创新菜单URL
+    #  Enterprise wechat innovation menuURL
     _create_menu_url = f"{settings.WECHAT_PROXY}/cgi-bin/menu/create?access_token=%s&agentid=%s"
 
     def __init__(self):
         """
-        初始化
+        Initialization
         """
         self._corpid = settings.WECHAT_CORPID
         self._appsecret = settings.WECHAT_APP_SECRET
@@ -49,8 +49,8 @@ class WeChat(metaclass=Singleton):
 
     def __get_access_token(self, force=False):
         """
-        获取微信Token
-        :return： 微信Token
+        Get wechatToken
+        :return：  MicrosoftToken
         """
         token_flag = True
         if not self._access_token:
@@ -72,21 +72,21 @@ class WeChat(metaclass=Singleton):
                         self._expires_in = ret_json.get('expires_in')
                         self._access_token_time = datetime.now()
                 elif res is not None:
-                    logger.error(f"获取微信access_token失败，错误码：{res.status_code}，错误原因：{res.reason}")
+                    logger.error(f" Get wechataccess_token Fail (e.g. experiments)， Error code：{res.status_code}， Cause of error：{res.reason}")
                 else:
-                    logger.error(f"获取微信access_token失败，未获取到返回信息")
+                    logger.error(f" Get wechataccess_token Fail (e.g. experiments)， Return information not obtained")
             except Exception as e:
-                logger.error(f"获取微信access_token失败，错误信息：{e}")
+                logger.error(f" Get wechataccess_token Fail (e.g. experiments)， Error message：{e}")
                 return None
         return self._access_token
 
     def __send_message(self, title: str, text: str = None, userid: str = None) -> Optional[bool]:
         """
-        发送文本消息
-        :param title: 消息标题
-        :param text: 消息内容
-        :param userid: 消息发送对象的ID，为空则发给所有人
-        :return: 发送状态，错误信息
+        Send text message
+        :param title:  Message title
+        :param text:  Message
+        :param userid:  The message sender'sID， If it's empty, send it to everyone.
+        :return:  Sender state， Error message
         """
         message_url = self._send_msg_url % self.__get_access_token()
         if text:
@@ -111,12 +111,12 @@ class WeChat(metaclass=Singleton):
 
     def __send_image_message(self, title: str, text: str, image_url: str, userid: str = None) -> Optional[bool]:
         """
-        发送图文消息
-        :param title: 消息标题
-        :param text: 消息内容
-        :param image_url: 图片地址
-        :param userid: 消息发送对象的ID，为空则发给所有人
-        :return: 发送状态，错误信息
+        Send a graphic message
+        :param title:  Message title
+        :param text:  Message
+        :param image_url:  Image address
+        :param userid:  The message sender'sID， If it's empty, send it to everyone.
+        :return:  Sender state， Error message
         """
         message_url = self._send_msg_url % self.__get_access_token()
         if text:
@@ -142,15 +142,15 @@ class WeChat(metaclass=Singleton):
 
     def send_msg(self, title: str, text: str = "", image: str = "", userid: str = None) -> Optional[bool]:
         """
-        微信消息发送入口，支持文本、图片、链接跳转、指定发送对象
-        :param title: 消息标题
-        :param text: 消息内容
-        :param image: 图片地址
-        :param userid: 消息发送对象的ID，为空则发给所有人
-        :return: 发送状态，错误信息
+        Wechat messaging portal， Supported texts、 Photograph、 Link jumping、 Specify who to send it to
+        :param title:  Message title
+        :param text:  Message
+        :param image:  Image address
+        :param userid:  The message sender'sID， If it's empty, send it to everyone.
+        :return:  Sender state， Error message
         """
         if not self.__get_access_token():
-            logger.error("获取微信access_token失败，请检查参数配置")
+            logger.error(" Get wechataccess_token Fail (e.g. experiments)， Please check the parameter configuration")
             return None
 
         if image:
@@ -162,10 +162,10 @@ class WeChat(metaclass=Singleton):
 
     def send_medias_msg(self, medias: List[MediaInfo], userid: str = "") -> Optional[bool]:
         """
-        发送列表类消息
+        Sending list class messages
         """
         if not self.__get_access_token():
-            logger.error("获取微信access_token失败，请检查参数配置")
+            logger.error(" Get wechataccess_token Fail (e.g. experiments)， Please check the parameter configuration")
             return None
 
         message_url = self._send_msg_url % self.__get_access_token()
@@ -175,9 +175,9 @@ class WeChat(metaclass=Singleton):
         index = 1
         for media in medias:
             if media.vote_average:
-                title = f"{index}. {media.title_year}\n类型：{media.type.value}，评分：{media.vote_average}"
+                title = f"{index}. {media.title_year}\n Typology：{media.type.value}， Score (of student's work)：{media.vote_average}"
             else:
-                title = f"{index}. {media.title_year}\n类型：{media.type.value}"
+                title = f"{index}. {media.title_year}\n Typology：{media.type.value}"
             articles.append({
                 "title": title,
                 "description": "",
@@ -199,17 +199,17 @@ class WeChat(metaclass=Singleton):
     def send_torrents_msg(self, torrents: List[Context],
                           userid: str = "", title: str = "") -> Optional[bool]:
         """
-        发送列表消息
+        Send a list message
         """
         if not self.__get_access_token():
-            logger.error("获取微信access_token失败，请检查参数配置")
+            logger.error(" Get wechataccess_token Fail (e.g. experiments)， Please check the parameter configuration")
             return None
 
-        # 先发送标题
+        #  Send the title first
         if title:
             self.__send_message(title=title, userid=userid)
 
-        # 发送列表
+        #  Distribution list
         message_url = self._send_msg_url % self.__get_access_token()
         if not userid:
             userid = "@all"
@@ -248,7 +248,7 @@ class WeChat(metaclass=Singleton):
 
     def __post_request(self, message_url: str, req_json: dict) -> bool:
         """
-        向微信发送请求
+        Send a request to wechat
         """
         try:
             res = RequestUtils(content_type='application/json').post(
@@ -262,50 +262,50 @@ class WeChat(metaclass=Singleton):
                 else:
                     if ret_json.get('errcode') == 42001:
                         self.__get_access_token(force=True)
-                    logger.error(f"发送请求失败，错误信息：{ret_json.get('errmsg')}")
+                    logger.error(f" Failed to send request， Error message：{ret_json.get('errmsg')}")
                     return False
             elif res is not None:
-                logger.error(f"发送请求失败，错误码：{res.status_code}，错误原因：{res.reason}")
+                logger.error(f" Failed to send request， Error code：{res.status_code}， Cause of error：{res.reason}")
                 return False
             else:
-                logger.error(f"发送请求失败，未获取到返回信息")
+                logger.error(f" Failed to send request， Return information not obtained")
                 return False
         except Exception as err:
-            logger.error(f"发送请求失败，错误信息：{err}")
+            logger.error(f" Failed to send request， Error message：{err}")
             return False
 
     def create_menus(self, commands: Dict[str, dict]):
         """
-        自动注册微信菜单
-        :param commands: 命令字典
-        命令字典：
+        Automatic registration of wechat menu
+        :param commands:  Command dictionary
+        Command dictionary：
         {
             "/cookiecloud": {
                 "func": CookieCloudChain(self._db).remote_sync,
-                "description": "同步站点",
-                "category": "站点",
+                "description": " Synchronization site",
+                "category": " Website",
                 "data": {}
             }
         }
-        注册报文格式，一级菜单只有最多3条，子菜单最多只有5条：
+        Registration message format， The first level menu only has the most3 Clause (of law or treaty)， The submenu has a maximum of5 Clause (of law or treaty)：
         {
            "button":[
                {
                    "type":"click",
-                   "name":"今日歌曲",
+                   "name":" Song of the day",
                    "key":"V1001_TODAY_MUSIC"
                },
                {
-                   "name":"菜单",
+                   "name":" Menu",
                    "sub_button":[
                        {
                            "type":"view",
-                           "name":"搜索",
+                           "name":" Look for sth.",
                            "url":"http://www.soso.com/"
                        },
                        {
                            "type":"click",
-                           "name":"赞一下我们",
+                           "name":" Give us a shout out.",
                            "key":"V1001_GOOD"
                        }
                    ]
@@ -313,10 +313,10 @@ class WeChat(metaclass=Singleton):
            ]
         }
         """
-        # 请求URL
+        #  RequestingURL
         req_url = self._create_menu_url % (self.__get_access_token(), self._appid)
 
-        # 对commands按category分组
+        #  Treat (sb a certain way)commands Check or refer tocategory Clusters
         category_dict = {}
         for key, value in commands.items():
             category: Dict[str, dict] = value.get("category")
@@ -325,10 +325,10 @@ class WeChat(metaclass=Singleton):
                     category_dict[category] = {}
                 category_dict[category][key] = value
 
-        # 一级菜单
+        #  Level 1 menu
         buttons = []
         for category, menu in category_dict.items():
-            # 二级菜单
+            #  Secondary menu
             sub_buttons = []
             for key, value in menu.items():
                 sub_buttons.append({
@@ -342,7 +342,7 @@ class WeChat(metaclass=Singleton):
             })
 
         if buttons:
-            # 发送请求
+            #  Send request
             self.__post_request(req_url, {
                 "button": buttons[:3]
             })

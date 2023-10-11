@@ -8,46 +8,46 @@ from app.schemas.types import SystemConfigKey, MessageChannel
 
 class _ModuleBase(metaclass=ABCMeta):
     """
-    模块基类，实现对应方法，在有需要时会被自动调用，返回None代表不启用该模块，将继续执行下一模块
-    输入参数与输出参数一致的，或没有输出的，可以被多个模块重复实现
+    Module base class， Implementing the corresponding method， Automatically called when needed， Come (or go) backNone Means that the module is not enabled， Will continue to the next module
+    Input parameter consistent with the output parameter， Or no output， Can be re-implemented by multiple modules
     """
 
     @abstractmethod
     def init_module(self) -> None:
         """
-        模块初始化
+        Module initialization
         """
         pass
 
     @abstractmethod
     def init_setting(self) -> Tuple[str, Union[str, bool]]:
         """
-        模块开关设置，返回开关名和开关值，开关值为True时代表有值即打开，不实现该方法或返回None代表不使用开关
-        部分模块支持同时开启多个，此时设置项以,分隔，开关值使用in判断
+        Module switch setting， Returns the switch name and switch value， The switch value isTrue When a value is present, it means that the value is turned on.， Not implementing the method or returningNone Represents switch not in use
+        Some modules support turning on more than one at the same time， At this point, the setup item starts with, Segregation， Switching value usein Judgements
         """
         pass
 
     @abstractmethod
     def stop(self) -> None:
         """
-        如果关闭时模块有服务需要停止，需要实现此方法
-        :return: None，该方法可被多个模块同时处理
+        If the module has services that need to be stopped when shutting down， This method needs to be implemented
+        :return: None， This method can be processed by multiple modules simultaneously
         """
         pass
 
 
 def checkMessage(channel_type: MessageChannel):
     """
-    检查消息渠道及消息类型，如不符合则不处理
+    Checking message channels and message types， Not processed if not met
     """
 
     def decorator(func):
         def wrapper(self, message: Notification, *args, **kwargs):
-            # 检查消息渠道
+            #  Check the message channel
             if message.channel and message.channel != channel_type:
                 return None
             else:
-                # 检查消息类型开关
+                #  Check message type switch
                 if message.mtype:
                     switchs = SystemConfigOper().get(SystemConfigKey.NotificationChannels) or []
                     for switch in switchs:

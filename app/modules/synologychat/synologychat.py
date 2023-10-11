@@ -28,20 +28,20 @@ class SynologyChat(metaclass=Singleton):
 
     def send_msg(self, title: str, text: str = "", image: str = "", userid: str = "") -> Optional[bool]:
         """
-        发送Telegram消息
-        :param title: 消息标题
-        :param text: 消息内容
-        :param image: 消息图片地址
-        :param userid: 用户ID，如有则只发消息给该用户
-        :user_id: 发送消息的目标用户ID，为空则发给管理员
+        DispatchTelegram Messages
+        :param title:  Message title
+        :param text:  Message
+        :param image:  Message image address
+        :param userid:  SubscribersID， If so, send a message to that user only
+        :user_id:  The target user to whom the message is sentID， If empty, send to administrator
         """
         if not title and not text:
-            logger.error("标题和内容不能同时为空")
+            logger.error(" Title and content cannot be empty at the same time")
             return False
         if not self._webhook_url or not self._token:
             return False
         try:
-            # 拼装消息内容
+            #  Assembly message content
             titles = str(title).split('\n')
             if len(titles) > 1:
                 title = titles[0]
@@ -62,19 +62,19 @@ class SynologyChat(metaclass=Singleton):
             else:
                 userids = self.__get_bot_users()
                 if not userids:
-                    logger.error("SynologyChat机器人没有对任何用户可见")
+                    logger.error("SynologyChat The robot is not visible to any user")
                     return False
                 payload_data['user_ids'] = userids
 
             return self.__send_request(payload_data)
 
         except Exception as msg_e:
-            logger.error(f"SynologyChat发送消息错误：{str(msg_e)}")
+            logger.error(f"SynologyChat Send message error：{str(msg_e)}")
             return False
 
     def send_meidas_msg(self, medias: List[MediaInfo], userid: str = "", title: str = "") -> Optional[bool]:
         """
-        发送列表类消息
+        Sending list class messages
         """
         if not medias:
             return False
@@ -92,14 +92,14 @@ class SynologyChat(metaclass=Singleton):
                                                             index,
                                                             media.detail_link,
                                                             media.title_year,
-                                                            f"类型：{media.type.value}",
-                                                            f"评分：{media.vote_average}")
+                                                            f" Typology：{media.type.value}",
+                                                            f" Score (of student's work)：{media.vote_average}")
                 else:
                     caption = "%s\n%s. <%s|%s>\n_%s_" % (caption,
                                                          index,
                                                          media.detail_link,
                                                          media.title_year,
-                                                         f"类型：{media.type.value}")
+                                                         f" Typology：{media.type.value}")
                 index += 1
 
             if userid:
@@ -113,13 +113,13 @@ class SynologyChat(metaclass=Singleton):
             return self.__send_request(payload_data)
 
         except Exception as msg_e:
-            logger.error(f"SynologyChat发送消息错误：{str(msg_e)}")
+            logger.error(f"SynologyChat Send message error：{str(msg_e)}")
             return False
 
     def send_torrents_msg(self, torrents: List[Context],
                           userid: str = "", title: str = "") -> Optional[bool]:
         """
-        发送列表消息
+        Send a list message
         """
         if not self._webhook_url or not self._token:
             return None
@@ -158,12 +158,12 @@ class SynologyChat(metaclass=Singleton):
             }
             return self.__send_request(payload_data)
         except Exception as msg_e:
-            logger.error(f"SynologyChat发送消息错误：{str(msg_e)}")
+            logger.error(f"SynologyChat Send message error：{str(msg_e)}")
             return False
 
     def __get_bot_users(self):
         """
-        查询机器人可见的用户列表
+        Query the list of users visible to the robot
         """
         if not self._domain or not self._token:
             return []
@@ -179,7 +179,7 @@ class SynologyChat(metaclass=Singleton):
 
     def __send_request(self, payload_data):
         """
-        发送消息请求
+        Send a message request
         """
         payload = f"payload={json.dumps(payload_data)}"
         ret = self._req.post_res(url=self._webhook_url, data=payload)
@@ -190,14 +190,14 @@ class SynologyChat(metaclass=Singleton):
                 errmsg = result.get('error', {}).get('errors')
                 if not errno:
                     return True
-                logger.error(f"SynologyChat返回错误：{errno}-{errmsg}")
+                logger.error(f"SynologyChat Return error：{errno}-{errmsg}")
                 return False
             else:
-                logger.error(f"SynologyChat返回：{ret.text}")
+                logger.error(f"SynologyChat Come (or go) back：{ret.text}")
                 return False
         elif ret is not None:
-            logger.error(f"SynologyChat请求失败，错误码：{ret.status_code}，错误原因：{ret.reason}")
+            logger.error(f"SynologyChat Request failed， Error code：{ret.status_code}， Cause of error：{ret.reason}")
             return False
         else:
-            logger.error(f"SynologyChat请求失败，未获取到返回信息")
+            logger.error(f"SynologyChat Request failed， Return information not obtained")
             return False

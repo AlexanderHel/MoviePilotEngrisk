@@ -8,12 +8,12 @@ from app.db.models.subscribe import Subscribe
 
 class SubscribeOper(DbOper):
     """
-    订阅管理
+    Subscription management
     """
 
     def add(self, mediainfo: MediaInfo, **kwargs) -> Tuple[int, str]:
         """
-        新增订阅
+        Add subscription
         """
         subscribe = Subscribe.exists(self._db, tmdbid=mediainfo.tmdb_id, season=kwargs.get('season'))
         if not subscribe:
@@ -30,13 +30,13 @@ class SubscribeOper(DbOper):
                                   date=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
                                   **kwargs)
             subscribe.create(self._db)
-            return subscribe.id, "新增订阅成功"
+            return subscribe.id, "Add subscription成功"
         else:
-            return subscribe.id, "订阅已存在"
+            return subscribe.id, " Subscription already exists"
 
     def exists(self, tmdbid: int, season: int) -> bool:
         """
-        判断是否存在
+        Determine the presence or absence of
         """
         if season:
             return True if Subscribe.exists(self._db, tmdbid=tmdbid, season=season) else False
@@ -45,13 +45,13 @@ class SubscribeOper(DbOper):
 
     def get(self, sid: int) -> Subscribe:
         """
-        获取订阅
+        Get subscriptions
         """
         return Subscribe.get(self._db, rid=sid)
 
     def list(self, state: str = None) -> List[Subscribe]:
         """
-        获取订阅列表
+        Get subscriptions列表
         """
         if state:
             return Subscribe.get_by_state(self._db, state)
@@ -59,13 +59,13 @@ class SubscribeOper(DbOper):
 
     def delete(self, sid: int):
         """
-        删除订阅
+        Delete subscription
         """
         Subscribe.delete(self._db, rid=sid)
 
     def update(self, sid: int, payload: dict) -> Subscribe:
         """
-        更新订阅
+        Update subscription
         """
         subscribe = self.get(sid)
         subscribe.update(self._db, payload)

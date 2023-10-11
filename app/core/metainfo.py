@@ -9,25 +9,25 @@ from app.core.meta.words import WordsMatcher
 
 def MetaInfo(title: str, subtitle: str = None) -> MetaBase:
     """
-    根据标题和副标题识别元数据
-    :param title: 标题、种子名、文件名
-    :param subtitle: 副标题、描述
+    Identify metadata by title and subtitle
+    :param title:  Caption、 Seed name、 Filename
+    :param subtitle:  Subheading、 Descriptive
     :return: MetaAnime、MetaVideo
     """
-    # 原标题
+    #  Original title
     org_title = title
-    # 预处理标题
+    #  Preprocessing headings
     title, apply_words = WordsMatcher().prepare(title)
-    # 判断是否处理文件
+    #  Determining whether to process a file
     if title and Path(title).suffix.lower() in settings.RMT_MEDIAEXT:
         isfile = True
     else:
         isfile = False
-    # 识别
+    #  Recognize
     meta = MetaAnime(title, subtitle, isfile) if is_anime(title) else MetaVideo(title, subtitle, isfile)
-    # 记录原标题
+    #  Original title of record
     meta.title = org_title
-    #  记录使用的识别词
+    #   Record the identifiers used
     meta.apply_words = apply_words or []
 
     return meta
@@ -35,23 +35,23 @@ def MetaInfo(title: str, subtitle: str = None) -> MetaBase:
 
 def MetaInfoPath(path: Path) -> MetaBase:
     """
-    根据路径识别元数据
-    :param path: 路径
+    Recognize metadata based on paths
+    :param path:  Trails
     """
-    # 上级目录元数据
+    #  Upper level catalog metadata
     dir_meta = MetaInfo(title=path.parent.name)
-    # 文件元数据，不包含后缀
+    #  Document metadata， Exclusive of suffix
     file_meta = MetaInfo(title=path.stem)
-    # 合并元数据
+    #  Merging metadata
     file_meta.merge(dir_meta)
     return file_meta
 
 
 def is_anime(name: str) -> bool:
     """
-    判断是否为动漫
-    :param name: 名称
-    :return: 是否动漫
+    Determine if it's an anime
+    :param name:  Name (of a thing)
+    :return:  Anime or not
     """
     if not name:
         return False

@@ -30,7 +30,7 @@ from app.scheduler import Scheduler
 App = FastAPI(title=settings.PROJECT_NAME,
               openapi_url=f"{settings.API_V1_STR}/openapi.json")
 
-# 跨域
+#  Cross-domain
 App.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_HOSTS,
@@ -39,26 +39,26 @@ App.add_middleware(
     allow_headers=["*"],
 )
 
-# uvicorn服务
+# uvicorn Service
 Server = uvicorn.Server(Config(App, host=settings.HOST, port=settings.PORT,
                                reload=settings.DEV, workers=multiprocessing.cpu_count()))
 
 
 def init_routers():
     """
-    初始化路由
+    Initializing routes
     """
     from app.api.apiv1 import api_router
     from app.api.servarr import arr_router
-    # API路由
+    # API Routing (in computer networks)
     App.include_router(api_router, prefix=settings.API_V1_STR)
-    # Radarr、Sonarr路由
+    # Radarr、Sonarr Routing (in computer networks)
     App.include_router(arr_router, prefix="/api/v3")
 
 
 def start_frontend():
     """
-    启动前端服务
+    Starting front-end services
     """
     if not SystemUtils.is_frozen():
         return
@@ -78,7 +78,7 @@ def start_frontend():
 
 def stop_frontend():
     """
-    停止前端服务
+    Stopping front-end services
     """
     if not SystemUtils.is_frozen():
         return
@@ -91,7 +91,7 @@ def stop_frontend():
 
 def start_tray():
     """
-    启动托盘图标
+    Launch tray icon
     """
 
     if not SystemUtils.is_frozen():
@@ -99,87 +99,87 @@ def start_tray():
 
     def open_web():
         """
-        调用浏览器打开前端页面
+        Calling the browser to open the front-end page
         """
         import webbrowser
         webbrowser.open(f"http://localhost:{settings.NGINX_PORT}")
 
     def quit_app():
         """
-        退出程序
+        Opt-out program
         """
         TrayIcon.stop()
         Server.should_exit = True
 
     import pystray
 
-    # 托盘图标
+    #  Pallet icon
     TrayIcon = pystray.Icon(
         settings.PROJECT_NAME,
         icon=Image.open(settings.ROOT_PATH / 'app.ico'),
         menu=pystray.Menu(
             pystray.MenuItem(
-                '打开',
+                ' Show (a ticket)',
                 open_web,
             ),
             pystray.MenuItem(
-                '退出',
+                ' Abort',
                 quit_app,
             )
         )
     )
-    # 启动托盘图标
+    # Launch tray icon
     threading.Thread(target=TrayIcon.run, daemon=True).start()
 
 
 @App.on_event("shutdown")
 def shutdown_server():
     """
-    服务关闭
+    Service shutdown
     """
-    # 停止模块
+    #  Stop module
     ModuleManager().stop()
-    # 停止插件
+    #  Stop plugins
     PluginManager().stop()
-    # 停止事件消费
+    #  Stop event consumption
     Command().stop()
-    # 停止虚拟显示
+    #  Stop virtual display
     DisplayHelper().stop()
-    # 停止定时服务
+    #  Stop timing service
     Scheduler().stop()
-    # 停止前端服务
+    # Stopping front-end services
     stop_frontend()
 
 
 @App.on_event("startup")
 def start_module():
     """
-    启动模块
+    Starter module
     """
-    # 虚拟显示
+    #  Virtualization
     DisplayHelper()
-    # 站点管理
+    #  Site management
     SitesHelper()
-    # 加载模块
+    #  Load modules
     ModuleManager()
-    # 加载插件
+    #  Loading plug-ins
     PluginManager()
-    # 启动定时服务
+    #  Start timing service
     Scheduler()
-    # 启动事件消费
+    #  Initiate event consumption
     Command()
-    # 初始化路由
+    # Initializing routes
     init_routers()
-    # 启动前端服务
+    # Starting front-end services
     start_frontend()
 
 
 if __name__ == '__main__':
-    # 启动托盘
+    #  Boot tray
     start_tray()
-    # 初始化数据库
+    #  Initializing the database
     init_db()
-    # 更新数据库
+    #  Updating the database
     update_db()
-    # 启动API服务
+    #  Activate (a plan)API Service
     Server.run()

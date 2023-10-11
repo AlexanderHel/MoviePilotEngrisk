@@ -29,16 +29,16 @@ class NexusRabbitSiteUserInfo(NexusPhpSiteUserInfo):
 
     def _parse_user_torrent_seeding_info(self, html_text: str, multi_page: bool = False) -> Optional[str]:
         """
-        做种相关信息
+        Seeding information
         :param html_text:
-        :param multi_page: 是否多页数据
-        :return: 下页地址
+        :param multi_page:  Whether multiple pages of data
+        :return:  Next page address
         """
 
         try:
             torrents = json.loads(html_text).get('data')
         except Exception as e:
-            logger.error(f"解析做种信息失败: {e}")
+            logger.error(f" Failure to parse seeding information: {e}")
             return
 
         page_seeding_size = 0

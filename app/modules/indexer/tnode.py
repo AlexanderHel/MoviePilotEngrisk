@@ -51,7 +51,7 @@ class TNodeSpider:
 
     def search(self, keyword: str, page: int = 0) -> Tuple[bool, List[dict]]:
         if not self._token:
-            logger.warn(f"{self._name} 未获取到token，无法搜索")
+            logger.warn(f"{self._name}  Not availabletoken， Unable to search")
             return True, []
         search_type = "imdbid" if (keyword and keyword.startswith('tt')) else "title"
         params = {
@@ -99,9 +99,9 @@ class TNodeSpider:
                 }
                 torrents.append(torrent)
         elif res is not None:
-            logger.warn(f"{self._name} 搜索失败，错误码：{res.status_code}")
+            logger.warn(f"{self._name}  Search failure， Error code：{res.status_code}")
             return True, []
         else:
-            logger.warn(f"{self._name} 搜索失败，无法连接 {self._domain}")
+            logger.warn(f"{self._name}  Search failure， Connectionless {self._domain}")
             return True, []
         return False, torrents

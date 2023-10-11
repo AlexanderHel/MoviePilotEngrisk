@@ -6,58 +6,58 @@ from app.db.models import Base
 
 class Subscribe(Base):
     """
-    订阅表
+    Subscription form
     """
     id = Column(Integer, Sequence('id'), primary_key=True, index=True)
-    # 标题
+    #  Caption
     name = Column(String, nullable=False, index=True)
-    # 年份
+    #  Particular year
     year = Column(String)
-    # 类型
+    #  Typology
     type = Column(String)
-    # 搜索关键字
+    #  Search keywords
     keyword = Column(String)
     tmdbid = Column(Integer, index=True)
     imdbid = Column(String)
     tvdbid = Column(Integer)
     doubanid = Column(String, index=True)
-    # 季号
+    #  Quarter
     season = Column(Integer)
-    # 海报
+    #  Playbill
     poster = Column(String)
-    # 背景图
+    #  Background image
     backdrop = Column(String)
-    # 评分
+    #  Score (of student's work)
     vote = Column(Integer)
-    # 简介
+    #  Synopsis
     description = Column(String)
-    # 过滤规则
+    #  Filter rules
     filter = Column(String)
-    # 包含
+    #  Embody
     include = Column(String)
-    # 排除
+    #  Rule out
     exclude = Column(String)
-    # 总集数
+    #  Total episodes
     total_episode = Column(Integer)
-    # 开始集数
+    #  Number of episodes
     start_episode = Column(Integer)
-    # 缺失集数
+    #  Missing episodes
     lack_episode = Column(Integer)
-    # 附加信息
+    #  Additional information
     note = Column(String)
-    # 状态：N-新建， R-订阅中
+    #  State of affairs：N- Newly built， R- Subscription
     state = Column(String, nullable=False, index=True, default='N')
-    # 最后更新时间
+    #  Last updated
     last_update = Column(String)
-    # 创建时间
+    #  Creation time
     date = Column(String)
-    # 订阅用户
+    #  Subscriber
     username = Column(String)
-    # 订阅站点
+    #  Subscribe to the site
     sites = Column(String)
-    # 是否洗版
+    #  Whether or not to wash the plate
     best_version = Column(Integer, default=0)
-    # 当前优先级
+    #  Current priority
     current_priority = Column(Integer)
 
     @staticmethod

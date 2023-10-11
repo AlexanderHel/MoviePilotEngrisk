@@ -22,43 +22,43 @@ class SynologyChatModule(_ModuleBase):
     def message_parser(self, body: Any, form: Any,
                        args: Any) -> Optional[CommingMessage]:
         """
-        解析消息内容，返回字典，注意以下约定值：
-        userid: 用户ID
-        username: 用户名
-        text: 内容
-        :param body: 请求体
-        :param form: 表单
-        :param args: 参数
-        :return: 渠道、消息体
+        Parsing message content， Return to dictionary， Note the following convention values：
+        userid:  SubscribersID
+        username:  User id
+        text:  Element
+        :param body:  Requestor
+        :param form:  Form (document)
+        :param args:  Parameters
+        :return:  (fig.) channel、 Message body
         """
         try:
             message: dict = form
             if not message:
                 return None
-            # 校验token
+            #  Calibrationtoken
             token = message.get("token")
             if not token or not self.synologychat.check_token(token):
                 return None
-            # 文本
+            #  Copies
             text = message.get("text")
-            # 用户ID
+            #  SubscribersID
             user_id = int(message.get("user_id"))
-            # 获取用户名
+            #  Get user name
             user_name = message.get("username")
             if text and user_id:
-                logger.info(f"收到SynologyChat消息：userid={user_id}, username={user_name}, text={text}")
+                logger.info(f" ReceivedSynologyChat Messages：userid={user_id}, username={user_name}, text={text}")
                 return CommingMessage(channel=MessageChannel.SynologyChat,
                                       userid=user_id, username=user_name, text=text)
         except Exception as err:
-            logger.debug(f"解析SynologyChat消息失败：{err}")
+            logger.debug(f" AnalyzeSynologyChat Message failure：{err}")
         return None
 
     @checkMessage(MessageChannel.SynologyChat)
     def post_message(self, message: Notification) -> None:
         """
-        发送消息
-        :param message: 消息体
-        :return: 成功或失败
+        Send a message
+        :param message:  Message body
+        :return:  Success or failure
         """
         self.synologychat.send_msg(title=message.title, text=message.text,
                                    image=message.image, userid=message.userid)
@@ -66,10 +66,10 @@ class SynologyChatModule(_ModuleBase):
     @checkMessage(MessageChannel.SynologyChat)
     def post_medias_message(self, message: Notification, medias: List[MediaInfo]) -> Optional[bool]:
         """
-        发送媒体信息选择列表
-        :param message: 消息体
-        :param medias: 媒体列表
-        :return: 成功或失败
+        Send media message selection list
+        :param message:  Message body
+        :param medias:  Media list
+        :return:  Success or failure
         """
         return self.synologychat.send_meidas_msg(title=message.title, medias=medias,
                                                  userid=message.userid)
@@ -77,9 +77,9 @@ class SynologyChatModule(_ModuleBase):
     @checkMessage(MessageChannel.SynologyChat)
     def post_torrents_message(self, message: Notification, torrents: List[Context]) -> Optional[bool]:
         """
-        发送种子信息选择列表
-        :param message: 消息体
-        :param torrents: 种子列表
-        :return: 成功或失败
+        Send seed message selection list
+        :param message:  Message body
+        :param torrents:  Seed list
+        :return:  Success or failure
         """
         return self.synologychat.send_torrents_msg(title=message.title, torrents=torrents, userid=message.userid)

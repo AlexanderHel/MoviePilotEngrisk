@@ -5,15 +5,15 @@ from pydantic import BaseModel
 
 # Shared properties
 class UserBase(BaseModel):
-    # 用户名
+    #  User id
     name: str
-    # 邮箱，未启用
+    #  Inbox， Not yet activated
     email: Optional[str] = None
-    # 状态
+    #  State of affairs
     is_active: Optional[bool] = True
-    # 超级管理员
+    #  Super-administrator
     is_superuser: bool = False
-    # 头像
+    #  Avatar
     avatar: Optional[str] = None
 
 

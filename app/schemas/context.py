@@ -5,73 +5,73 @@ from pydantic import BaseModel
 
 class MetaInfo(BaseModel):
     """
-    识别元数据
+    Identifying metadata
     """
-    # 是否处理的文件
+    #  Documents processed or not
     isfile: Optional[bool] = False
-    # 原字符串
+    #  Original string
     org_string: Optional[str] = None
-    # 原标题
+    #  Original title
     title: Optional[str] = None
-    # 副标题
+    #  Subheading
     subtitle: Optional[str] = None
-    # 类型 电影、电视剧
+    #  Typology  Cinematic、 Dramas
     type: Optional[str] = None
-    # 名称
+    #  Name (of a thing)
     name: Optional[str] = None
-    # 识别的中文名
+    #  Recognized chinese names
     cn_name: Optional[str] = None
-    # 识别的英文名
+    #  Recognizable english names
     en_name: Optional[str] = None
-    # 年份
+    #  Particular year
     year: Optional[str] = None
-    # 总季数
+    #  Total number of quarters
     total_season: Optional[int] = 0
-    # 识别的开始季 数字
+    #  The beginning of the identification season  Digital (electronics etc)
     begin_season: Optional[int] = None
-    # 识别的结束季 数字
+    #  End of season for identification  Digital (electronics etc)
     end_season: Optional[int] = None
-    # 总集数
+    #  Total episodes
     total_episode: Optional[int] = 0
-    # 识别的开始集
+    #  Identified starting set
     begin_episode: Optional[int] = None
-    # 识别的结束集
+    #  Identified end sets
     end_episode: Optional[int] = None
     # SxxExx
     season_episode: Optional[str] = None
     # Partx Cd Dvd Disk Disc
     part: Optional[str] = None
-    # 识别的资源类型
+    #  Types of resources identified
     resource_type: Optional[str] = None
-    # 识别的效果
+    #  Effectiveness of identification
     resource_effect: Optional[str] = None
-    # 识别的分辨率
+    #  Recognized resolution
     resource_pix: Optional[str] = None
-    # 识别的制作组/字幕组
+    #  Identified production team/ Subtitling team
     resource_team: Optional[str] = None
-    # 视频编码
+    #  Video encoding
     video_encode: Optional[str] = None
-    # 音频编码
+    #  Audio encoding
     audio_encode: Optional[str] = None
-    # 资源类型
+    #  Resource type
     edition: Optional[str] = None
-    # 应用的识别词信息
+    #  Identifier information for the application
     apply_words: Optional[List[str]] = None
 
 
 class MediaInfo(BaseModel):
     """
-    识别媒体信息
+    Identify media messages
     """
-    # 类型 电影、电视剧
+    #  Typology  Cinematic、 Dramas
     type: Optional[str] = None
-    # 媒体标题
+    #  Media title
     title: Optional[str] = None
-    # 年份
+    #  Particular year
     year: Optional[str] = None
-    # 标题（年份）
+    #  Caption（ Particular year）
     title_year: Optional[str] = None
-    # 季
+    #  Classifier for seasonal crop yield or seasons of a tv series
     season: Optional[int] = None
     # TMDB ID
     tmdb_id: Optional[int] = None
@@ -79,144 +79,144 @@ class MediaInfo(BaseModel):
     imdb_id: Optional[str] = None
     # TVDB ID
     tvdb_id: Optional[str] = None
-    # 豆瓣ID
+    #  Douban, prc social networking websiteID
     douban_id: Optional[str] = None
-    # 媒体原语种
+    #  Original language of the media
     original_language: Optional[str] = None
-    # 媒体原发行标题
+    #  Original media release title
     original_title: Optional[str] = None
-    # 媒体发行日期
+    #  Media release date
     release_date: Optional[str] = None
-    # 背景图片
+    #  Background image
     backdrop_path: Optional[str] = None
-    # 海报图片
+    #  Poster image
     poster_path: Optional[str] = None
-    # 评分
+    #  Score (of student's work)
     vote_average: Optional[int] = 0
-    # 描述
+    #  Descriptive
     overview: Optional[str] = None
-    # 二级分类
+    #  Secondary classification
     category: Optional[str] = ""
-    # 季季集清单
+    #  Classifier for seasonal crop yield or seasons of a tv series季集清单
     seasons: Optional[Dict[int, list]] = {}
-    # 季详情
+    #  Classifier for seasonal crop yield or seasons of a tv series详情
     season_info: Optional[List[dict]] = []
-    # 别名和译名
+    #  Alias and translation
     names: Optional[list] = []
-    # 演员
+    #  Actor or actress
     actors: Optional[list] = []
-    # 导演
+    #  Director (film etc)
     directors: Optional[list] = []
-    # 详情链接
+    #  Detailed links
     detail_link: Optional[str] = None
-    # 其它TMDB属性
-    # 是否成人内容
+    #  Other thanTMDB Causality
+    #  Adult content or not
     adult: Optional[bool] = False
-    # 创建人
+    #  Founder
     created_by: Optional[list] = []
-    # 集时长
+    #  Episode length
     episode_run_time: Optional[list] = []
-    # 风格
+    #  Hairstyle
     genres: Optional[List[dict]] = []
-    # 首播日期
+    #  Premiere date
     first_air_date: Optional[str] = None
-    # 首页
+    #  Home page (of a website)
     homepage: Optional[str] = None
-    # 语种
+    #  Language type (in a classification)
     languages: Optional[list] = []
-    # 最后上映日期
+    #  Last release date
     last_air_date: Optional[str] = None
-    # 流媒体平台
+    #  Streaming media platform
     networks: Optional[list] = []
-    # 集数
+    #  Episode number (of a tv series etc)
     number_of_episodes: Optional[int] = 0
-    # 季数
+    #  Classifier for seasonal crop yield or seasons of a tv series数
     number_of_seasons: Optional[int] = 0
-    # 原产国
+    #  Country of origin
     origin_country: Optional[list] = []
-    # 原名
+    #  Original name
     original_name: Optional[str] = None
-    # 出品公司
+    #  Production company
     production_companies: Optional[list] = []
-    # 出品国
+    #  Producer
     production_countries: Optional[list] = []
-    # 语种
+    #  Language type (in a classification)
     spoken_languages: Optional[list] = []
-    # 状态
+    #  State of affairs
     status: Optional[str] = None
-    # 标签
+    #  Tab (of a window) (computing)
     tagline: Optional[str] = None
-    # 风格ID
+    #  HairstyleID
     genre_ids: Optional[list] = []
-    # 评价数量
+    #  Number of evaluations
     vote_count: Optional[int] = 0
-    # 流行度
+    #  Popularity
     popularity: Optional[int] = 0
-    # 时长
+    #  Length of time
     runtime: Optional[int] = None
-    # 下一集
+    #  Next episode
     next_episode_to_air: Optional[dict] = {}
 
 
 class TorrentInfo(BaseModel):
     """
-    搜索种子信息
+    Search for seed information
     """
-    # 站点ID
+    #  WebsiteID
     site: Optional[int] = None
-    # 站点名称
+    #  Site name
     site_name: Optional[str] = None
-    # 站点Cookie
+    #  WebsiteCookie
     site_cookie: Optional[str] = None
-    # 站点UA
+    #  WebsiteUA
     site_ua: Optional[str] = None
-    # 站点是否使用代理
+    #  Whether the site uses a proxy
     site_proxy: Optional[bool] = False
-    # 站点优先级
+    #  Site prioritization
     site_order: Optional[int] = 0
-    # 种子名称
+    #  Seed name
     title: Optional[str] = None
-    # 种子副标题
+    #  Seed subtitle
     description: Optional[str] = None
     # IMDB ID
     imdbid: Optional[str] = None
-    # 种子链接
+    #  Seed links
     enclosure: Optional[str] = None
-    # 详情页面
+    #  Detail page
     page_url: Optional[str] = None
-    # 种子大小
+    #  Seed size
     size: Optional[float] = 0
-    # 做种者
+    #  Breeder
     seeders: Optional[int] = 0
-    # 下载者
+    #  Downloader
     peers: Optional[int] = 0
-    # 完成者
+    #  Completer
     grabs: Optional[int] = 0
-    # 发布时间
+    #  Release time
     pubdate: Optional[str] = None
-    # 已过时间
+    #  Past due
     date_elapsed: Optional[str] = None
-    # 上传因子
+    #  Upload factor
     uploadvolumefactor: Optional[float] = None
-    # 下载因子
+    #  Download factor
     downloadvolumefactor: Optional[float] = None
     # HR
     hit_and_run: Optional[bool] = False
-    # 种子标签
+    #  Seed labels
     labels: Optional[list] = []
-    # 种子优先级
+    #  Seeding priority
     pri_order: Optional[int] = 0
-    # 促销
+    #  Promote
     volume_factor: Optional[str] = None
 
 
 class Context(BaseModel):
     """
-    上下文
+    (textual) context
     """
-    # 元数据
+    #  Metadata
     meta_info: Optional[MetaInfo] = None
-    # 媒体信息
+    #  Media information
     media_info: Optional[MediaInfo] = None
-    # 种子信息
+    #  Seed information
     torrent_info: Optional[TorrentInfo] = None

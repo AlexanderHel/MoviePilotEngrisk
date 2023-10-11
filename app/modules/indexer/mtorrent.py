@@ -24,15 +24,15 @@ class MTorrentSpider:
     _downloadurl = "%sapi/torrent/genDlToken"
     _pageurl = "%sdetail/%s"
 
-    # 电影分类
+    #  Movie categories
     _movie_category = ['401', '419', '420', '421', '439', '405', '404']
     _tv_category = ['403', '402', '435', '438', '404', '405']
 
-    # 标签
+    #  Tab (of a window) (computing)
     _labels = {
         0: "",
-        4: "中字",
-        6: "国配",
+        4: " Chinese character",
+        6: " National prestige",
     }
 
     def __init__(self, indexer: CommentedMap):
@@ -91,10 +91,10 @@ class MTorrentSpider:
                 }
                 torrents.append(torrent)
         elif res is not None:
-            logger.warn(f"{self._name} 搜索失败，错误码：{res.status_code}")
+            logger.warn(f"{self._name}  Search failure， Error code：{res.status_code}")
             return True, []
         else:
-            logger.warn(f"{self._name} 搜索失败，无法连接 {self._domain}")
+            logger.warn(f"{self._name}  Search failure， Connectionless {self._domain}")
             return True, []
         return False, torrents
 
@@ -139,6 +139,6 @@ class MTorrentSpider:
             },
             'result': 'data'
         }
-        # base64编码
+        # base64 Encodings
         base64_str = base64.b64encode(json.dumps(params).encode('utf-8')).decode('utf-8')
         return f"[{base64_str}]{url}"

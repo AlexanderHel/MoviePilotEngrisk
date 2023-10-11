@@ -26,22 +26,22 @@ class Telegram(metaclass=Singleton):
 
     def __init__(self):
         """
-        初始化参数
+        Initialization parameters
         """
         # Token
         self._telegram_token = settings.TELEGRAM_TOKEN
         # Chat Id
         self._telegram_chat_id = settings.TELEGRAM_CHAT_ID
-        # 初始化机器人
+        #  Initializing the robot
         if self._telegram_token and self._telegram_chat_id:
             # bot
             _bot = telebot.TeleBot(self._telegram_token, parse_mode="Markdown")
-            # 记录句柄
+            #  Record handle
             self._bot = _bot
 
             @_bot.message_handler(commands=['start', 'help'])
             def send_welcome(message):
-                _bot.reply_to(message, "温馨提示：直接发送名称或`订阅`+名称，搜索或订阅电影、电视剧")
+                _bot.reply_to(message, " Hint： Send the name directly or` Subscribe to`+ Name (of a thing)， Search or subscribe to movies、 Dramas")
 
             @_bot.message_handler(func=lambda message: True)
             def echo_all(message):
@@ -49,32 +49,32 @@ class Telegram(metaclass=Singleton):
 
             def run_polling():
                 """
-                定义线程函数来运行 infinity_polling
+                Define threaded functions to run infinity_polling
                 """
                 try:
                     _bot.infinity_polling(long_polling_timeout=30, logger_level=None)
                 except Exception as err:
-                    logger.error(f"Telegram消息接收服务异常：{err}")
+                    logger.error(f"Telegram Message receiving service exception：{err}")
 
-            # 启动线程来运行 infinity_polling
+            #  Start a thread to run infinity_polling
             self._polling_thread = threading.Thread(target=run_polling)
             self._polling_thread.start()
-            logger.info("Telegram消息接收服务启动")
+            logger.info("Telegram Message acceptance service startup")
 
     def send_msg(self, title: str, text: str = "", image: str = "", userid: str = "") -> Optional[bool]:
         """
-        发送Telegram消息
-        :param title: 消息标题
-        :param text: 消息内容
-        :param image: 消息图片地址
-        :param userid: 用户ID，如有则只发消息给该用户
-        :userid: 发送消息的目标用户ID，为空则发给管理员
+        DispatchTelegram Messages
+        :param title:  Message title
+        :param text:  Message
+        :param image:  Message image address
+        :param userid:  SubscribersID， If so, send a message to that user only
+        :userid:  The target user to whom the message is sentID， If empty, send to administrator
         """
         if not self._telegram_token or not self._telegram_chat_id:
             return None
 
         if not title and not text:
-            logger.warn("标题和内容不能同时为空")
+            logger.warn(" Title and content cannot be empty at the same time")
             return False
 
         try:
@@ -91,12 +91,12 @@ class Telegram(metaclass=Singleton):
             return self.__send_request(userid=chat_id, image=image, caption=caption)
 
         except Exception as msg_e:
-            logger.error(f"发送消息失败：{msg_e}")
+            logger.error(f" Failed to send message：{msg_e}")
             return False
 
     def send_meidas_msg(self, medias: List[MediaInfo], userid: str = "", title: str = "") -> Optional[bool]:
         """
-        发送媒体列表消息
+        Send media list message
         """
         if not self._telegram_token or not self._telegram_chat_id:
             return None
@@ -111,14 +111,14 @@ class Telegram(metaclass=Singleton):
                                                              index,
                                                              media.title_year,
                                                              media.detail_link,
-                                                             f"类型：{media.type.value}",
-                                                             f"评分：{media.vote_average}")
+                                                             f" Typology：{media.type.value}",
+                                                             f" Score (of student's work)：{media.vote_average}")
                 else:
                     caption = "%s\n%s. [%s](%s)\n_%s_" % (caption,
                                                           index,
                                                           media.title_year,
                                                           media.detail_link,
-                                                          f"类型：{media.type.value}")
+                                                          f" Typology：{media.type.value}")
                 index += 1
 
             if userid:
@@ -129,13 +129,13 @@ class Telegram(metaclass=Singleton):
             return self.__send_request(userid=chat_id, image=image, caption=caption)
 
         except Exception as msg_e:
-            logger.error(f"发送消息失败：{msg_e}")
+            logger.error(f" Failed to send message：{msg_e}")
             return False
 
     def send_torrents_msg(self, torrents: List[Context],
                           userid: str = "", title: str = "") -> Optional[bool]:
         """
-        发送列表消息
+        Send a list message
         """
         if not self._telegram_token or not self._telegram_chat_id:
             return None
@@ -171,12 +171,12 @@ class Telegram(metaclass=Singleton):
                                        image=mediainfo.get_message_image())
 
         except Exception as msg_e:
-            logger.error(f"发送消息失败：{msg_e}")
+            logger.error(f" Failed to send message：{msg_e}")
             return False
 
     def __send_request(self, userid: str = None, image="", caption="") -> bool:
         """
-        向Telegram发送报文
+        TowardTelegram Sending message
         """
 
         if image:
@@ -199,11 +199,11 @@ class Telegram(metaclass=Singleton):
 
     def register_commands(self, commands: Dict[str, dict]):
         """
-        注册菜单命令
+        Registration menu commands
         """
         if not self._bot:
             return
-        # 设置bot命令
+        #  Set upbot Command
         if commands:
             self._bot.delete_my_commands()
             self._bot.set_my_commands(
@@ -215,9 +215,9 @@ class Telegram(metaclass=Singleton):
 
     def stop(self):
         """
-        停止Telegram消息接收服务
+        CessationTelegram Message acceptance service
         """
         if self._bot:
             self._bot.stop_polling()
             self._polling_thread.join()
-            logger.info("Telegram消息接收服务已停止")
+            logger.info("Telegram The message receiving service has been discontinued")

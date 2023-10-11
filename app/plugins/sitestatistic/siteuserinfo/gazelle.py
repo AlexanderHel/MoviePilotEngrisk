@@ -72,7 +72,7 @@ class GazelleSiteUserInfo(ISiteUserInfo):
 
     def _parse_user_detail_info(self, html_text: str):
         """
-        解析用户额外信息，加入时间，等级
+        Parsing additional user information， Joining time， Hierarchy
         :param html_text:
         :return:
         """
@@ -80,41 +80,41 @@ class GazelleSiteUserInfo(ISiteUserInfo):
         if not html:
             return None
 
-        # 用户等级
+        #  User level
         user_levels_text = html.xpath('//*[@id="class-value"]/@data-value')
         if user_levels_text:
             self.user_level = user_levels_text[0].strip()
         else:
-            user_levels_text = html.xpath('//li[contains(text(), "用户等级")]/text()')
+            user_levels_text = html.xpath('//li[contains(text(), " User level")]/text()')
             if user_levels_text:
                 self.user_level = user_levels_text[0].split(':')[1].strip()
 
-        # 加入日期
+        #  Date of accession
         join_at_text = html.xpath('//*[@id="join-date-value"]/@data-value')
         if join_at_text:
             self.join_at = StringUtils.unify_datetime_str(join_at_text[0].strip())
         else:
             join_at_text = html.xpath(
-                '//div[contains(@class, "box_userinfo_stats")]//li[contains(text(), "加入时间")]/span/text()')
+                '//div[contains(@class, "box_userinfo_stats")]//li[contains(text(), " Joining time")]/span/text()')
             if join_at_text:
                 self.join_at = StringUtils.unify_datetime_str(join_at_text[0].strip())
 
     def _parse_user_torrent_seeding_info(self, html_text: str, multi_page: bool = False) -> Optional[str]:
         """
-        做种相关信息
+        Seeding information
         :param html_text:
-        :param multi_page: 是否多页数据
-        :return: 下页地址
+        :param multi_page:  Whether multiple pages of data
+        :return:  Next page address
         """
         html = etree.HTML(html_text)
         if not html:
             return None
 
         size_col = 3
-        # 搜索size列
+        #  Look for sth.size Columns
         if html.xpath('//table[contains(@id, "torrent")]//tr[1]/td'):
             size_col = len(html.xpath('//table[contains(@id, "torrent")]//tr[1]/td')) - 3
-        # 搜索seeders列
+        #  Look for sth.seeders Columns
         seeders_col = size_col + 2
 
         page_seeding = 0
@@ -144,9 +144,9 @@ class GazelleSiteUserInfo(ISiteUserInfo):
             if not self.seeding_info:
                 self.seeding_info = page_seeding_info
 
-        # 是否存在下页数据
+        #  Existence of next page data
         next_page = None
-        next_page_text = html.xpath('//a[contains(.//text(), "Next") or contains(.//text(), "下一页")]/@href')
+        next_page_text = html.xpath('//a[contains(.//text(), "Next") or contains(.//text(), " Next page")]/@href')
         if next_page_text:
             next_page = next_page_text[-1].strip()
 

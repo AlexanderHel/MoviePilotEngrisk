@@ -18,7 +18,7 @@ EXPIRE_TIMESTAMP = settings.CACHE_CONF.get('meta')
 
 class TmdbCache(metaclass=Singleton):
     """
-    TMDB缓存数据
+    TMDB Cached data
     {
         "id": '',
         "title": '',
@@ -27,9 +27,9 @@ class TmdbCache(metaclass=Singleton):
     }
     """
     _meta_data: dict = {}
-    # 缓存文件路径
+    #  Cache file path
     _meta_path: Path = None
-    # TMDB缓存过期
+    # TMDB Cache expiration
     _tmdb_cache_expire: bool = True
 
     def __init__(self):
@@ -38,7 +38,7 @@ class TmdbCache(metaclass=Singleton):
 
     def clear(self):
         """
-        清空所有TMDB缓存
+        Empty allTMDB (computing) cache
         """
         with lock:
             self._meta_data = {}
@@ -46,13 +46,13 @@ class TmdbCache(metaclass=Singleton):
     @staticmethod
     def __get_key(meta: MetaBase) -> str:
         """
-        获取缓存KEY
+        Getting the cacheKEY
         """
-        return f"[{meta.type.value if meta.type else '未知'}]{meta.name}-{meta.year}-{meta.begin_season}"
+        return f"[{meta.type.value if meta.type else ' Uncharted'}]{meta.name}-{meta.year}-{meta.begin_season}"
 
     def get(self, meta: MetaBase):
         """
-        根据KEY值获取缓存值
+        According toKEY Value fetch cache value
         """
         key = self.__get_key(meta)
         with lock:
@@ -68,16 +68,16 @@ class TmdbCache(metaclass=Singleton):
 
     def delete(self, key: str) -> dict:
         """
-        删除缓存信息
-        @param key: 缓存key
-        @return: 被删除的缓存内容
+        Deleting cached information
+        @param key:  (computing) cachekey
+        @return:  Deleted cache contents
         """
         with lock:
             return self._meta_data.pop(key, None)
 
     def delete_by_tmdbid(self, tmdbid: int) -> None:
         """
-        清空对应TMDBID的所有缓存记录，以强制更新TMDB中最新的数据
+        Empty the correspondingTMDBID All cached records of the， To force an updateTMDB Latest data available in
         """
         for key in list(self._meta_data):
             if self._meta_data.get(key, {}).get("id") == tmdbid:
@@ -86,7 +86,7 @@ class TmdbCache(metaclass=Singleton):
 
     def delete_unknown(self) -> None:
         """
-        清除未识别的缓存记录，以便重新搜索TMDB
+        Clear unrecognized cache records， In order to re-searchTMDB
         """
         for key in list(self._meta_data):
             if self._meta_data.get(key, {}).get("id") == 0:
@@ -95,10 +95,10 @@ class TmdbCache(metaclass=Singleton):
 
     def modify(self, key: str, title: str) -> dict:
         """
-        删除缓存信息
-        @param key: 缓存key
-        @param title: 标题
-        @return: 被修改后缓存内容
+        Deleting cached information
+        @param key:  (computing) cachekey
+        @param title:  Caption
+        @return:  Modified cache contents
         """
         with lock:
             if self._meta_data.get(key):
@@ -109,7 +109,7 @@ class TmdbCache(metaclass=Singleton):
     @staticmethod
     def __load(path: Path) -> dict:
         """
-        从文件中加载缓存
+        Load cache from file
         """
         try:
             if path.exists():
@@ -123,14 +123,14 @@ class TmdbCache(metaclass=Singleton):
 
     def update(self, meta: MetaBase, info: dict) -> None:
         """
-        新增或更新缓存条目
+        Add or update cache entries
         """
         with lock:
             if info:
-                # 缓存标题
+                #  Cache title
                 cache_title = info.get("title") \
                     if info.get("media_type") == MediaType.MOVIE else info.get("name")
-                # 缓存年份
+                #  Cache year
                 cache_year = info.get('release_date') \
                     if info.get("media_type") == MediaType.MOVIE else info.get('first_air_date')
                 if cache_year:
@@ -149,7 +149,7 @@ class TmdbCache(metaclass=Singleton):
 
     def save(self, force: bool = False) -> None:
         """
-        保存缓存数据到文件
+        Save cached data to file
         """
 
         meta_data = self.__load(self._meta_path)
@@ -165,7 +165,7 @@ class TmdbCache(metaclass=Singleton):
 
     def _random_sample(self, new_meta_data: dict) -> bool:
         """
-        采样分析是否需要保存
+        Whether the sampling analysis needs to be preserved
         """
         ret = False
         if len(new_meta_data) < 25:
@@ -200,7 +200,7 @@ class TmdbCache(metaclass=Singleton):
 
     def get_title(self, key: str) -> Optional[str]:
         """
-        获取缓存的标题
+        Getting cached headers
         """
         cache_media_info = self._meta_data.get(key)
         if not cache_media_info or not cache_media_info.get("id"):
@@ -209,7 +209,7 @@ class TmdbCache(metaclass=Singleton):
 
     def set_title(self, key: str, cn_title: str) -> None:
         """
-        重新设置缓存标题
+        Reset the cache header
         """
         cache_media_info = self._meta_data.get(key)
         if not cache_media_info:

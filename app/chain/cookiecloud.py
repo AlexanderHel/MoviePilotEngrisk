@@ -22,7 +22,7 @@ from app.utils.site import SiteUtils
 
 class CookieCloudChain(ChainBase):
     """
-    CookieCloud处理链
+    CookieCloud Process chain
     """
 
     def __init__(self, db: Session = None):
@@ -41,32 +41,32 @@ class CookieCloudChain(ChainBase):
 
     def process(self, manual=False) -> Tuple[bool, str]:
         """
-        通过CookieCloud同步站点Cookie
+        Pass (a bill or inspection etc)CookieCloud Synchronization siteCookie
         """
-        logger.info("开始同步CookieCloud站点 ...")
+        logger.info(" Start synchronizationCookieCloud Website ...")
         cookies, msg = self.cookiecloud.download()
         if not cookies:
-            logger.error(f"CookieCloud同步失败：{msg}")
+            logger.error(f"CookieCloud Synchronization failure：{msg}")
             if manual:
-                self.message.put(f"CookieCloud同步失败： {msg}")
+                self.message.put(f"CookieCloud Synchronization failure： {msg}")
             return False, msg
-        # 保存Cookie或新增站点
+        #  Save (a file etc) (computing)Cookie Or add a new site
         _update_count = 0
         _add_count = 0
         _fail_count = 0
         for domain, cookie in cookies.items():
-            # 获取站点信息
+            #  Get site information
             indexer = self.siteshelper.get_indexer(domain)
             site_info = self.siteoper.get_by_domain(domain)
             if site_info:
-                # 检查站点连通性
+                #  Check site connectivity
                 status, msg = self.sitechain.test(domain)
-                # 更新站点Cookie
+                #  Updating the siteCookie
                 if status:
-                    logger.info(f"站点【{site_info.name}】连通性正常，不同步CookieCloud数据")
-                    # 更新站点rss地址
+                    logger.info(f" Website【{site_info.name}】 Connectivity is normal， AsynchronousCookieCloud Digital")
+                    #  Updating the siterss Address
                     if not site_info.public and not site_info.rss:
-                        # 自动生成rss地址
+                        #  Automatic generationrss Address
                         rss_url, errmsg = self.rsshelper.get_rss_link(
                             url=site_info.url,
                             cookie=cookie,
@@ -74,17 +74,17 @@ class CookieCloudChain(ChainBase):
                             proxy=True if site_info.proxy else False
                         )
                         if rss_url:
-                            logger.info(f"更新站点 {domain} RSS地址 ...")
+                            logger.info(f" Updating the site {domain} RSS Address ...")
                             self.siteoper.update_rss(domain=domain, rss=rss_url)
                         else:
                             logger.warn(errmsg)
                     continue
-                # 更新站点Cookie
-                logger.info(f"更新站点 {domain} Cookie ...")
+                #  Updating the siteCookie
+                logger.info(f" Updating the site {domain} Cookie ...")
                 self.siteoper.update_cookie(domain=domain, cookies=cookie)
                 _update_count += 1
             elif indexer:
-                # 新增站点
+                #  New sites
                 res = RequestUtils(cookies=cookie,
                                    ua=settings.USER_AGENT
                                    ).get_res(url=indexer.get("domain"))
@@ -92,30 +92,30 @@ class CookieCloudChain(ChainBase):
                     if not indexer.get("public") and not SiteUtils.is_logged_in(res.text):
                         _fail_count += 1
                         if under_challenge(res.text):
-                            logger.warn(f"站点 {indexer.get('name')} 被Cloudflare防护，无法登录，无法添加站点")
+                            logger.warn(f" Website {indexer.get('name')}  (indicates passive-voice clauses)Cloudflare Defend， Unable to log in， Unable to add site")
                             continue
                         logger.warn(
-                            f"站点 {indexer.get('name')} 登录失败，没有该站点账号或Cookie已失效，无法添加站点")
+                            f" Website {indexer.get('name')}  Login failure， No account on the site orCookie Expired， Unable to add site")
                         continue
                 elif res is not None:
                     _fail_count += 1
-                    logger.warn(f"站点 {indexer.get('name')} 连接状态码：{res.status_code}，无法添加站点")
+                    logger.warn(f" Website {indexer.get('name')}  Connection status code：{res.status_code}， Unable to add site")
                     continue
                 else:
                     _fail_count += 1
-                    logger.warn(f"站点 {indexer.get('name')} 连接失败，无法添加站点")
+                    logger.warn(f" Website {indexer.get('name')}  Connection failure， Unable to add site")
                     continue
-                # 获取rss地址
+                #  Gainrss Address
                 rss_url = None
                 if not indexer.get("public") and indexer.get("domain"):
-                    # 自动生成rss地址
+                    #  Automatic generationrss Address
                     rss_url, errmsg = self.rsshelper.get_rss_link(url=indexer.get("domain"),
                                                                   cookie=cookie,
                                                                   ua=settings.USER_AGENT)
                     if errmsg:
                         logger.warn(errmsg)
-                # 插入数据库
-                logger.info(f"新增站点 {indexer.get('name')} ...")
+                #  Insertion into the database
+                logger.info(f" New sites {indexer.get('name')} ...")
                 self.siteoper.add(name=indexer.get("name"),
                                   url=indexer.get("domain"),
                                   domain=domain,
@@ -124,11 +124,11 @@ class CookieCloudChain(ChainBase):
                                   public=1 if indexer.get("public") else 0)
                 _add_count += 1
 
-            # 保存站点图标
+            #  Save site icon
             if indexer:
                 site_icon = self.siteiconoper.get_by_domain(domain)
                 if not site_icon or not site_icon.base64:
-                    logger.info(f"开始缓存站点 {indexer.get('name')} 图标 ...")
+                    logger.info(f" Start caching site {indexer.get('name')}  Icon (computing) ...")
                     icon_url, icon_base64 = self.__parse_favicon(url=indexer.get("domain"),
                                                                  cookie=cookie,
                                                                  ua=settings.USER_AGENT)
@@ -137,23 +137,23 @@ class CookieCloudChain(ChainBase):
                                                       domain=domain,
                                                       icon_url=icon_url,
                                                       icon_base64=icon_base64)
-                        logger.info(f"缓存站点 {indexer.get('name')} 图标成功")
+                        logger.info(f" Cache site {indexer.get('name')}  Icon success")
                     else:
-                        logger.warn(f"缓存站点 {indexer.get('name')} 图标失败")
-        # 处理完成
-        ret_msg = f"更新了{_update_count}个站点，新增了{_add_count}个站点"
+                        logger.warn(f" Cache site {indexer.get('name')}  Icon failure")
+        #  Processing completed
+        ret_msg = f" Updated.{_update_count} Stations， Added{_add_count} Stations"
         if _fail_count > 0:
-            ret_msg += f"，{_fail_count}个站点添加失败，下次同步时将重试，也可以手动添加"
+            ret_msg += f"，{_fail_count} Failed to add a site， Will be retried the next time it is synchronized， It can also be added manually"
         if manual:
-            self.message.put(f"CookieCloud同步成功, {ret_msg}")
-        logger.info(f"CookieCloud同步成功：{ret_msg}")
+            self.message.put(f"CookieCloud Synchronization successful, {ret_msg}")
+        logger.info(f"CookieCloud Synchronization successful：{ret_msg}")
         return True, ret_msg
 
     @staticmethod
     def __parse_favicon(url: str, cookie: str, ua: str) -> Tuple[str, Optional[str]]:
         """
-        解析站点favicon,返回base64 fav图标
-        :param url: 站点地址
+        Parse sitefavicon, Come (or go) backbase64 fav Icon (computing)
+        :param url:  Site address
         :param cookie: Cookie
         :param ua: User-Agent
         :return:
@@ -163,7 +163,7 @@ class CookieCloudChain(ChainBase):
         if res:
             html_text = res.text
         else:
-            logger.error(f"获取站点页面失败：{url}")
+            logger.error(f" Failed to get site page：{url}")
             return favicon_url, None
         html = etree.HTML(html_text)
         if html:
@@ -175,5 +175,5 @@ class CookieCloudChain(ChainBase):
         if res:
             return favicon_url, base64.b64encode(res.content).decode()
         else:
-            logger.error(f"获取站点图标失败：{favicon_url}")
+            logger.error(f" Failed to get site icon：{favicon_url}")
         return favicon_url, None

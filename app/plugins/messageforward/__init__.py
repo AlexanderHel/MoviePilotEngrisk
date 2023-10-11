@@ -12,36 +12,36 @@ from app.log import logger
 
 
 class MessageForward(_PluginBase):
-    # 插件名称
-    plugin_name = "消息转发"
-    # 插件描述
-    plugin_desc = "根据正则转发通知到其他WeChat应用。"
-    # 插件图标
+    #  Plug-in name
+    plugin_name = " Message forwarding"
+    #  Plugin description
+    plugin_desc = " Forward notifications based on regularity to otherWeChat Appliance。"
+    #  Plug-in icons
     plugin_icon = "forward.png"
-    # 主题色
+    #  Theme color
     plugin_color = "#32ABD1"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "thsrite"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/thsrite"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "messageforward_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 16
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 1
 
-    # 私有属性
+    #  Private property
     _enabled = False
     _wechat = None
     _pattern = None
     _pattern_token = {}
 
-    # 企业微信发送消息URL
+    #  Enterprise wechat send messageURL
     _send_msg_url = f"{settings.WECHAT_PROXY}/cgi-bin/message/send?access_token=%s"
-    # 企业微信获取TokenURL
+    #  Enterprise wechat getTokenURL
     _token_url = f"{settings.WECHAT_PROXY}/cgi-bin/gettoken?corpid=%s&corpsecret=%s"
 
     def init_plugin(self, config: dict = None):
@@ -50,7 +50,7 @@ class MessageForward(_PluginBase):
             self._wechat = config.get("wechat")
             self._pattern = config.get("pattern")
 
-            # 获取token存库
+            #  Gaintoken Stockpile
             if self._enabled and self._wechat:
                 self.__save_wechat_token()
 
@@ -66,7 +66,7 @@ class MessageForward(_PluginBase):
 
     def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
         """
-        拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
+        Assembly plugin configuration page， Two pieces of data need to be returned：1、 Page configuration；2、 Data structure
         """
         return [
                    {
@@ -86,7 +86,7 @@ class MessageForward(_PluginBase):
                                                'component': 'VSwitch',
                                                'props': {
                                                    'model': 'enabled',
-                                                   'label': '开启转发'
+                                                   'label': ' Enable forwarding'
                                                }
                                            }
                                        ]
@@ -107,8 +107,8 @@ class MessageForward(_PluginBase):
                                                'props': {
                                                    'model': 'wechat',
                                                    'rows': '3',
-                                                   'label': '应用配置',
-                                                   'placeholder': 'appid:corpid:appsecret（一行一个配置）'
+                                                   'label': ' Application configuration',
+                                                   'placeholder': 'appid:corpid:appsecret（ One line, one configuration）'
                                                }
                                            }
                                        ]
@@ -129,8 +129,8 @@ class MessageForward(_PluginBase):
                                                'props': {
                                                    'model': 'pattern',
                                                    'rows': '3',
-                                                   'label': '正则配置',
-                                                   'placeholder': '对应上方应用配置，一行一个，一一对应'
+                                                   'label': ' Regular configuration',
+                                                   'placeholder': ' Corresponds to the application configuration above， One in a row， One-to-one correspondence'
                                                }
                                            }
                                        ]
@@ -151,12 +151,12 @@ class MessageForward(_PluginBase):
     @eventmanager.register(EventType.NoticeMessage)
     def send(self, event):
         """
-        消息转发
+        Message forwarding
         """
         if not self._enabled:
             return
 
-        # 消息体
+        #  Message body
         data = event.event_data
         channel = data['channel']
         if channel and channel != MessageChannel.Wechat:
@@ -167,17 +167,17 @@ class MessageForward(_PluginBase):
         image = data['image']
         userid = data['userid']
 
-        # 正则匹配
+        #  Regular match
         patterns = self._pattern.split("\n")
         for index, pattern in enumerate(patterns):
             msg_match = re.search(pattern, title)
             if msg_match:
                 access_token, appid = self.__flush_access_token(index)
                 if not access_token:
-                    logger.error("未获取到有效token，请检查配置")
+                    logger.error(" No validtoken， Please check the configuration")
                     continue
 
-                # 发送消息
+                #  Send a message
                 if image:
                     self.__send_image_message(title, text, image, userid, access_token, appid, index)
                 else:
@@ -185,25 +185,25 @@ class MessageForward(_PluginBase):
 
     def __save_wechat_token(self):
         """
-        获取并存储wechat token
+        Get and storewechat token
         """
-        # 解析配置
+        #  Parse configuration
         wechats = self._wechat.split("\n")
         for index, wechat in enumerate(wechats):
             wechat_config = wechat.split(":")
             if len(wechat_config) != 3:
-                logger.error(f"{wechat} 应用配置不正确")
+                logger.error(f"{wechat}  Incorrect application configuration")
                 continue
             appid = wechat_config[0]
             corpid = wechat_config[1]
             appsecret = wechat_config[2]
 
-            # 已过期，重新获取token
+            #  Expired， Retrievetoken
             access_token, expires_in, access_token_time = self.__get_access_token(corpid=corpid,
                                                                                   appsecret=appsecret)
             if not access_token:
-                # 没有token，获取token
-                logger.error(f"wechat配置 appid = {appid} 获取token失败，请检查配置")
+                #  Hasn'ttoken， Gaintoken
+                logger.error(f"wechat Configure appid = {appid}  Gaintoken Fail (e.g. experiments)， Please check the configuration")
                 continue
 
             self._pattern_token[index] = {
@@ -217,11 +217,11 @@ class MessageForward(_PluginBase):
 
     def __flush_access_token(self, index: int, force: bool = False):
         """
-        获取第i个配置wechat token
+        Getting the firsti Configurationwechat token
         """
         wechat_token = self._pattern_token[index]
         if not wechat_token:
-            logger.error(f"未获取到第 {index} 条正则对应的wechat应用token，请检查配置")
+            logger.error(f" Failure to acquire the first {index}  The rule corresponding to thewechat Appliancetoken， Please check the configuration")
             return None
         access_token = wechat_token['access_token']
         expires_in = wechat_token['expires_in']
@@ -230,13 +230,13 @@ class MessageForward(_PluginBase):
         corpid = wechat_token['corpid']
         appsecret = wechat_token['appsecret']
 
-        # 判断token有效期
+        #  Judgementstoken Validity period
         if force or (datetime.now() - access_token_time).seconds >= expires_in:
-            # 重新获取token
+            #  Retrievetoken
             access_token, expires_in, access_token_time = self.__get_access_token(corpid=corpid,
                                                                                   appsecret=appsecret)
             if not access_token:
-                logger.error(f"wechat配置 appid = {appid} 获取token失败，请检查配置")
+                logger.error(f"wechat Configure appid = {appid}  Gaintoken Fail (e.g. experiments)， Please check the configuration")
                 return None, None
 
         self._pattern_token[index] = {
@@ -252,11 +252,11 @@ class MessageForward(_PluginBase):
     def __send_message(self, title: str, text: str = None, userid: str = None, access_token: str = None,
                        appid: str = None, index: int = None) -> Optional[bool]:
         """
-        发送文本消息
-        :param title: 消息标题
-        :param text: 消息内容
-        :param userid: 消息发送对象的ID，为空则发给所有人
-        :return: 发送状态，错误信息
+        Send text message
+        :param title:  Message title
+        :param text:  Message
+        :param userid:  The message sender'sID， If it's empty, send it to everyone.
+        :return:  Sender state， Error message
         """
         if text:
             conent = "%s\n%s" % (title, text.replace("\n\n", "\n"))
@@ -281,12 +281,12 @@ class MessageForward(_PluginBase):
     def __send_image_message(self, title: str, text: str, image_url: str, userid: str = None,
                              access_token: str = None, appid: str = None, index: int = None) -> Optional[bool]:
         """
-        发送图文消息
-        :param title: 消息标题
-        :param text: 消息内容
-        :param image_url: 图片地址
-        :param userid: 消息发送对象的ID，为空则发给所有人
-        :return: 发送状态，错误信息
+        Send a graphic message
+        :param title:  Message title
+        :param text:  Message
+        :param image_url:  Image address
+        :param userid:  The message sender'sID， If it's empty, send it to everyone.
+        :return:  Sender state， Error message
         """
         if text:
             text = text.replace("\n\n", "\n")
@@ -312,7 +312,7 @@ class MessageForward(_PluginBase):
     def __post_request(self, access_token: str, req_json: dict, index: int, title: str, retry: int = 0) -> bool:
         message_url = self._send_msg_url % access_token
         """
-        向微信发送请求
+        Send a request to wechat
         """
         try:
             res = RequestUtils(content_type='application/json').post(
@@ -322,21 +322,21 @@ class MessageForward(_PluginBase):
             if res and res.status_code == 200:
                 ret_json = res.json()
                 if ret_json.get('errcode') == 0:
-                    logger.info(f"转发消息 {title} 成功")
+                    logger.info(f" Forward the message {title}  Successes")
                     return True
                 else:
                     if ret_json.get('errcode') == 81013:
                         return False
 
-                    logger.error(f"转发消息 {title} 失败，错误信息：{ret_json}")
+                    logger.error(f" Forward the message {title}  Fail (e.g. experiments)， Error message：{ret_json}")
                     if ret_json.get('errcode') == 42001 or ret_json.get('errcode') == 40014:
-                        logger.info("token已过期，正在重新刷新token重试")
-                        # 重新获取token
+                        logger.info("token Expired， Refreshing.token Retry")
+                        #  Retrievetoken
                         access_token, appid = self.__flush_access_token(index=index,
                                                                         force=True)
                         if access_token:
                             retry += 1
-                            # 重发请求
+                            #  Resend request
                             if retry <= 3:
                                 return self.__post_request(access_token=access_token,
                                                            req_json=req_json,
@@ -345,19 +345,19 @@ class MessageForward(_PluginBase):
                                                            retry=retry)
                     return False
             elif res is not None:
-                logger.error(f"转发消息 {title} 失败，错误码：{res.status_code}，错误原因：{res.reason}")
+                logger.error(f" Forward the message {title}  Fail (e.g. experiments)， Error code：{res.status_code}， Cause of error：{res.reason}")
                 return False
             else:
-                logger.error(f"转发消息 {title} 失败，未获取到返回信息")
+                logger.error(f" Forward the message {title}  Fail (e.g. experiments)， Return information not obtained")
                 return False
         except Exception as err:
-            logger.error(f"转发消息 {title} 异常，错误信息：{err}")
+            logger.error(f" Forward the message {title}  Exceptions， Error message：{err}")
             return False
 
     def __get_access_token(self, corpid: str, appsecret: str):
         """
-        获取微信Token
-        :return： 微信Token
+        Get wechatToken
+        :return：  MicrosoftToken
         """
         try:
             token_url = self._token_url % (corpid, appsecret)
@@ -374,14 +374,14 @@ class MessageForward(_PluginBase):
                     logger.error(f"{ret_json.get('errmsg')}")
                     return None, None, None
             else:
-                logger.error(f"{corpid} {appsecret} 获取token失败")
+                logger.error(f"{corpid} {appsecret}  Gaintoken Fail (e.g. experiments)")
                 return None, None, None
         except Exception as e:
-            logger.error(f"获取微信access_token失败，错误信息：{e}")
+            logger.error(f" Get wechataccess_token Fail (e.g. experiments)， Error message：{e}")
             return None, None, None
 
     def stop_service(self):
         """
-        退出插件
+        Exit plugin
         """
         pass

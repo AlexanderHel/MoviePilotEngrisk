@@ -5,15 +5,15 @@ import pkgutil
 
 class ModuleHelper:
     """
-    模块动态加载
+    Dynamic loading of modules
     """
 
     @classmethod
     def load(cls, package_path, filter_func=lambda name, obj: True):
         """
-        导入子模块
-        :param package_path: 父包名
-        :param filter_func: 子模块过滤函数，入参为模块名和模块对象，返回True则导入，否则不导入
+        Import submodule
+        :param package_path:  Parent package name
+        :param filter_func:  Submodule filter functions， The input parameters are the module name and the module object， Come (or go) backTrue Failing agreement， Otherwise not imported
         :return:
         """
 

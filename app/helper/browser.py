@@ -12,7 +12,7 @@ class PlaywrightHelper:
     @staticmethod
     def __pass_cloudflare(url: str, page: Page) -> bool:
         """
-        尝试跳过cloudfare验证
+        Try to skipcloudfare Validate (a theory)
         """
         sync_stealth(page, pure=True)
         page.goto(url)
@@ -26,14 +26,14 @@ class PlaywrightHelper:
                headless: bool = False,
                timeout: int = 30) -> Any:
         """
-        访问网页，接收Page对象并执行操作
-        :param url: 网页地址
-        :param callback: 回调函数，需要接收page对象
+        Access to the web page， Reception (of transmitted signal)Page Object and execute the operation
+        :param url:  Webaddress
+        :param callback:  Callback function， Need to receivepage Boyfriend
         :param cookies: cookies
         :param ua: user-agent
-        :param proxies: 代理
-        :param headless: 是否无头模式
-        :param timeout: 超时时间
+        :param proxies:  Act on behalf of sb. in a responsible position
+        :param headless:  Headless mode or not
+        :param timeout:  Timeout
         """
         try:
             with sync_playwright() as playwright:
@@ -46,14 +46,14 @@ class PlaywrightHelper:
                     if not self.__pass_cloudflare(url, page):
                         logger.warn("cloudflare challenge fail！")
                     page.wait_for_load_state("networkidle", timeout=timeout * 1000)
-                    # 回调函数
+                    #  Callback function
                     return callback(page)
                 except Exception as e:
-                    logger.error(f"网页操作失败: {e}")
+                    logger.error(f" Web operation failure: {e}")
                 finally:
                     browser.close()
         except Exception as e:
-            logger.error(f"网页操作失败: {e}")
+            logger.error(f" Web operation failure: {e}")
         return None
 
     def get_page_source(self, url: str,
@@ -63,13 +63,13 @@ class PlaywrightHelper:
                         headless: bool = False,
                         timeout: int = 30) -> str:
         """
-        获取网页源码
-        :param url: 网页地址
+        Get the web page source code
+        :param url:  Webaddress
         :param cookies: cookies
         :param ua: user-agent
-        :param proxies: 代理
-        :param headless: 是否无头模式
-        :param timeout: 超时时间
+        :param proxies:  Act on behalf of sb. in a responsible position
+        :param headless:  Headless mode or not
+        :param timeout:  Timeout
         """
         source = ""
         try:
@@ -85,16 +85,16 @@ class PlaywrightHelper:
                     page.wait_for_load_state("networkidle", timeout=timeout * 1000)
                     source = page.content()
                 except Exception as e:
-                    logger.error(f"获取网页源码失败: {e}")
+                    logger.error(f"Get the web page source code失败: {e}")
                     source = None
                 finally:
                     browser.close()
         except Exception as e:
-            logger.error(f"获取网页源码失败: {e}")
+            logger.error(f"Get the web page source code失败: {e}")
         return source
 
 
-# 示例用法
+#  Sample usage
 if __name__ == "__main__":
     utils = PlaywrightHelper()
     test_url = "https://piggo.me"

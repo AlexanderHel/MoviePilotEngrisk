@@ -2,113 +2,113 @@ from enum import Enum
 
 
 class MediaType(Enum):
-    MOVIE = '电影'
-    TV = '电视剧'
-    UNKNOWN = '未知'
+    MOVIE = ' Cinematic'
+    TV = ' Dramas'
+    UNKNOWN = ' Uncharted'
 
 
 class TorrentStatus(Enum):
-    TRANSFER = "可转移"
-    DOWNLOADING = "下载中"
+    TRANSFER = " Transferable"
+    DOWNLOADING = " Downloading"
 
 
-# 可监听事件
+#  Event listener
 class EventType(Enum):
-    # 插件重载
+    #  Plugin reloading
     PluginReload = "plugin.reload"
-    # 执行命令
+    #  Execute a command
     CommandExcute = "command.excute"
-    # 站点签到
+    #  Site check-in
     SiteSignin = "site.signin"
-    # 站点数据统计
+    #  Site statistics
     SiteStatistic = "site.statistic"
-    # 站点删除
+    #  Site deletion
     SiteDeleted = "site.deleted"
-    # 豆瓣想看
+    #  Douban wants to see
     DoubanSync = "douban.sync"
-    # Webhook消息
+    # Webhook Messages
     WebhookMessage = "webhook.message"
-    # 转移完成
+    #  Transfer completed
     TransferComplete = "transfer.complete"
-    # 添加下载
+    #  Add download
     DownloadAdded = "download.added"
-    # 删除历史记录
+    #  Delete history
     HistoryDeleted = "history.deleted"
-    # 删除下载源文件
+    #  Delete download source file
     DownloadFileDeleted = "downloadfile.deleted"
-    # 用户外来消息
+    #  User external messages
     UserMessage = "user.message"
-    # 通知消息
+    #  Notification message
     NoticeMessage = "notice.message"
 
 
-# 系统配置Key字典
+#  System configurationKey Dictionaries
 class SystemConfigKey(Enum):
-    # 用户已安装的插件
+    #  User-installed plug-ins
     UserInstalledPlugins = "UserInstalledPlugins"
-    # 搜索结果
+    #  Search results
     SearchResults = "SearchResults"
-    # 搜索站点范围
+    #  Search site scope
     IndexerSites = "IndexerSites"
-    # 订阅站点范围
+    #  Subscription site coverage
     RssSites = "RssSites"
-    # 种子优先级规则
+    #  Seed prioritization rules
     TorrentsPriority = "TorrentsPriority"
-    # 通知消息渠道设置
+    #  Notification message渠道设置
     NotificationChannels = "NotificationChannels"
-    # 自定义制作组/字幕组
+    #  Customizing the production team/ Subtitling team
     CustomReleaseGroups = "CustomReleaseGroups"
-    # 自定义占位符
+    #  Custom placeholders
     Customization = "Customization"
-    # 自定义识别词
+    #  Customized identifiers
     CustomIdentifiers = "CustomIdentifiers"
-    # 搜索优先级规则
+    #  Search prioritization rules
     SearchFilterRules = "SearchFilterRules"
-    # 订阅优先级规则
+    #  Subscription prioritization rules
     SubscribeFilterRules = "SubscribeFilterRules"
-    # 洗版规则
+    #  Washing rules
     BestVersionFilterRules = "BestVersionFilterRules"
-    # 默认过滤规则
+    #  Default filtering rules
     DefaultFilterRules = "DefaultFilterRules"
-    # 转移屏蔽词
+    #  Redirection of blocked words
     TransferExcludeWords = "TransferExcludeWords"
 
 
-# 处理进度Key字典
+#  Processing progressKey Dictionaries
 class ProgressKey(Enum):
-    # 搜索
+    #  Look for sth.
     Search = "search"
-    # 转移
+    #  Divert or distract (attention etc)
     FileTransfer = "filetransfer"
 
 
-# 媒体图片类型
+#  Media image types
 class MediaImageType(Enum):
     Poster = "poster"
     Backdrop = "backdrop"
 
 
-# 消息类型
+#  Message type
 class NotificationType(Enum):
-    # 资源下载
-    Download = "资源下载"
-    # 整理入库
-    Organize = "整理入库"
-    # 订阅
-    Subscribe = "订阅"
-    # 站点消息
-    SiteMessage = "站点消息"
-    # 媒体服务器通知
-    MediaServer = "媒体服务器通知"
-    # 处理失败需要人工干预
-    Manual = "手动处理通知"
+    #  Resource download
+    Download = " Resource download"
+    #  Put sth into storage
+    Organize = " Put sth into storage"
+    #  Subscribe to
+    Subscribe = " Subscribe to"
+    #  Site news
+    SiteMessage = " Site news"
+    #  Media server notification
+    MediaServer = " Media server notification"
+    #  Processing failures require manual intervention
+    Manual = " Manual processing of notifications"
 
 
 class MessageChannel(Enum):
     """
-    消息渠道
+    News channel
     """
-    Wechat = "微信"
+    Wechat = " Microsoft"
     Telegram = "Telegram"
     Slack = "Slack"
     SynologyChat = "SynologyChat"

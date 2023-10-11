@@ -17,40 +17,40 @@ from app.utils.string import StringUtils
 
 class Tjupt(_ISiteSigninHandler):
     """
-    北洋签到
+    Beiyang check-in
     """
-    # 匹配的站点Url，每一个实现类都需要设置为自己的站点Url
+    #  Matching sitesUrl， Each implementation class needs to be set up as its own siteUrl
     site_url = "tjupt.org"
 
-    # 签到地址
+    #  Check-in address
     _sign_in_url = 'https://www.tjupt.org/attendance.php'
 
-    # 已签到
-    _sign_regex = ['<a href="attendance.php">今日已签到</a>']
+    #  Signed in
+    _sign_regex = ['<a href="attendance.php"> Signed in today</a>']
 
-    # 签到成功
-    _succeed_regex = ['这是您的首次签到，本次签到获得\\d+个魔力值。',
-                      '签到成功，这是您的第\\d+次签到，已连续签到\\d+天，本次签到获得\\d+个魔力值。',
-                      '重新签到成功，本次签到获得\\d+个魔力值']
+    #  Sign in successfully
+    _succeed_regex = [' This is your first check-in， This check-in gets\\d+ Power level (math.)。',
+                      ' Sign in successfully， This is your first\\d+ Secondary check-in， Signed in continuously\\d+ Sky， This check-in gets\\d+ Power level (math.)。',
+                      ' Re-sign in successfully， This check-in gets\\d+ Power level (math.)']
 
-    # 存储正确的答案，后续可直接查
+    #  Store the correct answer， Follow-up can be checked directly
     _answer_path = settings.TEMP_PATH / "signin/"
     _answer_file = _answer_path / "tjupt.json"
 
     @classmethod
     def match(cls, url: str) -> bool:
         """
-        根据站点Url判断是否匹配当前站点签到类，大部分情况使用默认实现即可
-        :param url: 站点Url
-        :return: 是否匹配，如匹配则会调用该类的signin方法
+        Based on siteUrl Determine if the current site check-in class matches， In most cases it is sufficient to use the default implementation
+        :param url:  WebsiteUrl
+        :return:  Whether or not it matches， If a match is made then the class'ssignin Methodologies
         """
         return True if StringUtils.url_equal(url, cls.site_url) else False
 
     def signin(self, site_info: CommentedMap) -> Tuple[bool, str]:
         """
-        执行签到操作
-        :param site_info: 站点信息，含有站点Url、站点Cookie、UA等信息
-        :return: 签到结果信息
+        Perform check-in operations
+        :param site_info:  Site information， Contains siteUrl、 WebsiteCookie、UA And other information
+        :return:  Check-in results information
         """
         site = site_info.get("name")
         site_cookie = site_info.get("cookie")
@@ -58,126 +58,126 @@ class Tjupt(_ISiteSigninHandler):
         proxy = site_info.get("proxy")
         render = site_info.get("render")
 
-        # 创建正确答案存储目录
+        #  Creating a correct answer storage directory
         if not os.path.exists(os.path.dirname(self._answer_file)):
             os.makedirs(os.path.dirname(self._answer_file))
 
-        # 获取北洋签到页面html
+        # 获取Beiyang check-in页面html
         html_text = self.get_page_source(url=self._sign_in_url,
                                          cookie=site_cookie,
                                          ua=ua,
                                          proxy=proxy,
                                          render=render)
 
-        # 获取签到后返回html，判断是否签到成功
+        #  Get signed in and returnhtml， Determine if sign-in is successful
         if not html_text:
-            logger.error(f"{site} 签到失败，请检查站点连通性")
-            return False, '签到失败，请检查站点连通性'
+            logger.error(f"{site}  Failed to sign in， Please check site connectivity")
+            return False, ' Failed to sign in， Please check site connectivity'
 
         if "login.php" in html_text:
-            logger.error(f"{site} 签到失败，Cookie失效")
-            return False, '签到失败，Cookie失效'
+            logger.error(f"{site}  Failed to sign in，Cookie Lose effectiveness")
+            return False, ' Failed to sign in，Cookie Lose effectiveness'
 
         sign_status = self.sign_in_result(html_res=html_text,
                                           regexs=self._sign_regex)
         if sign_status:
-            logger.info(f"{site} 今日已签到")
-            return True, '今日已签到'
+            logger.info(f"{site}  Signed in today")
+            return True, ' Signed in today'
 
-        # 没有签到则解析html
+        #  Parsing without signing inhtml
         html = etree.HTML(html_text)
         if not html:
-            return False, '签到失败'
+            return False, ' Failed to sign in'
         img_url = html.xpath('//table[@class="captcha"]//img/@src')[0]
 
         if not img_url:
-            logger.error(f"{site} 签到失败，未获取到签到图片")
-            return False, '签到失败，未获取到签到图片'
+            logger.error(f"{site}  Failed to sign in， Not getting the sign-in image")
+            return False, ' Failed to sign in， Not getting the sign-in image'
 
-        # 签到图片
+        #  Check-in pictures
         img_url = "https://www.tjupt.org" + img_url
-        logger.info(f"获取到签到图片 {img_url}")
-        # 获取签到图片hash
+        logger.info(f" Get to the sign-in image {img_url}")
+        #  Get sign-in imagehash
         captcha_img_res = RequestUtils(cookies=site_cookie,
                                        ua=ua,
                                        proxies=settings.PROXY if proxy else None
                                        ).get_res(url=img_url)
         if not captcha_img_res or captcha_img_res.status_code != 200:
-            logger.error(f"{site} 签到图片 {img_url} 请求失败")
-            return False, '签到失败，未获取到签到图片'
+            logger.error(f"{site}  Check-in pictures {img_url}  Request failed")
+            return False, ' Failed to sign in， Not getting the sign-in image'
         captcha_img = Image.open(BytesIO(captcha_img_res.content))
         captcha_img_hash = self._tohash(captcha_img)
-        logger.debug(f"签到图片hash {captcha_img_hash}")
+        logger.debug(f" Check-in pictureshash {captcha_img_hash}")
 
-        # 签到答案选项
+        #  Check-in answer options
         values = html.xpath("//input[@name='answer']/@value")
         options = html.xpath("//input[@name='answer']/following-sibling::text()")
 
         if not values or not options:
-            logger.error(f"{site} 签到失败，未获取到答案选项")
-            return False, '签到失败，未获取到答案选项'
+            logger.error(f"{site}  Failed to sign in， Answer options not captured")
+            return False, ' Failed to sign in， Answer options not captured'
 
-        # value+选项
+        # value+ Options (as in computer software settings)
         answers = list(zip(values, options))
-        logger.debug(f"获取到所有签到选项 {answers}")
+        logger.debug(f" Get all check-in options {answers}")
 
-        # 查询已有答案
+        #  Check for existing answers
         exits_answers = {}
         try:
             with open(self._answer_file, 'r') as f:
                 json_str = f.read()
             exits_answers = json.loads(json_str)
-            # 查询本地本次验证码hash答案
+            #  Query local current captchahash Solution
             captcha_answer = exits_answers[captcha_img_hash]
 
-            # 本地存在本次hash对应的正确答案再遍历查询
+            #  The local presence of thishash The corresponding correct answer then traverses the query
             if captcha_answer:
                 for value, answer in answers:
                     if str(captcha_answer) == str(answer):
-                        # 确实是答案
+                        #  That's the answer.
                         return self.__signin(answer=value,
                                              site_cookie=site_cookie,
                                              ua=ua,
                                              proxy=proxy,
                                              site=site)
         except (FileNotFoundError, IOError, OSError) as e:
-            logger.debug(f"查询本地已知答案失败：{e}，继续请求豆瓣查询")
+            logger.debug(f" Failed to query locally known answers：{e}， Continue requesting doujinshi queries")
 
-        # 本地不存在正确答案则请求豆瓣查询匹配
+        #  If the correct answer does not exist locally then request a douban query for a match
         for value, answer in answers:
             if answer:
-                # 豆瓣检索
+                #  Douban search
                 db_res = RequestUtils().get_res(url=f'https://movie.douban.com/j/subject_suggest?q={answer}')
                 if not db_res or db_res.status_code != 200:
-                    logger.debug(f"签到选项 {answer} 未查询到豆瓣数据")
+                    logger.debug(f" Check-in options {answer}  Douban data not queried")
                     continue
 
-                # 豆瓣返回结果
+                #  Douban returns results
                 db_answers = json.loads(db_res.text)
                 if not isinstance(db_answers, list):
                     db_answers = [db_answers]
 
                 if len(db_answers) == 0:
-                    logger.debug(f"签到选项 {answer} 查询到豆瓣数据为空")
+                    logger.debug(f" Check-in options {answer}  Query to douban data is empty")
 
                 for db_answer in db_answers:
                     answer_img_url = db_answer['img']
 
-                    # 获取答案hash
+                    #  Get answershash
                     answer_img_res = RequestUtils(referer="https://movie.douban.com").get_res(url=answer_img_url)
                     if not answer_img_res or answer_img_res.status_code != 200:
-                        logger.debug(f"签到答案 {answer} {answer_img_url} 请求失败")
+                        logger.debug(f" Check-in answers {answer} {answer_img_url}  Request failed")
                         continue
 
                     answer_img = Image.open(BytesIO(answer_img_res.content))
                     answer_img_hash = self._tohash(answer_img)
-                    logger.debug(f"签到答案图片hash {answer} {answer_img_hash}")
+                    logger.debug(f" Sign in answer picturehash {answer} {answer_img_hash}")
 
-                    # 获取选项图片与签到图片相似度，大于0.9默认是正确答案
+                    #  Get the similarity between the option image and the check-in image， More than0.9 Default is the correct answer
                     score = self._comparehash(captcha_img_hash, answer_img_hash)
-                    logger.info(f"签到图片与选项 {answer} 豆瓣图片相似度 {score}")
+                    logger.info(f" Check-in images and options {answer}  Douban picture similarity {score}")
                     if score > 0.9:
-                        # 确实是答案
+                        #  That's the answer.
                         return self.__signin(answer=value,
                                              site_cookie=site_cookie,
                                              ua=ua,
@@ -186,62 +186,62 @@ class Tjupt(_ISiteSigninHandler):
                                              exits_answers=exits_answers,
                                              captcha_img_hash=captcha_img_hash)
 
-            # 间隔5s，防止请求太频繁被豆瓣屏蔽ip
+            #  Intervals5s， Prevent requests from being blocked by douban too oftenip
             time.sleep(5)
-        logger.error(f"豆瓣图片匹配，未获取到匹配答案")
+        logger.error(f" Douban image matching， No matches were obtained")
 
-        # 没有匹配签到成功，则签到失败
-        return False, '签到失败，未获取到匹配答案'
+        #  No match signed in successfully， Then the sign-in fails
+        return False, ' Failed to sign in， No matches were obtained'
 
     def __signin(self, answer, site_cookie, ua, proxy, site, exits_answers=None, captcha_img_hash=None):
         """
-        签到请求
+        Check-in request
         """
         data = {
             'answer': answer,
-            'submit': '提交'
+            'submit': ' Submit (a report etc)'
         }
-        logger.debug(f"提交data {data}")
+        logger.debug(f" Submit (a report etc)data {data}")
         sign_in_res = RequestUtils(cookies=site_cookie,
                                    ua=ua,
                                    proxies=settings.PROXY if proxy else None
                                    ).post_res(url=self._sign_in_url, data=data)
         if not sign_in_res or sign_in_res.status_code != 200:
-            logger.error(f"{site} 签到失败，签到接口请求失败")
-            return False, '签到失败，签到接口请求失败'
+            logger.error(f"{site}  Failed to sign in， Check-in interface request failed")
+            return False, ' Failed to sign in， Check-in interface request failed'
 
-        # 获取签到后返回html，判断是否签到成功
+        #  Get signed in and returnhtml， Determine if sign-in is successful
         sign_status = self.sign_in_result(html_res=sign_in_res.text,
                                           regexs=self._succeed_regex)
         if sign_status:
-            logger.info(f"签到成功")
+            logger.info(f" Sign in successfully")
             if exits_answers and captcha_img_hash:
-                # 签到成功写入本地文件
+                #  Sign in successfully写入本地文件
                 self.__write_local_answer(exits_answers=exits_answers or {},
                                           captcha_img_hash=captcha_img_hash,
                                           answer=answer)
-            return True, '签到成功'
+            return True, ' Sign in successfully'
         else:
-            logger.error(f"{site} 签到失败，请到页面查看")
-            return False, '签到失败，请到页面查看'
+            logger.error(f"{site}  Failed to sign in， Please go to page")
+            return False, ' Failed to sign in， Please go to page'
 
     def __write_local_answer(self, exits_answers, captcha_img_hash, answer):
         """
-        签到成功写入本地文件
+        Check-in successfully written to local file
         """
         try:
             exits_answers[captcha_img_hash] = answer
-            # 序列化数据
+            #  Serialized data
             formatted_data = json.dumps(exits_answers, indent=4)
             with open(self._answer_file, 'w') as f:
                 f.write(formatted_data)
         except (FileNotFoundError, IOError, OSError) as e:
-            logger.debug(f"签到成功写入本地文件失败：{e}")
+            logger.debug(f"Check-in successfully written to local file失败：{e}")
 
     @staticmethod
     def _tohash(img, shape=(10, 10)):
         """
-        获取图片hash
+        Get picturehash
         """
         img = img.resize(shape)
         gray = img.convert('L')
@@ -262,8 +262,8 @@ class Tjupt(_ISiteSigninHandler):
     @staticmethod
     def _comparehash(hash1, hash2, shape=(10, 10)):
         """
-        比较图片hash
-        返回相似度
+        Compare pictureshash
+        Return similarity
         """
         n = 0
         if len(hash1) != len(hash2):

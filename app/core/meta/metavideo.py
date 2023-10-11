@@ -12,9 +12,9 @@ from app.schemas.types import MediaType
 
 class MetaVideo(MetaBase):
     """
-    识别电影、电视剧
+    Identify the movie、 Dramas
     """
-    # 控制标位区
+    #  Control annotation zone
     _stop_name_flag = False
     _stop_cnname_flag = False
     _last_token = ""
@@ -23,7 +23,7 @@ class MetaVideo(MetaBase):
     _unknown_name_str = ""
     _source = ""
     _effect = []
-    # 正则式区
+    #  Regular district (math.)
     _season_re = r"S(\d{2})|^S(\d{1,2})$|S(\d{1,2})E"
     _episode_re = r"EP?(\d{2,4})$|^EP?(\d{1,4})$|^S\d{1,2}EP?(\d{1,4})$|S\d{2}EP?(\d{2,4})"
     _part_re = r"(^PART[0-9ABI]{0,2}$|^CD[0-9]{0,2}$|^DVD[0-9]{0,2}$|^DISK[0-9]{0,2}$|^DISC[0-9]{0,2}$)"
@@ -32,15 +32,15 @@ class MetaVideo(MetaBase):
     _effect_re = r"^REMUX$|^UHD$|^SDR$|^HDR\d*$|^DOLBY$|^DOVI$|^DV$|^3D$|^REPACK$"
     _resources_type_re = r"%s|%s" % (_source_re, _effect_re)
     _name_no_begin_re = r"^\[.+?]"
-    _name_no_chinese_re = r".*版|.*字幕"
-    _name_se_words = ['共', '第', '季', '集', '话', '話', '期']
+    _name_no_chinese_re = r".* Block of printing|.* Subtitling"
+    _name_se_words = [' Common', ' (prefix indicating ordinal number, e.g. first, number two etc)', ' Classifier for seasonal crop yield or seasons of a tv series', ' Classifier for sections of a tv series e.g. episode', ' What sb said', ' Words', ' A period of time']
     _name_nostring_re = r"^PTS|^JADE|^AOD|^CHC|^[A-Z]{1,4}TV[\-0-9UVHDK]*" \
                         r"|HBO$|\s+HBO|\d{1,2}th|\d{1,2}bit|NETFLIX|AMAZON|IMAX|^3D|\s+3D|^BBC\s+|\s+BBC|BBC$|DISNEY\+?|XXX|\s+DC$" \
-                        r"|[第\s共]+[0-9一二三四五六七八九十\-\s]+季" \
-                        r"|[第\s共]+[0-9一二三四五六七八九十百零\-\s]+[集话話]" \
-                        r"|连载|日剧|美剧|电视剧|动画片|动漫|欧美|西德|日韩|超高清|高清|蓝光|翡翠台|梦幻天堂·龙网|★?\d*月?新番" \
-                        r"|最终季|合集|[多中国英葡法俄日韩德意西印泰台港粤双文语简繁体特效内封官译外挂]+字幕|版本|出品|台版|港版|\w+字幕组" \
-                        r"|未删减版|UNCUT$|UNRATE$|WITH EXTRAS$|RERIP$|SUBBED$|PROPER$|REPACK$|SEASON$|EPISODE$|Complete$|Extended$|Extended Version$" \
+                        r"|[ (prefix indicating ordinal number, e.g. first, number two etc)\s Common]+[0-9 One, two, three, four, five, six, seven, eight, nine, ten.\-\s]+ Classifier for seasonal crop yield or seasons of a tv series" \
+                        r"|[ (prefix indicating ordinal number, e.g. first, number two etc)\s Common]+[0-9 One, two, three, four, five, six, seven, eight, nine, ten, zero.\-\s]+[ Assembled words]" \
+                        r"| Published as a serial (in a newspaper)| Japanese drama| American theater| Dramas| Animated film| Cartoons and comics| Europe and america| West germany| Japan and south korea| Ultra-high definition| High definition (photo, audio or television)| Blu-ray (disc format)| Jade channel| Paradise of dreams· Dragon net, a japanese company specializing in online shopping|★?\d* Moon? New trial" \
+                        r"| Final season| Collection|[ Multi-chinese, english, portuguese, french, russian, japanese, korean, german, italian, spanish, indian, thai, taiwanese, hong kong, and cantonese bi-lingual simplified chinese and traditional chinese.]+ Subtitling| Releases| Items that are produced| Taiwan edition| Hong kong version|\w+ Subtitling team" \
+                        r"| Uncut edition|UNCUT$|UNRATE$|WITH EXTRAS$|RERIP$|SUBBED$|PROPER$|REPACK$|SEASON$|EPISODE$|Complete$|Extended$|Extended Version$" \
                         r"|S\d{2}\s*-\s*S\d{2}|S\d{2}|\s+S\d{1,2}|EP?\d{2,4}\s*-\s*EP?\d{2,4}|EP?\d{2,4}|\s+EP?\d{1,4}" \
                         r"|CD[\s.]*[1-9]|DVD[\s.]*[1-9]|DISK[\s.]*[1-9]|DISC[\s.]*[1-9]" \
                         r"|[248]K|\d{3,4}[PIX]+" \
@@ -57,7 +57,7 @@ class MetaVideo(MetaBase):
         original_title = title
         self._source = ""
         self._effect = []
-        # 判断是否纯数字命名
+        #  Determining whether a number is named purely numerically
         title_path = Path(title)
         if title_path.suffix.lower() in settings.RMT_MEDIAEXT \
                 and title_path.stem.isdigit() \
@@ -65,73 +65,73 @@ class MetaVideo(MetaBase):
             self.begin_episode = int(title_path.stem)
             self.type = MediaType.TV
             return
-        # 去掉名称中第1个[]的内容
+        #  Remove the first line from the name1 Classifier for individual things or people, general, catch-all classifier[] Content
         title = re.sub(r'%s' % self._name_no_begin_re, "", title, count=1)
-        # 把xxxx-xxxx年份换成前一个年份，常出现在季集上
+        #  Particle marking the following noun as a direct objectxxxx-xxxx Year for previous year， Often appearing in seasonal episodes
         title = re.sub(r'([\s.]+)(\d{4})-(\d{4})', r'\1\2', title)
-        # 把大小去掉
+        #  Remove the size.
         title = re.sub(r'[0-9.]+\s*[MGT]i?B(?![A-Z]+)', "", title, flags=re.IGNORECASE)
-        # 把年月日去掉
+        #  Take out the year, month and day.
         title = re.sub(r'\d{4}[\s._-]\d{1,2}[\s._-]\d{1,2}', "", title)
-        # 拆分tokens
+        #  Broken up inseparate itemstokens
         tokens = Tokens(title)
         self.tokens = tokens
-        # 解析名称、年份、季、集、资源类型、分辨率等
+        #  Parse name、 Particular year、 Classifier for seasonal crop yield or seasons of a tv series、 Classifier for sections of a tv series e.g. episode、 Resource type、 Resolution (of a photo)
         token = tokens.get_next()
         while token:
             # Part
             self.__init_part(token)
-            # 标题
+            #  Caption
             if self._continue_flag:
                 self.__init_name(token)
-            # 年份
+            #  Particular year
             if self._continue_flag:
                 self.__init_year(token)
-            # 分辨率
+            #  Resolution (of a photo)
             if self._continue_flag:
                 self.__init_resource_pix(token)
-            # 季
+            #  Classifier for seasonal crop yield or seasons of a tv series
             if self._continue_flag:
                 self.__init_season(token)
-            # 集
+            #  Classifier for sections of a tv series e.g. episode
             if self._continue_flag:
                 self.__init_episode(token)
-            # 资源类型
+            #  Resource type
             if self._continue_flag:
                 self.__init_resource_type(token)
-            # 视频编码
+            #  Video encoding
             if self._continue_flag:
                 self.__init_video_encode(token)
-            # 音频编码
+            #  Audio encoding
             if self._continue_flag:
                 self.__init_audio_encode(token)
-            # 取下一个，直到没有为卡
+            #  Take the next one.， Until there are no cards for the
             token = tokens.get_next()
             self._continue_flag = True
-        # 合成质量
+        #  Composite mass
         if self._effect:
             self._effect.reverse()
             self.resource_effect = " ".join(self._effect)
         if self._source:
             self.resource_type = self._source.strip()
-        # 提取原盘DIY
+        #  Extract the original diskDIY
         if self.resource_type and "BluRay" in self.resource_type:
             if (self.subtitle and re.findall(r'D[Ii]Y', self.subtitle)) \
                     or re.findall(r'-D[Ii]Y@', original_title):
                 self.resource_type = f"{self.resource_type} DIY"
-        # 解析副标题，只要季和集
+        #  Analyzing subheadings， As long as the season and set
         self.init_subtitle(self.org_string)
         if not self._subtitle_flag and self.subtitle:
             self.init_subtitle(self.subtitle)
-        # 去掉名字中不需要的干扰字符，过短的纯数字不要
+        #  Remove unwanted interfering characters from the name， Plain numbers that are too short don't
         self.cn_name = self.__fix_name(self.cn_name)
         self.en_name = StringUtils.str_title(self.__fix_name(self.en_name))
-        # 处理part
+        #  Deal withpart
         if self.part and self.part.upper() == "PART":
             self.part = None
-        # 制作组/字幕组
+        #  Production team/ Subtitling team
         self.resource_team = ReleaseGroupsMatcher().match(title=original_title) or None
-        # 自定义占位符
+        #  Custom placeholders
         self.customization = CustomizationMatcher().match(title=original_title) or None
 
     def __fix_name(self, name: str):
@@ -158,7 +158,7 @@ class MetaVideo(MetaBase):
     def __init_name(self, token: str):
         if not token:
             return
-        # 回收标题
+        #  Recycling title
         if self._unknown_name_str:
             if not self.cn_name:
                 if not self.en_name:
@@ -177,7 +177,7 @@ class MetaVideo(MetaBase):
             self._last_token_type = 'name_se_words'
             return
         if StringUtils.is_chinese(token):
-            # 含有中文，直接做为标题（连着的数字或者英文会保留），且不再取用后面出现的中文
+            #  Contains chinese， Straight to the title.（ Consecutive numbers or english are retained）， And no longer takes the chinese characters that appear after it
             self._last_token_type = "cnname"
             if not self.cn_name:
                 self.cn_name = token
@@ -188,59 +188,59 @@ class MetaVideo(MetaBase):
                 self._stop_cnname_flag = True
         else:
             is_roman_digit = re.search(self._roman_numerals, token)
-            # 阿拉伯数字或者罗马数字
+            #  Arabic or roman numerals
             if token.isdigit() or is_roman_digit:
-                # 第季集后面的不要
+                #  Not after the first season.
                 if self._last_token_type == 'name_se_words':
                     return
                 if self.name:
-                    # 名字后面以 0 开头的不要，极有可能是集
+                    #  The name is followed by 0  Not at the beginning.， It is highly likely that the set
                     if token.startswith('0'):
                         return
-                    # 检查是否真正的数字
+                    #  Check to see if it's a real number
                     if token.isdigit():
                         try:
                             int(token)
                         except ValueError:
                             return
-                    # 中文名后面跟的数字不是年份的极有可能是集
+                    #  Chinese names followed by a number that is not a year are most likely to be sets.
                     if not is_roman_digit \
                             and self._last_token_type == "cnname" \
                             and int(token) < 1900:
                         return
                     if (token.isdigit() and len(token) < 4) or is_roman_digit:
-                        # 4位以下的数字或者罗马数字，拼装到已有标题中
+                        # 4 Numbers or roman numerals up to the first digit， Assembling into existing titles
                         if self._last_token_type == "cnname":
                             self.cn_name = "%s %s" % (self.cn_name, token)
                         elif self._last_token_type == "enname":
                             self.en_name = "%s %s" % (self.en_name, token)
                         self._continue_flag = False
                     elif token.isdigit() and len(token) == 4:
-                        # 4位数字，可能是年份，也可能真的是标题的一部分，也有可能是集
+                        # 4 Digital (e.g. phone number)， It could be the year.， Or maybe it's really part of the title， It's also possible that the set
                         if not self._unknown_name_str:
                             self._unknown_name_str = token
                 else:
-                    # 名字未出现前的第一个数字，记下来
+                    #  The first number before the name， Take down
                     if not self._unknown_name_str:
                         self._unknown_name_str = token
             elif re.search(r"%s" % self._season_re, token, re.IGNORECASE):
-                # 季的处理
+                #  Classifier for seasonal crop yield or seasons of a tv series的处理
                 if self.en_name and re.search(r"SEASON$", self.en_name, re.IGNORECASE):
-                    # 如果匹配到季，英文名结尾为Season，说明Season属于标题，不应在后续作为干扰词去除
+                    #  If matched to the season， English names end inSeason， ClarificationSeason Belongs to the title， Should not be removed as a disruptive word subsequently
                     self.en_name += ' '
                 self._stop_name_flag = True
                 return
             elif re.search(r"%s" % self._episode_re, token, re.IGNORECASE) \
                     or re.search(r"(%s)" % self._resources_type_re, token, re.IGNORECASE) \
                     or re.search(r"%s" % self._resources_pix_re, token, re.IGNORECASE):
-                # 集、来源、版本等不要
+                #  Classifier for sections of a tv series e.g. episode、来源、版本等不要
                 self._stop_name_flag = True
                 return
             else:
-                # 后缀名不要
+                #  Suffixes should not be
                 if ".%s".lower() % token in settings.RMT_MEDIAEXT:
                     return
-                # 英文或者英文+数字，拼装起来
+                #  English or english+ Digital (electronics etc)， Assemble
                 if self.en_name:
                     self.en_name = "%s %s" % (self.en_name, token)
                 else:
@@ -285,7 +285,7 @@ class MetaVideo(MetaBase):
             elif self.cn_name:
                 self.cn_name = "%s %s" % (self.cn_name, self.year)
         elif self.en_name and re.search(r"SEASON$", self.en_name, re.IGNORECASE):
-            # 如果匹配到年，且英文名结尾为Season，说明Season属于标题，不应在后续作为干扰词去除
+            #  If matched to year， And the english name ends inSeason， ClarificationSeason Belongs to the title， Should not be removed as a disruptive word subsequently
             self.en_name += ' '
         self.year = token
         self._last_token_type = "year"

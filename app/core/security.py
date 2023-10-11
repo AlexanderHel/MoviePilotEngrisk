@@ -19,7 +19,7 @@ from cryptography.fernet import Fernet
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ALGORITHM = "HS256"
 
-# Token认证
+# Token Accreditation
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"
 )
@@ -48,7 +48,7 @@ def verify_token(token: str = Depends(reusable_oauth2)) -> schemas.TokenPayload:
     except (jwt.DecodeError, jwt.InvalidTokenError, jwt.ImmatureSignatureError):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="token校验不通过",
+            detail="token Failed calibration",
         )
 
 
@@ -62,7 +62,7 @@ def get_password_hash(password: str) -> str:
 
 def decrypt(data: bytes, key: bytes) -> Optional[bytes]:
     """
-    解密二进制数据
+    Decrypt binary data
     """
     fernet = Fernet(key)
     try:
@@ -74,7 +74,7 @@ def decrypt(data: bytes, key: bytes) -> Optional[bytes]:
 
 def encrypt_message(message: str, key: bytes):
     """
-    使用给定的key对消息进行加密，并返回加密后的字符串
+    Use the givenkey Encrypting messages， And returns the encrypted string
     """
     f = Fernet(key)
     encrypted_message = f.encrypt(message.encode())
@@ -83,24 +83,24 @@ def encrypt_message(message: str, key: bytes):
 
 def hash_sha256(message):
     """
-    对字符串做hash运算
+    Dohash (mathematical) operation
     """
     return hashlib.sha256(message.encode()).hexdigest()
 
 
 def aes_decrypt(data, key):
     """
-    AES解密
+    AES Declassification
     """
     if not data:
         return ""
     data = base64.b64decode(data)
     iv = data[:16]
     encrypted = data[16:]
-    # 使用AES-256-CBC解密
+    #  UtilizationAES-256-CBC Declassification
     cipher = AES.new(key.encode('utf-8'), AES.MODE_CBC, iv)
     result = cipher.decrypt(encrypted)
-    # 去除填充
+    #  Remove fill
     padding = result[-1]
     if padding < 1 or padding > AES.block_size:
         return ""
@@ -110,35 +110,35 @@ def aes_decrypt(data, key):
 
 def aes_encrypt(data, key):
     """
-    AES加密
+    AES Encrypted
     """
     if not data:
         return ""
-    # 使用AES-256-CBC加密
+    #  UtilizationAES-256-CBC Encrypted
     cipher = AES.new(key.encode('utf-8'), AES.MODE_CBC)
-    # 填充
+    #  Padding
     padding = AES.block_size - len(data) % AES.block_size
     data += chr(padding) * padding
     result = cipher.encrypt(data.encode('utf-8'))
-    # 使用base64编码
+    #  Utilizationbase64 Encodings
     return base64.b64encode(cipher.iv + result).decode('utf-8')
 
 
 def nexusphp_encrypt(data_str: str, key):
     """
-    NexusPHP加密
+    NexusPHP Encrypted
     """
-    # 生成16字节长的随机字符串
+    #  Generating16 Byte-long random string
     iv = os.urandom(16)
-    # 对向量进行 Base64 编码
+    #  Evaluate a vector Base64  Encodings
     iv_base64 = base64.b64encode(iv)
-    # 加密数据
+    #  Encrypted data
     cipher = AES.new(key, AES.MODE_CBC, iv)
     ciphertext = cipher.encrypt(pad(data_str.encode(), AES.block_size))
     ciphertext_base64 = base64.b64encode(ciphertext)
-    # 对向量的字符串表示进行签名
+    #  Sign the string representation of a vector
     mac = hmac.new(key, msg=iv_base64 + ciphertext_base64, digestmod=hashlib.sha256).hexdigest()
-    # 构造 JSON 字符串
+    #  Tectonic (geology) JSON  String (computer science)
     json_str = json.dumps({
         'iv': iv_base64.decode(),
         'value': ciphertext_base64.decode(),
@@ -146,5 +146,5 @@ def nexusphp_encrypt(data_str: str, key):
         'tag': ''
     })
 
-    # 对 JSON 字符串进行 Base64 编码
+    #  Treat (sb a certain way) JSON  String Base64  Encodings
     return base64.b64encode(json_str.encode()).decode()

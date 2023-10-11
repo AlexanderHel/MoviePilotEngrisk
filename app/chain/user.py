@@ -7,9 +7,9 @@ class UserChain(ChainBase):
 
     def user_authenticate(self, name, password) -> Optional[str]:
         """
-        辅助完成用户认证
-        :param name: 用户名
-        :param password: 密码
+        Assisted completion of user authentication
+        :param name:  User id
+        :param password:  Cryptographic
         :return: token
         """
         return self.run_module("user_authenticate", name=name, password=password)

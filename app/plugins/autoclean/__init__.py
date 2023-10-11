@@ -20,30 +20,30 @@ from app.schemas.types import EventType
 
 
 class AutoClean(_PluginBase):
-    # 插件名称
-    plugin_name = "定时清理媒体库"
-    # 插件描述
-    plugin_desc = "定时清理用户下载的种子、源文件、媒体库文件。"
-    # 插件图标
+    #  Plug-in name
+    plugin_name = " Timed media library cleanup"
+    #  Plugin description
+    plugin_desc = " Regular cleaning of seeds downloaded by users、 Source file、 Media library files。"
+    #  Plug-in icons
     plugin_icon = "clean.png"
-    # 主题色
+    #  Theme color
     plugin_color = "#3377ed"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "thsrite"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/thsrite"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "autoclean_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 23
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 2
 
-    # 私有属性
+    #  Private property
     _enabled = False
-    # 任务执行间隔
+    #  Task execution interval
     _cron = None
     _type = None
     _onlyonce = False
@@ -54,11 +54,11 @@ class AutoClean(_PluginBase):
     _downloadhis = None
     _transferhis = None
 
-    # 定时器
+    #  Timers
     _scheduler: Optional[BackgroundScheduler] = None
 
     def init_plugin(self, config: dict = None):
-        # 停止现有任务
+        #  Discontinuation of existing mandates
         self.stop_service()
 
         if config:
@@ -70,27 +70,27 @@ class AutoClean(_PluginBase):
             self._cleanuser = config.get("cleanuser")
             self._cleandate = config.get("cleandate")
 
-            # 加载模块
+            #  Load modules
         if self._enabled:
             self._downloadhis = DownloadHistoryOper(self.db)
             self._transferhis = TransferHistoryOper(self.db)
-            # 定时服务
+            #  Time service
             self._scheduler = BackgroundScheduler(timezone=settings.TZ)
 
             if self._cron:
                 try:
                     self._scheduler.add_job(func=self.__clean,
                                             trigger=CronTrigger.from_crontab(self._cron),
-                                            name="定时清理媒体库")
+                                            name=" Timed media library cleanup")
                 except Exception as err:
-                    logger.error(f"定时任务配置错误：{err}")
+                    logger.error(f" Timed task configuration error：{err}")
 
             if self._onlyonce:
-                logger.info(f"定时清理媒体库服务启动，立即运行一次")
+                logger.info(f" Timed media library cleanup service starts， Run one immediately")
                 self._scheduler.add_job(func=self.__clean, trigger='date',
                                         run_date=datetime.now(tz=pytz.timezone(settings.TZ)) + timedelta(seconds=3),
-                                        name="定时清理媒体库")
-                # 关闭一次性开关
+                                        name=" Timed media library cleanup")
+                #  Turn off the disposable switch
                 self._onlyonce = False
                 self.update_config({
                     "onlyonce": False,
@@ -102,28 +102,28 @@ class AutoClean(_PluginBase):
                     "notify": self._notify,
                 })
 
-            # 启动任务
+            #  Initiate tasks
             if self._scheduler.get_jobs():
                 self._scheduler.print_jobs()
                 self._scheduler.start()
 
     def __clean(self):
         """
-        定时清理媒体库
+        Timed media library cleanup
         """
         if not self._cleandate:
-            logger.error("未配置清理媒体库时间，停止运行")
+            logger.error(" No media library cleanup time configured， Stop running")
             return
 
-        # 清理日期
+        #  Liquidation date
         current_time = datetime.now()
         days_ago = current_time - timedelta(days=int(self._cleandate))
         clean_date = days_ago.strftime("%Y-%m-%d")
 
-        # 查询用户清理日期之后的下载历史
+        #  Querying download history after a user's purge date
         if not self._cleanuser:
             downloadhis_list = self._downloadhis.list_by_user_date(date=clean_date)
-            logger.info(f'获取到日期 {clean_date} 之后的下载历史 {len(downloadhis_list)} 条')
+            logger.info(f' Get the date {clean_date}  Subsequent download history {len(downloadhis_list)}  Clause (of law or treaty)')
 
             self.__clean_history(date=clean_date, downloadhis_list=downloadhis_list)
         else:
@@ -131,34 +131,34 @@ class AutoClean(_PluginBase):
                 downloadhis_list = self._downloadhis.list_by_user_date(date=clean_date,
                                                                        userid=userid)
                 logger.info(
-                    f'获取到用户 {userid} 日期 {clean_date} 之后的下载历史 {len(downloadhis_list)} 条')
+                    f' Getting to the user {userid}  Dates {clean_date}  Subsequent download history {len(downloadhis_list)}  Clause (of law or treaty)')
                 self.__clean_history(date=clean_date, downloadhis_list=downloadhis_list, userid=userid)
 
     def __clean_history(self, date: str, downloadhis_list: List[DownloadHistory], userid: str = None):
         """
-        清理下载历史、转移记录
+        Clear download history、 Transfer records
         """
         if not downloadhis_list:
-            logger.warn(f"未获取到日期 {date} 之后的下载记录，停止运行")
+            logger.warn(f" Date not captured {date}  Subsequent downloads， Stop running")
             return
 
-        # 读取历史记录
+        #  Read history
         history = self.get_data('history') or []
 
-        # 创建一个字典来保存分组结果
+        #  Create a dictionary to hold the grouping results
         downloadhis_grouped_dict: Dict[tuple, List[DownloadHistory]] = defaultdict(list)
-        # 遍历DownloadHistory对象列表
+        #  (math.) ergodicDownloadHistory Object list
         for downloadhis in downloadhis_list:
-            # 获取type和tmdbid的值
+            #  Gaintype Cap (a poem)tmdbid Value of
             dtype = downloadhis.type
             tmdbid = downloadhis.tmdbid
 
-            # 将DownloadHistory对象添加到对应分组的列表中
+            #  Commander-in-chief (military)DownloadHistory Objects are added to the list of the corresponding grouping
             downloadhis_grouped_dict[(dtype, tmdbid)].append(downloadhis)
 
-        # 输出分组结果
+        #  Output grouping results
         for key, downloadhis_list in downloadhis_grouped_dict.items():
-            logger.info(f"开始清理 {key}")
+            logger.info(f" Starting to clean up. {key}")
 
             del_transferhis_cnt = 0
             del_media_name = downloadhis_list[0].title
@@ -170,24 +170,24 @@ class AutoClean(_PluginBase):
             del_image = downloadhis_list[0].image
             for downloadhis in downloadhis_list:
                 if not downloadhis.download_hash:
-                    logger.debug(f'下载历史 {downloadhis.id} {downloadhis.title} 未获取到download_hash，跳过处理')
+                    logger.debug(f' Download history {downloadhis.id} {downloadhis.title}  Not availabledownload_hash， Skip processing')
                     continue
-                # 根据hash获取转移记录
+                #  According tohash Obtaining transfer records
                 transferhis_list = self._transferhis.list_by_hash(download_hash=downloadhis.download_hash)
                 if not transferhis_list:
-                    logger.warn(f"下载历史 {downloadhis.download_hash} 未查询到转移记录，跳过处理")
+                    logger.warn(f" Download history {downloadhis.download_hash}  No records of transfers were inquired about， Skip processing")
                     continue
 
                 for history in transferhis_list:
-                    # 册除媒体库文件
+                    #  Excluding media library files
                     if str(self._cleantype == "dest") or str(self._cleantype == "all"):
                         TransferChain(self.db).delete_files(Path(history.dest))
-                        # 删除记录
+                        #  Deletion of records
                         self._transferhis.delete(history.id)
-                    # 删除源文件
+                    #  Deleting source files
                     if str(self._cleantype == "src") or str(self._cleantype == "all"):
                         TransferChain(self.db).delete_files(Path(history.src))
-                        # 发送事件
+                        #  Send event
                         eventmanager.send_event(
                             EventType.DownloadFileDeleted,
                             {
@@ -195,17 +195,17 @@ class AutoClean(_PluginBase):
                             }
                         )
 
-                # 累加删除数量
+                #  Cumulative number of deletions
                 del_transferhis_cnt += len(transferhis_list)
 
-            # 发送消息
+            #  Send a message
             if self._notify:
                 self.post_message(
                     mtype=NotificationType.MediaServer,
-                    title="【定时清理媒体库任务完成】",
-                    text=f"清理媒体名称 {del_media_name}\n"
-                         f"下载媒体用户 {del_media_user}\n"
-                         f"删除历史记录 {del_transferhis_cnt}",
+                    title="【Timed media library cleanup任务完成】",
+                    text=f" Clearance of media names {del_media_name}\n"
+                         f" Download media users {del_media_user}\n"
+                         f" Delete history {del_transferhis_cnt}",
                     userid=userid)
 
             history.append({
@@ -218,7 +218,7 @@ class AutoClean(_PluginBase):
                 "del_time": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
             })
 
-        # 保存历史
+        #  Preserving history
         self.save_data("history", history)
 
     def get_state(self) -> bool:
@@ -233,7 +233,7 @@ class AutoClean(_PluginBase):
 
     def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
         """
-        拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
+        Assembly plugin configuration page， Two pieces of data need to be returned：1、 Page configuration；2、 Data structure
         """
         return [
                    {
@@ -253,7 +253,7 @@ class AutoClean(_PluginBase):
                                                'component': 'VSwitch',
                                                'props': {
                                                    'model': 'enabled',
-                                                   'label': '启用插件',
+                                                   'label': ' Enabling plug-ins',
                                                }
                                            }
                                        ]
@@ -269,7 +269,7 @@ class AutoClean(_PluginBase):
                                                'component': 'VSwitch',
                                                'props': {
                                                    'model': 'onlyonce',
-                                                   'label': '立即运行一次',
+                                                   'label': ' Run one immediately',
                                                }
                                            }
                                        ]
@@ -285,7 +285,7 @@ class AutoClean(_PluginBase):
                                                'component': 'VSwitch',
                                                'props': {
                                                    'model': 'notify',
-                                                   'label': '开启通知',
+                                                   'label': ' Open notification',
                                                }
                                            }
                                        ]
@@ -306,7 +306,7 @@ class AutoClean(_PluginBase):
                                                'component': 'VTextField',
                                                'props': {
                                                    'model': 'cron',
-                                                   'label': '执行周期',
+                                                   'label': ' Implementation period',
                                                    'placeholder': '0 0 ? ? ?'
                                                }
                                            }
@@ -323,11 +323,11 @@ class AutoClean(_PluginBase):
                                                'component': 'VSelect',
                                                'props': {
                                                    'model': 'cleantype',
-                                                   'label': '清理方式',
+                                                   'label': ' Clearance method',
                                                    'items': [
-                                                       {'title': '媒体库文件', 'value': 'dest'},
-                                                       {'title': '源文件', 'value': 'src'},
-                                                       {'title': '所有文件', 'value': 'all'},
+                                                       {'title': ' Media library files', 'value': 'dest'},
+                                                       {'title': ' Source file', 'value': 'src'},
+                                                       {'title': ' All documents', 'value': 'all'},
                                                    ]
                                                }
                                            }
@@ -344,8 +344,8 @@ class AutoClean(_PluginBase):
                                                'component': 'VTextField',
                                                'props': {
                                                    'model': 'cleandate',
-                                                   'label': '清理媒体日期',
-                                                   'placeholder': '清理多少天之前的下载记录（天）'
+                                                   'label': ' Date of clearance of media',
+                                                   'placeholder': ' Clear downloads from how many days ago（ Sky）'
                                                }
                                            }
                                        ]
@@ -365,8 +365,8 @@ class AutoClean(_PluginBase):
                                                'component': 'VTextField',
                                                'props': {
                                                    'model': 'cleanuser',
-                                                   'label': '清理下载用户',
-                                                   'placeholder': '多个用户,分割'
+                                                   'label': ' Clear download users',
+                                                   'placeholder': ' Multi-user, Demerger'
                                                }
                                            }
                                        ]
@@ -387,23 +387,23 @@ class AutoClean(_PluginBase):
 
     def get_page(self) -> List[dict]:
         """
-        拼装插件详情页面，需要返回页面配置，同时附带数据
+        Patchwork plug-in detail page， Need to return to page configuration， Also with data
         """
-        # 查询同步详情
+        #  Query synchronization details
         historys = self.get_data('history')
         if not historys:
             return [
                 {
                     'component': 'div',
-                    'text': '暂无数据',
+                    'text': ' No data available',
                     'props': {
                         'class': 'text-center',
                     }
                 }
             ]
-        # 数据按时间降序排序
+        #  Data is sorted in descending chronological order
         historys = sorted(historys, key=lambda x: x.get('del_time'), reverse=True)
-        # 拼装页面
+        #  Assembly page
         contents = []
         for history in historys:
             htype = history.get("type")
@@ -421,42 +421,42 @@ class AutoClean(_PluginBase):
                         'props': {
                             'class': 'pa-0 px-2'
                         },
-                        'text': f'类型：{htype}'
+                        'text': f' Typology：{htype}'
                     },
                     {
                         'component': 'VCardText',
                         'props': {
                             'class': 'pa-0 px-2'
                         },
-                        'text': f'标题：{title}'
+                        'text': f' Caption：{title}'
                     },
                     {
                         'component': 'VCardText',
                         'props': {
                             'class': 'pa-0 px-2'
                         },
-                        'text': f'年份：{year}'
+                        'text': f' Particular year：{year}'
                     },
                     {
                         'component': 'VCardText',
                         'props': {
                             'class': 'pa-0 px-2'
                         },
-                        'text': f'季：{season}'
+                        'text': f' Classifier for seasonal crop yield or seasons of a tv series：{season}'
                     },
                     {
                         'component': 'VCardText',
                         'props': {
                             'class': 'pa-0 px-2'
                         },
-                        'text': f'集：{episode}'
+                        'text': f' Classifier for sections of a tv series e.g. episode：{episode}'
                     },
                     {
                         'component': 'VCardText',
                         'props': {
                             'class': 'pa-0 px-2'
                         },
-                        'text': f'时间：{del_time}'
+                        'text': f' Timing：{del_time}'
                     }
                 ]
             else:
@@ -466,28 +466,28 @@ class AutoClean(_PluginBase):
                         'props': {
                             'class': 'pa-0 px-2'
                         },
-                        'text': f'类型：{htype}'
+                        'text': f' Typology：{htype}'
                     },
                     {
                         'component': 'VCardText',
                         'props': {
                             'class': 'pa-0 px-2'
                         },
-                        'text': f'标题：{title}'
+                        'text': f' Caption：{title}'
                     },
                     {
                         'component': 'VCardText',
                         'props': {
                             'class': 'pa-0 px-2'
                         },
-                        'text': f'年份：{year}'
+                        'text': f' Particular year：{year}'
                     },
                     {
                         'component': 'VCardText',
                         'props': {
                             'class': 'pa-0 px-2'
                         },
-                        'text': f'时间：{del_time}'
+                        'text': f' Timing：{del_time}'
                     }
                 ]
 
@@ -539,7 +539,7 @@ class AutoClean(_PluginBase):
 
     def stop_service(self):
         """
-        退出插件
+        Exit plugin
         """
         try:
             if self._scheduler:
@@ -548,4 +548,4 @@ class AutoClean(_PluginBase):
                     self._scheduler.shutdown()
                 self._scheduler = None
         except Exception as e:
-            logger.error("退出插件失败：%s" % str(e))
+            logger.error("Exit plugin失败：%s" % str(e))

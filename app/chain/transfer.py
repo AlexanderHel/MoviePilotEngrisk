@@ -33,7 +33,7 @@ lock = threading.Lock()
 
 class TransferChain(ChainBase):
     """
-    文件转移处理链
+    Document transfer processing chain
     """
 
     def __init__(self, db: Session = None):
@@ -47,41 +47,41 @@ class TransferChain(ChainBase):
 
     def process(self) -> bool:
         """
-        获取下载器中的种子列表，并执行转移
+        Get the list of seeds in the downloader， And execute the transfer
         """
 
-        # 全局锁，避免重复处理
+        #  Global lock， Avoiding duplication of processing
         with lock:
-            logger.info("开始执行下载器文件转移 ...")
-            # 从下载器获取种子列表
+            logger.info(" Begin executing downloader file transfers ...")
+            #  Get seed list from downloader
             torrents: Optional[List[TransferTorrent]] = self.list_torrents(status=TorrentStatus.TRANSFER)
             if not torrents:
-                logger.info("没有获取到已完成的下载任务")
+                logger.info(" Completed downloads not fetched")
                 return False
 
-            logger.info(f"获取到 {len(torrents)} 个已完成的下载任务")
+            logger.info(f" Get {len(torrents)}  Completed downloads")
 
             for torrent in torrents:
-                # 查询下载记录识别情况
+                #  Query download record recognition
                 downloadhis: DownloadHistory = self.downloadhis.get_by_hash(torrent.hash)
                 if downloadhis:
-                    # 类型
+                    #  Typology
                     mtype = MediaType(downloadhis.type)
-                    # 按TMDBID识别
+                    #  Check or refer toTMDBID Recognize
                     mediainfo = self.recognize_media(mtype=mtype,
                                                      tmdbid=downloadhis.tmdbid)
                 else:
-                    # 非MoviePilot下载的任务，按文件识别
+                    #  In-MoviePilot Downloaded tasks， Identification by document
                     mediainfo = None
 
-                # 执行转移
+                #  Execution transfer
                 self.do_transfer(path=torrent.path, mediainfo=mediainfo,
                                  download_hash=torrent.hash)
 
-                # 设置下载任务状态
+                #  Setting the status of a download task
                 self.transfer_completed(hashs=torrent.hash, path=torrent.path)
-            # 结束
-            logger.info("下载器文件转移执行完成")
+            #  Close
+            logger.info(" Downloader file transfer execution complete")
             return True
 
     def do_transfer(self, path: Path, meta: MetaBase = None,
@@ -90,76 +90,76 @@ class TransferChain(ChainBase):
                     season: int = None, epformat: EpisodeFormat = None,
                     min_filesize: int = 0, force: bool = False) -> Tuple[bool, str]:
         """
-        执行一个复杂目录的转移操作
-        :param path: 待转移目录或文件
-        :param meta: 元数据
-        :param mediainfo: 媒体信息
-        :param download_hash: 下载记录hash
-        :param target: 目标路径
-        :param transfer_type: 转移类型
-        :param season: 季
-        :param epformat: 剧集格式
-        :param min_filesize: 最小文件大小(MB)
-        :param force: 是否强制转移
-        返回：成功标识，错误信息
+        Perform a complex directory transfer operation
+        :param path:  Directories or files to be transferred
+        :param meta:  Metadata
+        :param mediainfo:  Media information
+        :param download_hash:  Download recordhash
+        :param target:  Target path
+        :param transfer_type:  Type of transfer
+        :param season:  Classifier for seasonal crop yield or seasons of a tv series
+        :param epformat:  Episode format
+        :param min_filesize:  Minimum file size(MB)
+        :param force:  Compulsory transfer or not
+        Come (or go) back： Success story， Error message
         """
         if not transfer_type:
             transfer_type = settings.TRANSFER_TYPE
 
-        # 获取待转移路径清单
+        #  Obtaining a list of routes to be transferred
         trans_paths = self.__get_trans_paths(path)
         if not trans_paths:
-            logger.warn(f"{path.name} 没有找到可转移的媒体文件")
-            return False, f"{path.name} 没有找到可转移的媒体文件"
+            logger.warn(f"{path.name}  No transferable media files found")
+            return False, f"{path.name}  No transferable media files found"
 
-        # 有集自定义格式
+        #  There are sets of customized formats
         formaterHandler = FormatParser(eformat=epformat.format,
                                        details=epformat.detail,
                                        part=epformat.part,
                                        offset=epformat.offset) if epformat else None
 
-        # 开始进度
+        #  Initiation of progress
         self.progress.start(ProgressKey.FileTransfer)
-        # 目录所有文件清单
+        #  List of all documents in the catalog
         transfer_files = SystemUtils.list_files(directory=path,
                                                 extensions=settings.RMT_MEDIAEXT,
                                                 min_filesize=min_filesize)
         if formaterHandler:
-            # 有集自定义格式，过滤文件
+            #  There are sets of customized formats，过滤文件
             transfer_files = [f for f in transfer_files if formaterHandler.match(f.name)]
 
-        # 汇总错误信息
+        #  Aggregate error messages
         err_msgs: List[str] = []
-        # 总文件数
+        #  Total number of documents
         total_num = len(transfer_files)
-        # 已处理数量
+        #  Number processed
         processed_num = 0
-        # 失败数量
+        #  Number of failures
         fail_num = 0
-        # 跳过数量
+        #  Skip count
         skip_num = 0
         self.progress.update(value=0,
-                             text=f"开始转移 {path}，共 {total_num} 个文件 ...",
+                             text=f" Commencement of transfer {path}， Common {total_num}  File ...",
                              key=ProgressKey.FileTransfer)
 
-        # 整理屏蔽词
+        #  Organize blocked words
         transfer_exclude_words = self.systemconfig.get(SystemConfigKey.TransferExcludeWords)
 
-        # 处理所有待转移目录或文件，默认一个转移路径或文件只有一个媒体信息
+        #  Process all directories or files to be transferred， By default a transfer path or file has only one media message
         for trans_path in trans_paths:
-            # 汇总季集清单
+            #  List of summary seasonal episodes
             season_episodes: Dict[Tuple, List[int]] = {}
-            # 汇总元数据
+            #  Aggregated metadata
             metas: Dict[Tuple, MetaBase] = {}
-            # 汇总媒体信息
+            #  Aggregated media information
             medias: Dict[Tuple, MediaInfo] = {}
-            # 汇总转移信息
+            #  Aggregate transfer information
             transfers: Dict[Tuple, TransferInfo] = {}
 
-            # 如果是目录且不是⼀蓝光原盘，获取所有文件并转移
+            #  If it is a catalog and not⼀ Blu-ray disk， Get all files and transfer
             if (not trans_path.is_file()
                     and not SystemUtils.is_bluray_dir(trans_path)):
-                # 遍历获取下载目录所有文件
+                #  Iterate over all files in the download directory
                 file_paths = SystemUtils.list_files(directory=trans_path,
                                                     extensions=settings.RMT_MEDIAEXT,
                                                     min_filesize=min_filesize)
@@ -167,76 +167,76 @@ class TransferChain(ChainBase):
                 file_paths = [trans_path]
 
             if formaterHandler:
-                # 有集自定义格式，过滤文件
+                #  There are sets of customized formats，过滤文件
                 file_paths = [f for f in file_paths if formaterHandler.match(f.name)]
 
-            # 转移所有文件
+            #  Transfer of all documents
             for file_path in file_paths:
-                # 回收站及隐藏的文件不处理
+                #  Recycle bin and hidden files not handled
                 file_path_str = str(file_path)
                 if file_path_str.find('/@Recycle/') != -1 \
                         or file_path_str.find('/#recycle/') != -1 \
                         or file_path_str.find('/.') != -1 \
                         or file_path_str.find('/@eaDir') != -1:
-                    logger.debug(f"{file_path_str} 是回收站或隐藏的文件")
-                    # 计数
+                    logger.debug(f"{file_path_str}  It's the recycle bin or hidden files")
+                    #  Reckoning
                     processed_num += 1
                     skip_num += 1
                     continue
 
-                # 整理屏蔽词不处理
+                #  Organize blocked words不处理
                 is_blocked = False
                 if transfer_exclude_words:
                     for keyword in transfer_exclude_words:
                         if not keyword:
                             continue
                         if keyword and re.search(r"%s" % keyword, file_path_str, re.IGNORECASE):
-                            logger.info(f"{file_path} 命中整理屏蔽词 {keyword}，不处理")
+                            logger.info(f"{file_path}  Hit listener's blocking words (computing) {keyword}， Not dealt with")
                             is_blocked = True
                             break
                 if is_blocked:
-                    err_msgs.append(f"{file_path.name} 命中整理屏蔽词")
-                    # 计数
+                    err_msgs.append(f"{file_path.name}  Hit listener's blocking words (computing)")
+                    #  Reckoning
                     processed_num += 1
                     skip_num += 1
                     continue
 
-                # 转移成功的不再处理
+                #  Successful transfers are no longer processed
                 if not force:
                     transferd = self.transferhis.get_by_src(file_path_str)
                     if transferd and transferd.status:
-                        logger.info(f"{file_path} 已成功转移过，如需重新处理，请删除历史记录。")
-                        # 计数
+                        logger.info(f"{file_path}  Successfully transferred， If reprocessing is required， Please delete the history。")
+                        #  Reckoning
                         processed_num += 1
                         skip_num += 1
                         continue
 
-                # 更新进度
+                #  Update progress
                 self.progress.update(value=processed_num / total_num * 100,
-                                     text=f"正在转移 （{processed_num + 1}/{total_num}）{file_path.name} ...",
+                                     text=f" Moving. （{processed_num + 1}/{total_num}）{file_path.name} ...",
                                      key=ProgressKey.FileTransfer)
 
                 if not meta:
-                    # 文件元数据
+                    #  Document metadata
                     file_meta = MetaInfoPath(file_path)
                 else:
                     file_meta = meta
 
-                # 合并季
+                #  Merger season
                 if season is not None:
                     file_meta.begin_season = season
 
                 if not file_meta:
-                    logger.error(f"{file_path} 无法识别有效信息")
-                    err_msgs.append(f"{file_path} 无法识别有效信息")
-                    # 计数
+                    logger.error(f"{file_path}  Unable to recognize valid information")
+                    err_msgs.append(f"{file_path}  Unable to recognize valid information")
+                    #  Reckoning
                     processed_num += 1
                     fail_num += 1
                     continue
 
-                # 自定义识别
+                #  Custom recognition
                 if formaterHandler:
-                    # 开始集、结束集、PART
+                    #  Initial set、 Endgame、PART
                     begin_ep, end_ep, part = formaterHandler.split_episode(file_path.stem)
                     if begin_ep is not None:
                         file_meta.begin_episode = begin_ep
@@ -245,14 +245,14 @@ class TransferChain(ChainBase):
                         file_meta.end_episode = end_ep
 
                 if not mediainfo:
-                    # 识别媒体信息
+                    #  Identify media messages
                     file_mediainfo = self.recognize_media(meta=file_meta)
                 else:
                     file_mediainfo = mediainfo
 
                 if not file_mediainfo:
-                    logger.warn(f'{file_path} 未识别到媒体信息')
-                    # 新增转移失败历史记录
+                    logger.warn(f'{file_path}  No media messages recognized')
+                    #  Added transfer failure history
                     his = self.transferhis.add_fail(
                         src_path=file_path,
                         mode=transfer_type,
@@ -261,40 +261,40 @@ class TransferChain(ChainBase):
                     )
                     self.post_message(Notification(
                         mtype=NotificationType.Manual,
-                        title=f"{file_path.name} 未识别到媒体信息，无法入库！\n"
-                              f"回复：```\n/redo {his.id} [tmdbid]|[类型]\n``` 手动识别转移。"
+                        title=f"{file_path.name}  No media messages recognized， Out of stock！\n"
+                              f" Return (to a previous condition)：```\n/redo {his.id} [tmdbid]|[ Typology]\n```  Manual recognition transfer。"
                     ))
-                    # 计数
+                    #  Reckoning
                     processed_num += 1
                     fail_num += 1
                     continue
 
-                # 如果未开启新增已入库媒体是否跟随TMDB信息变化则根据tmdbid查询之前的title
+                #  If not enabled does the new inbound media follow theTMDB Information changes are then based ontmdbid Query the previoustitle
                 if not settings.SCRAP_FOLLOW_TMDB:
                     transfer_history = self.transferhis.get_by_type_tmdbid(tmdbid=file_mediainfo.tmdb_id,
                                                                            mtype=file_mediainfo.type.value)
                     if transfer_history:
                         file_mediainfo.title = transfer_history.title
 
-                logger.info(f"{file_path.name} 识别为：{file_mediainfo.type.value} {file_mediainfo.title_year}")
+                logger.info(f"{file_path.name}  Identify as：{file_mediainfo.type.value} {file_mediainfo.title_year}")
 
-                # 更新媒体图片
+                #  Updating media images
                 self.obtain_images(mediainfo=file_mediainfo)
 
-                # 获取集数据
+                #  Getting set data
                 if file_mediainfo.type == MediaType.TV:
                     episodes_info = self.tmdbchain.tmdb_episodes(tmdbid=file_mediainfo.tmdb_id,
                                                                  season=file_meta.begin_season or 1)
                 else:
                     episodes_info = None
 
-                # 获取下载hash
+                #  Get downloadhash
                 if not download_hash:
                     download_file = self.downloadhis.get_file_by_fullpath(file_path_str)
                     if download_file:
                         download_hash = download_file.download_hash
 
-                # 执行转移
+                #  Execution transfer
                 transferinfo: TransferInfo = self.transfer(meta=file_meta,
                                                            mediainfo=file_mediainfo,
                                                            path=file_path,
@@ -302,13 +302,13 @@ class TransferChain(ChainBase):
                                                            target=target,
                                                            episodes_info=episodes_info)
                 if not transferinfo:
-                    logger.error("文件转移模块运行失败")
-                    return False, "文件转移模块运行失败"
+                    logger.error(" Failure to run the file transfer module")
+                    return False, " Failure to run the file transfer module"
                 if not transferinfo.success:
-                    # 转移失败
-                    logger.warn(f"{file_path.name} 入库失败：{transferinfo.message}")
+                    #  Transfer failure
+                    logger.warn(f"{file_path.name}  Failure to stock：{transferinfo.message}")
                     err_msgs.append(f"{file_path.name} {transferinfo.message}")
-                    # 新增转移失败历史记录
+                    #  Added transfer failure history
                     self.transferhis.add_fail(
                         src_path=file_path,
                         mode=transfer_type,
@@ -317,37 +317,37 @@ class TransferChain(ChainBase):
                         mediainfo=file_mediainfo,
                         transferinfo=transferinfo
                     )
-                    # 发送消息
+                    #  Send a message
                     self.post_message(Notification(
                         mtype=NotificationType.Manual,
-                        title=f"{file_mediainfo.title_year} {file_meta.season_episode} 入库失败！",
-                        text=f"原因：{transferinfo.message or '未知'}",
+                        title=f"{file_mediainfo.title_year} {file_meta.season_episode}  Failure to stock！",
+                        text=f" Rationale：{transferinfo.message or ' Uncharted'}",
                         image=file_mediainfo.get_message_image()
                     ))
-                    # 计数
+                    #  Reckoning
                     processed_num += 1
                     fail_num += 1
                     continue
 
-                # 汇总信息
+                #  Summary information
                 mkey = (file_mediainfo.tmdb_id, file_meta.begin_season)
                 if mkey not in medias:
-                    # 新增信息
+                    #  New information
                     metas[mkey] = file_meta
                     medias[mkey] = file_mediainfo
                     season_episodes[mkey] = file_meta.episode_list
                     transfers[mkey] = transferinfo
                 else:
-                    # 合并季集清单
+                    #  Merger season集清单
                     season_episodes[mkey] = list(set(season_episodes[mkey] + file_meta.episode_list))
-                    # 合并转移数据
+                    #  Consolidation of transfer data
                     transfers[mkey].file_count += transferinfo.file_count
                     transfers[mkey].total_size += transferinfo.total_size
                     transfers[mkey].file_list.extend(transferinfo.file_list)
                     transfers[mkey].file_list_new.extend(transferinfo.file_list_new)
                     transfers[mkey].fail_list.extend(transferinfo.fail_list)
 
-                # 新增转移成功历史记录
+                #  Add transfer success history
                 self.transferhis.add_success(
                     src_path=file_path,
                     mode=transfer_type,
@@ -356,30 +356,30 @@ class TransferChain(ChainBase):
                     mediainfo=file_mediainfo,
                     transferinfo=transferinfo
                 )
-                # 刮削单个文件
+                #  Scraping of individual documents
                 if settings.SCRAP_METADATA:
                     self.scrape_metadata(path=transferinfo.target_path, mediainfo=file_mediainfo)
-                # 更新进度
+                #  Update progress
                 processed_num += 1
                 self.progress.update(value=processed_num / total_num * 100,
-                                     text=f"{file_path.name} 转移完成",
+                                     text=f"{file_path.name}  Transfer completed",
                                      key=ProgressKey.FileTransfer)
 
-            # 目录或文件转移完成
-            self.progress.update(text=f"{trans_path} 转移完成，正在执行后续处理 ...",
+            #  Directory or file transfer complete
+            self.progress.update(text=f"{trans_path}  Transfer completed， Follow-up being implemented ...",
                                  key=ProgressKey.FileTransfer)
 
-            # 执行后续处理
+            #  Implementation follow-up
             for mkey, media in medias.items():
                 transfer_meta = metas[mkey]
                 transfer_info = transfers[mkey]
-                # 媒体目录
+                #  Media catalog
                 if transfer_info.target_path.is_file():
                     transfer_info.target_path = transfer_info.target_path.parent
-                # 刷新媒体库，根目录或季目录
+                #  Refresh media library， Root or quarter directory
                 if settings.REFRESH_MEDIASERVER:
                     self.refresh_mediaserver(mediainfo=media, file_path=transfer_info.target_path)
-                # 发送通知
+                #  Send notification
                 se_str = None
                 if media.type == MediaType.TV:
                     se_str = f"{transfer_meta.season} {StringUtils.format_ep(season_episodes[mkey])}"
@@ -387,20 +387,20 @@ class TransferChain(ChainBase):
                                            mediainfo=media,
                                            transferinfo=transfer_info,
                                            season_episode=se_str)
-                # 广播事件
+                #  Broadcasting incident
                 self.eventmanager.send_event(EventType.TransferComplete, {
                     'meta': transfer_meta,
                     'mediainfo': media,
                     'transferinfo': transfer_info
                 })
 
-        # 结束进度
-        logger.info(f"{path} 转移完成，共 {total_num} 个文件，"
-                    f"失败 {fail_num} 个，跳过 {skip_num} 个")
+        #  Close进度
+        logger.info(f"{path}  Transfer completed， Common {total_num}  File，"
+                    f" Fail (e.g. experiments) {fail_num}  Classifier for individual things or people, general, catch-all classifier， Skip over {skip_num}  Classifier for individual things or people, general, catch-all classifier")
 
         self.progress.update(value=100,
-                             text=f"{path} 转移完成，共 {total_num} 个文件，"
-                                  f"失败 {fail_num} 个，跳过 {skip_num} 个",
+                             text=f"{path}  Transfer completed， Common {total_num}  File，"
+                                  f" Fail (e.g. experiments) {fail_num}  Classifier for individual things or people, general, catch-all classifier， Skip over {skip_num}  Classifier for individual things or people, general, catch-all classifier",
                              key=ProgressKey.FileTransfer)
         self.progress.end(ProgressKey.FileTransfer)
 
@@ -409,38 +409,38 @@ class TransferChain(ChainBase):
     @staticmethod
     def __get_trans_paths(directory: Path):
         """
-        获取转移目录列表
+        Get a list of transfer catalogs
         """
 
         if not directory.exists():
-            logger.warn(f"目录不存在：{directory}")
+            logger.warn(f" Catalog does not exist：{directory}")
             return []
 
-        # 单文件
+        #  Single document
         if directory.is_file():
             return [directory]
 
-        # 蓝光原盘
+        #  Blu-ray disk
         if SystemUtils.is_bluray_dir(directory):
             return [directory]
 
-        # 需要转移的路径列表
+        #  List of paths to be transferred
         trans_paths = []
 
-        # 先检查当前目录的下级目录，以支持合集的情况
+        #  First check the current directory's lower level directories， To support the case of ensembles
         for sub_dir in SystemUtils.list_sub_directory(directory):
-            # 如果是蓝光原盘
+            #  If it's the original blu-ray
             if SystemUtils.is_bluray_dir(sub_dir):
                 trans_paths.append(sub_dir)
-            # 没有媒体文件的目录跳过
+            #  Directories without media files are skipped
             elif SystemUtils.list_files(sub_dir, extensions=settings.RMT_MEDIAEXT):
                 trans_paths.append(sub_dir)
 
         if not trans_paths:
-            # 没有有效子目录，直接转移当前目录
+            #  No valid subdirectories， Direct transfer of the current directory
             trans_paths.append(directory)
         else:
-            # 有子目录时，把当前目录的文件添加到转移任务中
+            #  When there are subdirectories， Add files from the current directory to the transfer task
             trans_paths.extend(
                 SystemUtils.list_sub_files(directory, extensions=settings.RMT_MEDIAEXT)
             )
@@ -448,13 +448,13 @@ class TransferChain(ChainBase):
 
     def remote_transfer(self, arg_str: str, channel: MessageChannel, userid: Union[str, int] = None):
         """
-        远程重新转移，参数 历史记录ID TMDBID|类型
+        Remote retransfer， Parameters  Historical recordID TMDBID| Typology
         """
 
         def args_error():
             self.post_message(Notification(channel=channel,
-                                           title="请输入正确的命令格式：/redo [id] [tmdbid]|[类型]，"
-                                                 "[id]历史记录编号", userid=userid))
+                                           title=" Please enter the correct command format：/redo [id] [tmdbid]|[ Typology]，"
+                                                 "[id] Historical record number", userid=userid))
 
         if not arg_str:
             args_error()
@@ -463,7 +463,7 @@ class TransferChain(ChainBase):
         if len(arg_strs) != 2:
             args_error()
             return
-        # 历史记录ID
+        #  Historical recordID
         logid = arg_strs[0]
         if not logid.isdigit():
             args_error()
@@ -474,7 +474,7 @@ class TransferChain(ChainBase):
         if not logid.isdigit():
             args_error()
             return
-        # 类型
+        #  Typology
         type_str = tmdb_strs[1] if len(tmdb_strs) > 1 else None
         if not type_str or type_str not in [MediaType.MOVIE.value, MediaType.TV.value]:
             args_error()
@@ -482,46 +482,46 @@ class TransferChain(ChainBase):
         state, errmsg = self.re_transfer(logid=int(logid),
                                          mtype=MediaType(type_str), tmdbid=int(tmdbid))
         if not state:
-            self.post_message(Notification(channel=channel, title="手动整理失败",
+            self.post_message(Notification(channel=channel, title=" Failed to organize manually",
                                            text=errmsg, userid=userid))
             return
 
     def re_transfer(self, logid: int,
                     mtype: MediaType = None, tmdbid: int = None) -> Tuple[bool, str]:
         """
-        根据历史记录，重新识别转移，只处理对应的src目录
-        :param logid: 历史记录ID
-        :param mtype: 媒体类型
+        Based on historical records， Re-identification transfer， Only process the correspondingsrc Catalogs
+        :param logid:  Historical recordID
+        :param mtype:  Media type
         :param tmdbid: TMDB ID
         """
-        # 查询历史记录
+        #  Query history
         history: TransferHistory = self.transferhis.get(logid)
         if not history:
-            logger.error(f"历史记录不存在，ID：{logid}")
-            return False, "历史记录不存在"
-        # 没有下载记录，按源目录路径重新转移
+            logger.error(f" History does not exist，ID：{logid}")
+            return False, " History does not exist"
+        #  No download history， Re-transfer by source directory path
         src_path = Path(history.src)
         if not src_path.exists():
-            return False, f"源目录不存在：{src_path}"
+            return False, f" Source directory does not exist：{src_path}"
         dest_path = Path(history.dest) if history.dest else None
-        # 查询媒体信息
+        #  Search for media information
         if mtype and tmdbid:
             mediainfo = self.recognize_media(mtype=mtype, tmdbid=tmdbid)
         else:
             meta = MetaInfoPath(src_path)
             mediainfo = self.recognize_media(meta=meta)
         if not mediainfo:
-            return False, f"未识别到媒体信息，类型：{mtype.value}，tmdbid：{tmdbid}"
-        # 重新执行转移
-        logger.info(f"{src_path.name} 识别为：{mediainfo.title_year}")
-        # 更新媒体图片
+            return False, f" No media messages recognized， Typology：{mtype.value}，tmdbid：{tmdbid}"
+        #  Re-implementation of transfers
+        logger.info(f"{src_path.name}  Identify as：{mediainfo.title_year}")
+        #  Updating media images
         self.obtain_images(mediainfo=mediainfo)
 
-        # 删除旧的已整理文件
+        #  Deleting old organized files
         if history.dest:
             self.delete_files(Path(history.dest))
 
-        # 强制转移
+        #  Forcible transfer
         state, errmsg = self.do_transfer(path=src_path,
                                          mediainfo=mediainfo,
                                          download_hash=history.download_hash,
@@ -541,30 +541,30 @@ class TransferChain(ChainBase):
                         epformat: EpisodeFormat = None,
                         min_filesize: int = 0) -> Tuple[bool, Union[str, list]]:
         """
-        手动转移
-        :param in_path: 源文件路径
-        :param target: 目标路径
+        Manual transfer
+        :param in_path:  Source file path
+        :param target:  Target path
         :param tmdbid: TMDB ID
-        :param mtype: 媒体类型
-        :param season: 季度
-        :param transfer_type: 转移类型
-        :param epformat: 剧集格式
-        :param min_filesize: 最小文件大小(MB)
+        :param mtype:  Media type
+        :param season:  Classifier for seasonal crop yield or seasons of a tv series度
+        :param transfer_type:  Type of transfer
+        :param epformat:  Episode format
+        :param min_filesize:  Minimum file size(MB)
         """
-        logger.info(f"手动转移：{in_path} ...")
+        logger.info(f"Manual transfer：{in_path} ...")
 
         if tmdbid:
-            # 有输入TMDBID时单个识别
-            # 识别媒体信息
+            #  InputtedTMDBID Time interval recognition
+            #  Identify media messages
             mediainfo: MediaInfo = self.mediachain.recognize_media(tmdbid=tmdbid, mtype=mtype)
             if not mediainfo:
-                return False, f"媒体信息识别失败，tmdbid: {tmdbid}, type: {mtype.value}"
-            # 开始进度
+                return False, f" Media message recognition failure，tmdbid: {tmdbid}, type: {mtype.value}"
+            #  Initiation of progress
             self.progress.start(ProgressKey.FileTransfer)
             self.progress.update(value=0,
-                                 text=f"开始转移 {in_path} ...",
+                                 text=f" Commencement of transfer {in_path} ...",
                                  key=ProgressKey.FileTransfer)
-            # 开始转移
+            #  Commencement of transfer
             state, errmsg = self.do_transfer(
                 path=in_path,
                 mediainfo=mediainfo,
@@ -577,10 +577,10 @@ class TransferChain(ChainBase):
                 return False, errmsg
 
             self.progress.end(ProgressKey.FileTransfer)
-            logger.info(f"{in_path} 转移完成")
+            logger.info(f"{in_path}  Transfer completed")
             return True, ""
         else:
-            # 没有输入TMDBID时，按文件识别
+            #  No inputTMDBID Hour， Identification by document
             state, errmsg = self.do_transfer(path=in_path,
                                              target=target,
                                              transfer_type=transfer_type,
@@ -592,22 +592,22 @@ class TransferChain(ChainBase):
     def send_transfer_message(self, meta: MetaBase, mediainfo: MediaInfo,
                               transferinfo: TransferInfo, season_episode: str = None):
         """
-        发送入库成功的消息
+        Send inbound success message
         """
-        msg_title = f"{mediainfo.title_year} {meta.season_episode if not season_episode else season_episode} 已入库"
+        msg_title = f"{mediainfo.title_year} {meta.season_episode if not season_episode else season_episode}  In stock"
         if mediainfo.vote_average:
-            msg_str = f"评分：{mediainfo.vote_average}，类型：{mediainfo.type.value}"
+            msg_str = f" Score (of student's work)：{mediainfo.vote_average}， Typology：{mediainfo.type.value}"
         else:
-            msg_str = f"类型：{mediainfo.type.value}"
+            msg_str = f" Typology：{mediainfo.type.value}"
         if mediainfo.category:
-            msg_str = f"{msg_str}，类别：{mediainfo.category}"
+            msg_str = f"{msg_str}， Form：{mediainfo.category}"
         if meta.resource_term:
-            msg_str = f"{msg_str}，质量：{meta.resource_term}"
-        msg_str = f"{msg_str}，共{transferinfo.file_count}个文件，" \
-                  f"大小：{StringUtils.str_filesize(transferinfo.total_size)}"
+            msg_str = f"{msg_str}， Mass (in physics)：{meta.resource_term}"
+        msg_str = f"{msg_str}， Common{transferinfo.file_count} File，" \
+                  f" Adults and children：{StringUtils.str_filesize(transferinfo.total_size)}"
         if transferinfo.message:
-            msg_str = f"{msg_str}，以下文件处理失败：\n{transferinfo.message}"
-        # 发送
+            msg_str = f"{msg_str}， The following files failed to be processed：\n{transferinfo.message}"
+        #  Dispatch
         self.post_message(Notification(
             mtype=NotificationType.Organize,
             title=msg_title, text=msg_str, image=mediainfo.get_message_image()))
@@ -615,48 +615,48 @@ class TransferChain(ChainBase):
     @staticmethod
     def delete_files(path: Path):
         """
-        删除转移后的文件以及空目录
-        :param path: 文件路径
+        Delete transferred files and empty directories
+        :param path:  File path
         """
-        logger.info(f"开始删除文件以及空目录：{path} ...")
+        logger.info(f" Start deleting files and empty directories：{path} ...")
         if not path.exists():
             return
         if path.is_file():
-            # 删除文件、nfo、jpg等同名文件
+            #  Delete file、nfo、jpg And other documents of the same name
             pattern = path.stem.replace('[', '?').replace(']', '?')
             files = path.parent.glob(f"{pattern}.*")
             for file in files:
                 Path(file).unlink()
-            logger.warn(f"文件 {path} 已删除")
-            # 需要删除父目录
+            logger.warn(f" File {path}  Deleted")
+            #  Parent directory needs to be deleted
         elif str(path.parent) == str(path.root):
-            # 根目录，不删除
-            logger.warn(f"根目录 {path} 不能删除！")
+            #  Root directory， Non-deletion
+            logger.warn(f" Root directory {path}  Cannot be deleted！")
             return
         else:
-            # 非根目录，才删除目录
+            #  Non-root directory， Just deleted the directory.
             shutil.rmtree(path)
-            # 删除目录
-            logger.warn(f"目录 {path} 已删除")
-            # 需要删除父目录
+            #  Delete catalog
+            logger.warn(f" Catalogs {path}  Deleted")
+            #  Parent directory needs to be deleted
 
-        # 判断当前媒体父路径下是否有媒体文件，如有则无需遍历父级
+        #  Determine if there is a media file under the current media parent path， There is no need to traverse the parent if
         if not SystemUtils.exits_files(path.parent, settings.RMT_MEDIAEXT):
-            # 媒体库二级分类根路径
+            #  Root path for secondary categorization of media libraries
             library_root_names = [
-                settings.LIBRARY_MOVIE_NAME or '电影',
-                settings.LIBRARY_TV_NAME or '电视剧',
-                settings.LIBRARY_ANIME_NAME or '动漫',
+                settings.LIBRARY_MOVIE_NAME or ' Cinematic',
+                settings.LIBRARY_TV_NAME or ' Dramas',
+                settings.LIBRARY_ANIME_NAME or ' Cartoons and comics',
             ]
 
-            # 判断父目录是否为空, 为空则删除
+            #  Determine if the parent directory is empty,  Delete if empty
             for parent_path in path.parents:
-                # 遍历父目录到媒体库二级分类根路径
+                #  Iterate the parent directory to the root path of the media library secondary category
                 if str(parent_path.name) in library_root_names:
                     break
                 if str(parent_path.parent) != str(path.root):
-                    # 父目录非根目录，才删除父目录
+                    #  Parent directory is not the root directory， Before deleting the parent directory.
                     if not SystemUtils.exits_files(parent_path, settings.RMT_MEDIAEXT):
-                        # 当前路径下没有媒体文件则删除
+                        #  Delete if there are no media files in the current path
                         shutil.rmtree(parent_path)
-                        logger.warn(f"目录 {parent_path} 已删除")
+                        logger.warn(f" Catalogs {parent_path}  Deleted")

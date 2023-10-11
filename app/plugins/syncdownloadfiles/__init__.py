@@ -15,30 +15,30 @@ from app.plugins import _PluginBase
 
 
 class SyncDownloadFiles(_PluginBase):
-    # 插件名称
-    plugin_name = "下载器文件同步"
-    # 插件描述
-    plugin_desc = "同步下载器的文件信息到数据库，删除文件时联动删除下载任务。"
-    # 插件图标
+    #  Plug-in name
+    plugin_name = " Downloader file synchronization"
+    #  Plugin description
+    plugin_desc = " Synchronize downloader file information to database， Delete download tasks when deleting files。"
+    #  Plug-in icons
     plugin_icon = "sync_file.png"
-    # 主题色
+    #  Theme color
     plugin_color = "#4686E3"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "thsrite"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/thsrite"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "syncdownloadfiles_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 20
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 1
 
-    # 私有属性
+    #  Private property
     _enabled = False
-    # 任务执行间隔
+    #  Task execution interval
     _time = None
     qb = None
     tr = None
@@ -50,11 +50,11 @@ class SyncDownloadFiles(_PluginBase):
     downloadhis = None
     transferhis = None
 
-    # 定时器
+    #  Timers
     _scheduler: Optional[BackgroundScheduler] = None
 
     def init_plugin(self, config: dict = None):
-        # 停止现有任务
+        #  Discontinuation of existing mandates
         self.stop_service()
 
         self.qb = Qbittorrent()
@@ -72,38 +72,38 @@ class SyncDownloadFiles(_PluginBase):
             self._dirs = config.get("dirs") or ""
 
         if self._clear:
-            # 清理下载器文件记录
+            #  Clear downloader file logs
             self.downloadhis.truncate_files()
-            # 清理下载器最后处理记录
+            #  Clearing the downloader's last processed record
             for downloader in self._downloaders:
-                # 获取最后同步时间
+                #  Get the last synchronization time
                 self.del_data(f"last_sync_time_{downloader}")
-            # 关闭clear
+            #  Clotureclear
             self._clear = False
             self.__update_config()
 
         if self._onlyonce:
-            # 执行一次
-            # 关闭onlyonce
+            #  Execute once
+            #  Clotureonlyonce
             self._onlyonce = False
             self.__update_config()
 
             self.sync()
 
         if self._enabled:
-            # 定时服务
+            #  Time service
             self._scheduler = BackgroundScheduler(timezone=settings.TZ)
             if self._time:
                 try:
                     self._scheduler.add_job(func=self.sync,
                                             trigger="interval",
                                             hours=float(str(self._time).strip()),
-                                            name="自动同步下载器文件记录")
-                    logger.info(f"自动同步下载器文件记录服务启动，时间间隔 {self._time} 小时")
+                                            name=" Automatic synchronization of downloader file records")
+                    logger.info(f" Automatic synchronization of downloader file logging service startup， Time interval {self._time}  Hourly")
                 except Exception as err:
-                    logger.error(f"定时任务配置错误：{err}")
+                    logger.error(f" Timed task configuration error：{err}")
 
-                # 启动任务
+                #  Initiate tasks
                 if self._scheduler.get_jobs():
                     self._scheduler.print_jobs()
                     self._scheduler.start()
@@ -113,100 +113,100 @@ class SyncDownloadFiles(_PluginBase):
 
     def sync(self):
         """
-        同步所选下载器种子记录
+        Synchronize selected downloader seed records
         """
         start_time = datetime.now()
-        logger.info("开始同步下载器任务文件记录")
+        logger.info(" Start synchronizing downloader task file records")
 
         if not self._downloaders:
-            logger.error("未选择同步下载器，停止运行")
+            logger.error(" Synchronized downloader not selected， Stop running")
             return
 
-        # 遍历下载器同步记录
+        #  Iterate over downloader synchronization records
         for downloader in self._downloaders:
-            # 获取最后同步时间
+            #  Get the last synchronization time
             last_sync_time = self.get_data(f"last_sync_time_{downloader}")
 
-            logger.info(f"开始扫描下载器 {downloader} ...")
+            logger.info(f" Start scanning the downloader {downloader} ...")
             downloader_obj = self.__get_downloader(downloader)
-            # 获取下载器中已完成的种子
+            #  Getting completed seeds in the downloader
             torrents = downloader_obj.get_completed_torrents()
             if torrents:
-                logger.info(f"下载器 {downloader} 已完成种子数：{len(torrents)}")
+                logger.info(f" Downloader {downloader}  Number of seeds completed：{len(torrents)}")
             else:
-                logger.info(f"下载器 {downloader} 没有已完成种子")
+                logger.info(f" Downloader {downloader}  No completed seeds")
                 continue
 
-            # 把种子按照名称和种子大小分组，获取添加时间最早的一个，认定为是源种子，其余为辅种
+            #  Grouping seeds by name and seed size， Get the one with the earliest add time， Determined to be a source seed， The rest are auxiliary species
             torrents = self.__get_origin_torrents(torrents, downloader)
-            logger.info(f"下载器 {downloader} 去除辅种，获取到源种子数：{len(torrents)}")
+            logger.info(f" Downloader {downloader}  Removal of auxiliary species， Number of source seeds obtained：{len(torrents)}")
 
             for torrent in torrents:
-                # 返回false，标识后续种子已被同步
+                #  Come (or go) backfalse， Identifies that subsequent seeds have been synchronized
                 sync_flag = self.__compare_time(torrent, downloader, last_sync_time)
 
                 if not sync_flag:
-                    logger.info(f"最后同步时间{last_sync_time}, 之前种子已被同步，结束当前下载器 {downloader} 任务")
+                    logger.info(f" Final synchronization time{last_sync_time},  Seeds were previously synchronized， End current downloader {downloader}  Mandates")
                     break
 
-                # 获取种子hash
+                #  Getting seedshash
                 hash_str = self.__get_hash(torrent, downloader)
 
-                # 判断是否是mp下载，判断download_hash是否在downloadhistory表中，是则不处理
+                #  Determine if it ismp Downloading， Judgementsdownload_hash Whether or notdownloadhistory Statistical tables， Yes, not processed
                 downloadhis = self.downloadhis.get_by_hash(hash_str)
                 if downloadhis:
                     downlod_files = self.downloadhis.get_files_by_hash(hash_str)
                     if downlod_files:
-                        logger.info(f"种子 {hash_str} 通过MoviePilot下载，跳过处理")
+                        logger.info(f" Torrent {hash_str}  Pass (a bill or inspection etc)MoviePilot Downloading， Skip processing")
                         continue
 
-                # 获取种子download_dir
+                #  Getting seedsdownload_dir
                 download_dir = self.__get_download_dir(torrent, downloader)
 
-                # 处理路径映射
+                #  Handling path mapping
                 if self._dirs:
                     paths = self._dirs.split("\n")
                     for path in paths:
                         sub_paths = path.split(":")
                         download_dir = download_dir.replace(sub_paths[0], sub_paths[1]).replace('\\', '/')
 
-                # 获取种子name
+                #  Getting seedsname
                 torrent_name = self.__get_torrent_name(torrent, downloader)
-                # 种子保存目录
+                #  Seed saving catalog
                 save_path = Path(download_dir).joinpath(torrent_name)
-                # 获取种子文件
+                #  Getting the seed file
                 torrent_files = self.__get_torrent_files(torrent, downloader, downloader_obj)
-                logger.info(f"开始同步种子 {hash_str}, 文件数 {len(torrent_files)}")
+                logger.info(f" Start synchronizing seeds {hash_str},  Number of documents {len(torrent_files)}")
 
                 download_files = []
                 for file in torrent_files:
-                    # 过滤掉没下载的文件
+                    #  Filtering out un-downloaded files
                     if not self.__is_download(file, downloader):
                         continue
-                    # 种子文件路径
+                    #  Seed file path
                     file_path_str = self.__get_file_path(file, downloader)
                     file_path = Path(file_path_str)
-                    # 只处理视频格式
+                    #  Handles only video formats
                     if not file_path.suffix \
                             or file_path.suffix not in settings.RMT_MEDIAEXT:
                         continue
-                    # 种子文件根路程
+                    #  Seed file root path
                     root_path = file_path.parts[0]
-                    # 不含种子名称的种子文件相对路径
+                    #  Relative path to the seed file without the seed name
                     if root_path == torrent_name:
                         rel_path = str(file_path.relative_to(root_path))
                     else:
                         rel_path = str(file_path)
-                    # 完整路径
+                    #  Full path
                     full_path = save_path.joinpath(rel_path)
                     if self._history:
                         transferhis = self.transferhis.get_by_src(str(full_path))
                         if transferhis and not transferhis.download_hash:
-                            logger.info(f"开始补充转移记录：{transferhis.id} download_hash {hash_str}")
+                            logger.info(f" Commencement of replenishment of transfer records：{transferhis.id} download_hash {hash_str}")
                             self.transferhis.update_download_hash(historyid=transferhis.id,
                                                                   download_hash=hash_str)
 
-                    # 种子文件记录
+                    #  Seed documentation records
                     download_files.append(
                         {
                             "download_hash": hash_str,
@@ -219,18 +219,18 @@ class SyncDownloadFiles(_PluginBase):
                     )
 
                 if download_files:
-                    # 登记下载文件
+                    #  Register to download files
                     self.downloadhis.add_files(download_files)
-                logger.info(f"种子 {hash_str} 同步完成")
+                logger.info(f" Torrent {hash_str}  Synchronized completion")
 
-            logger.info(f"下载器种子文件同步完成！")
+            logger.info(f" Downloader seed file synchronization complete！")
             self.save_data(f"last_sync_time_{downloader}",
                            time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
 
-            # 计算耗时
+            #  Computational time
             end_time = datetime.now()
 
-            logger.info(f"下载器任务文件记录已同步完成。总耗时 {(end_time - start_time).seconds} 秒")
+            logger.info(f" Downloader task file record synchronization completed。 Total time consumption {(end_time - start_time).seconds}  Unit of angle or arc equivalent one sixtieth of a degree")
 
     def __update_config(self):
         self.update_config({
@@ -245,55 +245,55 @@ class SyncDownloadFiles(_PluginBase):
 
     @staticmethod
     def __get_origin_torrents(torrents: Any, dl_tpe: str):
-        # 把种子按照名称和种子大小分组，获取添加时间最早的一个，认定为是源种子，其余为辅种
+        #  Grouping seeds by name and seed size， Get the one with the earliest add time， Determined to be a source seed， The rest are auxiliary species
         grouped_data = {}
 
-        # 排序种子，根据种子添加时间倒序
+        #  Sorting seeds， Seeds added in reverse chronological order
         if dl_tpe == "qbittorrent":
             torrents = sorted(torrents, key=lambda x: x.get("added_on"), reverse=True)
-            # 遍历原始数组，按照size和name进行分组
+            #  Iterate over the original array， On the basis ofsize Cap (a poem)name Cluster
             for torrent in torrents:
                 size = torrent.get('size')
                 name = torrent.get('name')
-                key = (size, name)  # 使用元组作为字典的键
+                key = (size, name)  #  Using tuples as keys for dictionaries
 
-                # 如果分组键不存在，则将当前元素作为最小元素添加到字典中
+                #  If the grouping key does not exist， Then the current element is added to the dictionary as the smallest element
                 if key not in grouped_data:
                     grouped_data[key] = torrent
                 else:
-                    # 如果分组键已存在，则比较当前元素的time是否更小，如果更小则更新字典中的元素
+                    #  If the grouping key already exists， Then compares the current element'stime Is it smaller， Update elements in the dictionary if smaller
                     if torrent.get('added_on') < grouped_data[key].get('added_on'):
                         grouped_data[key] = torrent
         else:
             torrents = sorted(torrents, key=lambda x: x.added_date, reverse=True)
-            # 遍历原始数组，按照size和name进行分组
+            #  Iterate over the original array， On the basis ofsize Cap (a poem)name Cluster
             for torrent in torrents:
                 size = torrent.total_size
                 name = torrent.name
-                key = (size, name)  # 使用元组作为字典的键
+                key = (size, name)  #  Using tuples as keys for dictionaries
 
-                # 如果分组键不存在，则将当前元素作为最小元素添加到字典中
+                #  If the grouping key does not exist， Then the current element is added to the dictionary as the smallest element
                 if key not in grouped_data:
                     grouped_data[key] = torrent
                 else:
-                    # 如果分组键已存在，则比较当前元素的time是否更小，如果更小则更新字典中的元素
+                    #  If the grouping key already exists， Then compares the current element'stime Is it smaller， Update elements in the dictionary if smaller
                     if torrent.added_date < grouped_data[key].added_date:
                         grouped_data[key] = torrent
 
-        # 新的数组
+        #  New arrays
         return list(grouped_data.values())
 
     @staticmethod
     def __compare_time(torrent: Any, dl_tpe: str, last_sync_time: str = None):
         if last_sync_time:
-            # 获取种子时间
+            #  Getting seed time
             if dl_tpe == "qbittorrent":
-                torrent_date = time.gmtime(torrent.get("added_on"))  # 将时间戳转换为时间元组
-                torrent_date = time.strftime("%Y-%m-%d %H:%M:%S", torrent_date)  # 格式化时间
+                torrent_date = time.gmtime(torrent.get("added_on"))  #  Converting timestamps to time tuples
+                torrent_date = time.strftime("%Y-%m-%d %H:%M:%S", torrent_date)  #  Formatting time
             else:
                 torrent_date = torrent.added_date
 
-            # 之后的种子已经同步了
+            #  The seeds after that have been synchronized
             if last_sync_time > str(torrent_date):
                 return False
 
@@ -302,7 +302,7 @@ class SyncDownloadFiles(_PluginBase):
     @staticmethod
     def __is_download(file: Any, dl_type: str):
         """
-        判断文件是否被下载
+        Determine if a file has been downloaded
         """
         try:
             if dl_type == "qbittorrent":
@@ -316,7 +316,7 @@ class SyncDownloadFiles(_PluginBase):
     @staticmethod
     def __get_file_path(file: Any, dl_type: str):
         """
-        获取文件路径
+        Get file path
         """
         try:
             return file.get("name") if dl_type == "qbittorrent" else file.name
@@ -327,7 +327,7 @@ class SyncDownloadFiles(_PluginBase):
     @staticmethod
     def __get_torrent_files(torrent: Any, dl_type: str, downloader_obj):
         """
-        获取种子文件
+        Getting the seed file
         """
         try:
             return torrent.files if dl_type == "qbittorrent" else downloader_obj.get_files(tid=torrent.id)
@@ -338,7 +338,7 @@ class SyncDownloadFiles(_PluginBase):
     @staticmethod
     def __get_torrent_name(torrent: Any, dl_type: str):
         """
-        获取种子name
+        Getting seedsname
         """
         try:
             return torrent.get("name") if dl_type == "qbittorrent" else torrent.name
@@ -349,7 +349,7 @@ class SyncDownloadFiles(_PluginBase):
     @staticmethod
     def __get_download_dir(torrent: Any, dl_type: str):
         """
-        获取种子download_dir
+        Getting seedsdownload_dir
         """
         try:
             return torrent.get("save_path") if dl_type == "qbittorrent" else torrent.download_dir
@@ -360,7 +360,7 @@ class SyncDownloadFiles(_PluginBase):
     @staticmethod
     def __get_hash(torrent: Any, dl_type: str):
         """
-        获取种子hash
+        Getting seedshash
         """
         try:
             return torrent.get("hash") if dl_type == "qbittorrent" else torrent.hashString
@@ -370,7 +370,7 @@ class SyncDownloadFiles(_PluginBase):
 
     def __get_downloader(self, dtype: str):
         """
-        根据类型返回下载器实例
+        Returns downloader instances by type
         """
         if dtype == "qbittorrent":
             return self.qb
@@ -391,7 +391,7 @@ class SyncDownloadFiles(_PluginBase):
 
     def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
         """
-        拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
+        Assembly plugin configuration page， Two pieces of data need to be returned：1、 Page configuration；2、 Data structure
         """
         return [
             {
@@ -411,7 +411,7 @@ class SyncDownloadFiles(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'enabled',
-                                            'label': '开启插件',
+                                            'label': ' Enabling plug-ins',
                                         }
                                     }
                                 ]
@@ -427,7 +427,7 @@ class SyncDownloadFiles(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'onlyonce',
-                                            'label': '立即运行一次',
+                                            'label': ' Run one immediately',
                                         }
                                     }
                                 ]
@@ -443,7 +443,7 @@ class SyncDownloadFiles(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'history',
-                                            'label': '补充整理历史记录',
+                                            'label': ' Supplementing and organizing historical records',
                                         }
                                     }
                                 ]
@@ -459,7 +459,7 @@ class SyncDownloadFiles(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'clear',
-                                            'label': '清理数据',
+                                            'label': ' Cleaning of data',
                                         }
                                     }
                                 ]
@@ -480,7 +480,7 @@ class SyncDownloadFiles(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'time',
-                                            'label': '同步时间间隔'
+                                            'label': ' Synchronization interval'
                                         }
                                     }
                                 ]
@@ -498,7 +498,7 @@ class SyncDownloadFiles(_PluginBase):
                                             'chips': True,
                                             'multiple': True,
                                             'model': 'downloaders',
-                                            'label': '同步下载器',
+                                            'label': ' Synchronous downloader',
                                             'items': [
                                                 {'title': 'Qbittorrent', 'value': 'qbittorrent'},
                                                 {'title': 'Transmission', 'value': 'transmission'}
@@ -522,9 +522,9 @@ class SyncDownloadFiles(_PluginBase):
                                         'component': 'VTextarea',
                                         'props': {
                                             'model': 'dirs',
-                                            'label': '目录映射',
+                                            'label': ' Directory map',
                                             'rows': 5,
-                                            'placeholder': '每一行一个目录，下载器保存目录:MoviePilot映射目录'
+                                            'placeholder': ' One directory per line， Downloader save directory:MoviePilot Mapping directory'
                                         }
                                     }
                                 ]
@@ -543,7 +543,7 @@ class SyncDownloadFiles(_PluginBase):
                                     {
                                         'component': 'VAlert',
                                         'props': {
-                                            'text': '适用于非MoviePilot下载的任务；下载器种子数据较多时，同步时间将会较长，请耐心等候，可查看实时日志了解同步进度；时间间隔建议最少每6小时执行一次，防止上次任务没处理完。'
+                                            'text': ' Suitable for nonMoviePilot Downloaded tasks； When the downloader has more seed data， Synchronization will take longer， Please be patient.， Real-time logs can be viewed for synchronization progress； The time interval is recommended to be at least every6 Performed once an hour， In case the last task was not completed。'
                                         }
                                     }
                                 ]
@@ -567,7 +567,7 @@ class SyncDownloadFiles(_PluginBase):
 
     def stop_service(self):
         """
-        退出插件
+        Exit plugin
         """
         try:
             if self._scheduler:
@@ -576,4 +576,4 @@ class SyncDownloadFiles(_PluginBase):
                     self._scheduler.shutdown()
                 self._scheduler = None
         except Exception as e:
-            logger.error("退出插件失败：%s" % str(e))
+            logger.error("Exit plugin失败：%s" % str(e))

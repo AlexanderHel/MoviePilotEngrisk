@@ -26,7 +26,7 @@ class Jellyfin(metaclass=Singleton):
 
     def is_inactive(self) -> bool:
         """
-        判断是否需要重连
+        Determine if reconnection is required
         """
         if not self._host or not self._apikey:
             return False
@@ -34,14 +34,14 @@ class Jellyfin(metaclass=Singleton):
 
     def reconnect(self):
         """
-        重连
+        Reconnect
         """
         self.user = self.get_user()
         self.serverid = self.get_server_id()
 
     def __get_jellyfin_librarys(self) -> List[dict]:
         """
-        获取Jellyfin媒体库的信息
+        GainJellyfin Information on the media library
         """
         if not self._host or not self._apikey:
             return []
@@ -51,15 +51,15 @@ class Jellyfin(metaclass=Singleton):
             if res:
                 return res.json().get("Items")
             else:
-                logger.error(f"Users/Views 未获取到返回数据")
+                logger.error(f"Users/Views  Return data not obtained")
                 return []
         except Exception as e:
-            logger.error(f"连接Users/Views 出错：" + str(e))
+            logger.error(f" GroutUsers/Views  Make a mistake：" + str(e))
             return []
 
     def get_librarys(self):
         """
-        获取媒体服务器所有媒体库列表
+        Get a list of all media libraries on the media server
         """
         if not self._host or not self._apikey:
             return []
@@ -84,7 +84,7 @@ class Jellyfin(metaclass=Singleton):
 
     def get_user_count(self) -> int:
         """
-        获得用户数量
+        Number of users acquired
         """
         if not self._host or not self._apikey:
             return 0
@@ -94,15 +94,15 @@ class Jellyfin(metaclass=Singleton):
             if res:
                 return len(res.json())
             else:
-                logger.error(f"Users 未获取到返回数据")
+                logger.error(f"Users  Return data not obtained")
                 return 0
         except Exception as e:
-            logger.error(f"连接Users出错：" + str(e))
+            logger.error(f" GroutUsers Make a mistake：" + str(e))
             return 0
 
     def get_user(self, user_name: str = None) -> Optional[Union[str, int]]:
         """
-        获得管理员用户
+        Getting the administrator user
         """
         if not self._host or not self._apikey:
             return None
@@ -111,27 +111,27 @@ class Jellyfin(metaclass=Singleton):
             res = RequestUtils().get_res(req_url)
             if res:
                 users = res.json()
-                # 先查询是否有与当前用户名称匹配的
+                #  First check to see if there is a match to the current user name for the
                 if user_name:
                     for user in users:
                         if user.get("Name") == user_name:
                             return user.get("Id")
-                # 查询管理员
+                #  Query manager
                 for user in users:
                     if user.get("Policy", {}).get("IsAdministrator"):
                         return user.get("Id")
             else:
-                logger.error(f"Users 未获取到返回数据")
+                logger.error(f"Users  Return data not obtained")
         except Exception as e:
-            logger.error(f"连接Users出错：" + str(e))
+            logger.error(f" GroutUsers Make a mistake：" + str(e))
         return None
 
     def authenticate(self, username: str, password: str) -> Optional[str]:
         """
-        用户认证
-        :param username: 用户名
-        :param password: 密码
-        :return: 认证成功返回token，否则返回None
+        User authentication
+        :param username:  User id
+        :param password:  Cryptographic
+        :return:  Authentication success returnstoken， Otherwise, returnNone
         """
         if not self._host or not self._apikey:
             return None
@@ -155,17 +155,17 @@ class Jellyfin(metaclass=Singleton):
             if res:
                 auth_token = res.json().get("AccessToken")
                 if auth_token:
-                    logger.info(f"用户 {username} Jellyfin认证成功")
+                    logger.info(f" Subscribers {username} Jellyfin Certification success")
                     return auth_token
             else:
-                logger.error(f"Users/AuthenticateByName 未获取到返回数据")
+                logger.error(f"Users/AuthenticateByName  Return data not obtained")
         except Exception as e:
-            logger.error(f"连接Users/AuthenticateByName出错：" + str(e))
+            logger.error(f" GroutUsers/AuthenticateByName Make a mistake：" + str(e))
         return None
 
     def get_server_id(self) -> Optional[str]:
         """
-        获得服务器信息
+        Getting server information
         """
         if not self._host or not self._apikey:
             return None
@@ -175,14 +175,14 @@ class Jellyfin(metaclass=Singleton):
             if res:
                 return res.json().get("Id")
             else:
-                logger.error(f"System/Info 未获取到返回数据")
+                logger.error(f"System/Info  Return data not obtained")
         except Exception as e:
-            logger.error(f"连接System/Info出错：" + str(e))
+            logger.error(f" GroutSystem/Info Make a mistake：" + str(e))
         return None
 
     def get_medias_count(self) -> schemas.Statistic:
         """
-        获得电影、电视剧、动漫媒体数量
+        Get the movie、 Dramas、 Number of anime and manga media
         :return: MovieCount SeriesCount SongCount
         """
         if not self._host or not self._apikey:
@@ -198,15 +198,15 @@ class Jellyfin(metaclass=Singleton):
                     episode_count=result.get("EpisodeCount") or 0
                 )
             else:
-                logger.error(f"Items/Counts 未获取到返回数据")
+                logger.error(f"Items/Counts  Return data not obtained")
                 return schemas.Statistic()
         except Exception as e:
-            logger.error(f"连接Items/Counts出错：" + str(e))
+            logger.error(f" GroutItems/Counts Make a mistake：" + str(e))
         return schemas.Statistic()
 
     def __get_jellyfin_series_id_by_name(self, name: str, year: str) -> Optional[str]:
         """
-        根据名称查询Jellyfin中剧集的SeriesId
+        Search by nameJellyfin Mid-episodeSeriesId
         """
         if not self._host or not self._apikey or not self.user:
             return None
@@ -223,7 +223,7 @@ class Jellyfin(metaclass=Singleton):
                                 not year or str(res_item.get('ProductionYear')) == str(year)):
                             return res_item.get('Id')
         except Exception as e:
-            logger.error(f"连接Items出错：" + str(e))
+            logger.error(f" GroutItems Make a mistake：" + str(e))
             return None
         return ""
 
@@ -232,11 +232,11 @@ class Jellyfin(metaclass=Singleton):
                    year: str = None,
                    tmdb_id: int = None) -> Optional[List[schemas.MediaServerItem]]:
         """
-        根据标题和年份，检查电影是否在Jellyfin中存在，存在则返回列表
-        :param title: 标题
-        :param year: 年份，为空则不过滤
+        By title and year， Check if the movie is onJellyfin Exist in， Returns the list if it exists
+        :param title:  Caption
+        :param year:  Particular year， No filtering if empty
         :param tmdb_id: TMDB ID
-        :return: 含title、year属性的字典列表
+        :return:  Suck (keep in your mouth without chewing)title、year Dictionary list of attributes
         """
         if not self._host or not self._apikey or not self.user:
             return None
@@ -275,7 +275,7 @@ class Jellyfin(metaclass=Singleton):
                             ret_movies.append(mediaserver_item)
                     return ret_movies
         except Exception as e:
-            logger.error(f"连接Items出错：" + str(e))
+            logger.error(f" GroutItems Make a mistake：" + str(e))
             return None
         return []
 
@@ -286,24 +286,24 @@ class Jellyfin(metaclass=Singleton):
                         tmdb_id: int = None,
                         season: int = None) -> Tuple[Optional[str], Optional[Dict[int, list]]]:
         """
-        根据标题和年份和季，返回Jellyfin中的剧集列表
-        :param item_id: Jellyfin中的Id
-        :param title: 标题
-        :param year: 年份
+        By title and year and season， Come (or go) backJellyfin List of episodes in
+        :param item_id: Jellyfin Hit the nail on the headId
+        :param title:  Caption
+        :param year:  Particular year
         :param tmdb_id: TMDBID
-        :param season: 季
-        :return: 集号的列表
+        :param season:  Classifier for seasonal crop yield or seasons of a tv series
+        :return:  List of set numbers
         """
         if not self._host or not self._apikey or not self.user:
             return None, None
-        # 查TVID
+        #  Surname zhaTVID
         if not item_id:
             item_id = self.__get_jellyfin_series_id_by_name(title, year)
             if item_id is None:
                 return None, None
             if not item_id:
                 return None, {}
-        # 验证tmdbid是否相同
+        #  Validate (a theory)tmdbid Whether or not the same
         item_info = self.get_iteminfo(item_id)
         if item_info:
             if tmdb_id and item_info.tmdbid:
@@ -318,7 +318,7 @@ class Jellyfin(metaclass=Singleton):
             if res_json:
                 tv_info = res_json.json()
                 res_items = tv_info.get("Items")
-                # 返回的季集信息
+                #  Returned season set information
                 season_episodes = {}
                 for res_item in res_items:
                     season_index = res_item.get("ParentIndexNumber")
@@ -334,16 +334,16 @@ class Jellyfin(metaclass=Singleton):
                     season_episodes[season_index].append(episode_index)
                 return tv_info.get('Id'), season_episodes
         except Exception as e:
-            logger.error(f"连接Shows/Id/Episodes出错：" + str(e))
+            logger.error(f" GroutShows/Id/Episodes Make a mistake：" + str(e))
             return None, None
         return None, {}
 
     def get_remote_image_by_id(self, item_id: str, image_type: str) -> Optional[str]:
         """
-        根据ItemId从Jellyfin查询TMDB图片地址
-        :param item_id: 在Emby中的ID
-        :param image_type: 图片的类弄地，poster或者backdrop等
-        :return: 图片对应在TMDB中的URL
+        According toItemId Through (a gap)Jellyfin Consult (a document etc)TMDB Image address
+        :param item_id:  ExistEmby Hit the nail on the headID
+        :param image_type:  Classes of pictures to get the ground，poster Orbackdrop Et al. (and other authors)
+        :return:  The image corresponds to an image in theTMDB Hit the nail on the headURL
         """
         if not self._host or not self._apikey:
             return None
@@ -356,16 +356,16 @@ class Jellyfin(metaclass=Singleton):
                     if image.get("ProviderName") == "TheMovieDb" and image.get("Type") == image_type:
                         return image.get("Url")
             else:
-                logger.error(f"Items/RemoteImages 未获取到返回数据")
+                logger.error(f"Items/RemoteImages  Return data not obtained")
                 return None
         except Exception as e:
-            logger.error(f"连接Items/Id/RemoteImages出错：" + str(e))
+            logger.error(f" GroutItems/Id/RemoteImages Make a mistake：" + str(e))
             return None
         return None
 
     def refresh_root_library(self) -> bool:
         """
-        通知Jellyfin刷新整个媒体库
+        NotificationsJellyfin Refresh the entire media library
         """
         if not self._host or not self._apikey:
             return False
@@ -375,14 +375,14 @@ class Jellyfin(metaclass=Singleton):
             if res:
                 return True
             else:
-                logger.info(f"刷新媒体库失败，无法连接Jellyfin！")
+                logger.info(f" Failed to refresh media library， ConnectionlessJellyfin！")
         except Exception as e:
-            logger.error(f"连接Library/Refresh出错：" + str(e))
+            logger.error(f" GroutLibrary/Refresh Make a mistake：" + str(e))
             return False
 
     def get_webhook_message(self, body: any) -> Optional[schemas.WebhookEventInfo]:
         """
-        解析Jellyfin报文
+        AnalyzeJellyfin Telegram
         {
           "ServerId": "d79d3a6261614419a114595a585xxxxx",
           "ServerName": "nyanmisaka-jellyfin1",
@@ -391,15 +391,15 @@ class Jellyfin(metaclass=Singleton):
           "NotificationType": "PlaybackStart",
           "Timestamp": "2023-09-10T08:35:25.3996506+00:00",
           "UtcTimestamp": "2023-09-10T08:35:25.3996527Z",
-          "Name": "慕灼华逃婚离开",
-          "Overview": "慕灼华假装在读书，她害怕大娘子说她不务正业。",
+          "Name": " Mucho scorch leaves by running away from the wedding",
+          "Overview": " Mucho pretends to be reading.， She's afraid the first mistress will say she's not doing her job.。",
           "Tagline": "",
           "ItemId": "4b92551344f53b560fb55cd6700xxxxx",
           "ItemType": "Episode",
           "RunTimeTicks": 27074985984,
           "RunTime": "00:45:07",
           "Year": 2023,
-          "SeriesName": "灼灼风流",
+          "SeriesName": " Scorching wind flow (idiom); whirlwind of activity",
           "SeasonNumber": 1,
           "SeasonNumber00": "01",
           "SeasonNumber000": "001",
@@ -448,11 +448,11 @@ class Jellyfin(metaclass=Singleton):
         try:
             message = json.loads(body)
         except Exception as e:
-            logger.debug(f"解析Jellyfin Webhook报文出错：" + str(e))
+            logger.debug(f" AnalyzeJellyfin Webhook Error in telegram：" + str(e))
             return None
         if not message:
             return None
-        logger.info(f"接收到jellyfin webhook：{message}")
+        logger.info(f" Receivejellyfin webhook：{message}")
         eventType = message.get('NotificationType')
         if not eventType:
             return None
@@ -467,7 +467,7 @@ class Jellyfin(metaclass=Singleton):
         eventItem.user_name = message.get('NotificationUsername')
         eventItem.client = message.get('ClientName')
         if message.get("ItemType") == "Episode":
-            # 剧集
+            #  Episode
             eventItem.item_type = "TV"
             eventItem.season_id = message.get('SeasonNumber')
             eventItem.episode_id = message.get('EpisodeNumber')
@@ -477,14 +477,14 @@ class Jellyfin(metaclass=Singleton):
                 "E" + str(eventItem.episode_id),
                 message.get('Name'))
         else:
-            # 电影
+            #  Cinematic
             eventItem.item_type = "MOV"
             eventItem.item_name = "%s %s" % (
                 message.get('Name'), "(" + str(message.get('Year')) + ")")
 
-        # 获取消息图片
+        #  Get message image
         if eventItem.item_id:
-            # 根据返回的item_id去调用媒体服务器获取
+            #  Based on the returneditem_id Go call the media server to get the
             eventItem.image_url = self.get_remote_image_by_id(
                 item_id=eventItem.item_id,
                 image_type="Backdrop"
@@ -494,7 +494,7 @@ class Jellyfin(metaclass=Singleton):
 
     def get_iteminfo(self, itemid: str) -> Optional[schemas.MediaServerItem]:
         """
-        获取单个项目详情
+        Get individual program details
         """
         if not itemid:
             return None
@@ -521,12 +521,12 @@ class Jellyfin(metaclass=Singleton):
                     path=item.get("Path")
                 )
         except Exception as e:
-            logger.error(f"连接Users/Items出错：" + str(e))
+            logger.error(f" GroutUsers/Items Make a mistake：" + str(e))
         return None
 
     def get_items(self, parent: str) -> Generator:
         """
-        获取媒体服务器所有媒体库列表
+        Get a list of all media libraries on the media server
         """
         if not parent:
             yield None
@@ -546,13 +546,13 @@ class Jellyfin(metaclass=Singleton):
                         for item in self.get_items(result.get("Id")):
                             yield item
         except Exception as e:
-            logger.error(f"连接Users/Items出错：" + str(e))
+            logger.error(f" GroutUsers/Items Make a mistake：" + str(e))
         yield None
 
     def get_data(self, url: str) -> Optional[Response]:
         """
-        自定义URL从媒体服务器获取数据，其中[HOST]、[APIKEY]、[USER]会被替换成实际的值
-        :param url: 请求地址
+        CustomizableURL Getting data from the media server， Included among these[HOST]、[APIKEY]、[USER] Will be replaced with the actual value
+        :param url:  Request address
         """
         if not self._host or not self._apikey:
             return None
@@ -562,15 +562,15 @@ class Jellyfin(metaclass=Singleton):
         try:
             return RequestUtils(accept_type="application/json").get_res(url=url)
         except Exception as e:
-            logger.error(f"连接Jellyfin出错：" + str(e))
+            logger.error(f" GroutJellyfin Make a mistake：" + str(e))
             return None
 
     def post_data(self, url: str, data: str = None, headers: dict = None) -> Optional[Response]:
         """
-        自定义URL从媒体服务器获取数据，其中[HOST]、[APIKEY]、[USER]会被替换成实际的值
-        :param url: 请求地址
-        :param data: 请求数据
-        :param headers: 请求头
+        CustomizableURL Getting data from the media server， Included among these[HOST]、[APIKEY]、[USER] Will be replaced with the actual value
+        :param url:  Request address
+        :param data:  Request data
+        :param headers:  Request header
         """
         if not self._host or not self._apikey:
             return None
@@ -582,5 +582,5 @@ class Jellyfin(metaclass=Singleton):
                 headers=headers
             ).post_res(url=url, data=data)
         except Exception as e:
-            logger.error(f"连接Jellyfin出错：" + str(e))
+            logger.error(f" GroutJellyfin Make a mistake：" + str(e))
             return None

@@ -18,7 +18,7 @@ class SystemUtils:
     @staticmethod
     def execute(cmd: str) -> str:
         """
-        执行命令，获得返回结果
+        Execute a command， Getting the return result
         """
         try:
             with os.popen(cmd) as p:
@@ -30,14 +30,14 @@ class SystemUtils:
     @staticmethod
     def is_docker() -> bool:
         """
-        判断是否为Docker环境
+        Determine if theDocker Matrix
         """
         return Path("/.dockerenv").exists()
 
     @staticmethod
     def is_synology() -> bool:
         """
-        判断是否为群晖系统
+        Determining if it is a group sunshine system
         """
         if SystemUtils.is_windows():
             return False
@@ -46,28 +46,28 @@ class SystemUtils:
     @staticmethod
     def is_windows() -> bool:
         """
-        判断是否为Windows系统
+        Determine if theWindows Systems
         """
         return True if os.name == "nt" else False
 
     @staticmethod
     def is_frozen() -> bool:
         """
-        判断是否为冻结的二进制文件
+        Determine if a binary file is frozen
         """
         return True if getattr(sys, 'frozen', False) else False
 
     @staticmethod
     def is_macos() -> bool:
         """
-        判断是否为MacOS系统
+        Determine if theMacOS Systems
         """
         return True if platform.system() == 'Darwin' else False
 
     @staticmethod
     def copy(src: Path, dest: Path) -> Tuple[int, str]:
         """
-        复制
+        Make a copy of
         """
         try:
             shutil.copy2(src, dest)
@@ -79,12 +79,12 @@ class SystemUtils:
     @staticmethod
     def move(src: Path, dest: Path) -> Tuple[int, str]:
         """
-        移动
+        Mobility
         """
         try:
-            # 当前目录改名
+            #  Rename the current directory
             temp = src.replace(src.parent / dest.name)
-            # 移动到目标目录
+            # Mobility到目标目录
             shutil.move(temp, dest)
             return 0, ""
         except Exception as err:
@@ -94,13 +94,13 @@ class SystemUtils:
     @staticmethod
     def link(src: Path, dest: Path) -> Tuple[int, str]:
         """
-        硬链接
+        Hard link
         """
         try:
-            # link到当前目录并改名
+            # link To the current directory and rename it
             tmp_path = src.parent / (dest.name + ".mp")
             tmp_path.hardlink_to(src)
-            # 移动到目标目录
+            # Mobility到目标目录
             shutil.move(tmp_path, dest)
             return 0, ""
         except Exception as err:
@@ -110,7 +110,7 @@ class SystemUtils:
     @staticmethod
     def softlink(src: Path, dest: Path) -> Tuple[int, str]:
         """
-        软链接
+        Soft link (computing)
         """
         try:
             dest.symlink_to(src)
@@ -122,7 +122,7 @@ class SystemUtils:
     @staticmethod
     def rclone_move(src: Path, dest: Path):
         """
-        Rclone移动
+        RcloneMobility
         """
         try:
             retcode = subprocess.run(
@@ -141,7 +141,7 @@ class SystemUtils:
     @staticmethod
     def rclone_copy(src: Path, dest: Path):
         """
-        Rclone复制
+        RcloneMake a copy of
         """
         try:
             retcode = subprocess.run(
@@ -170,7 +170,7 @@ class SystemUtils:
     @staticmethod
     def list_files(directory: Path, extensions: list, min_filesize: int = 0) -> List[Path]:
         """
-        获取目录下所有指定扩展名的文件（包括子目录）
+        Get all files with the specified extension in the directory（ Including subdirectories）
         """
 
         if not min_filesize:
@@ -188,7 +188,7 @@ class SystemUtils:
         files = []
         pattern = r".*(" + "|".join(extensions) + ")$"
 
-        # 遍历目录及子目录
+        #  Iterate through directories and subdirectories
         for path in directory.rglob('**/*'):
             if path.is_file() \
                     and re.match(pattern, path.name, re.IGNORECASE) \
@@ -200,8 +200,8 @@ class SystemUtils:
     @staticmethod
     def exits_files(directory: Path, extensions: list, min_filesize: int = 0) -> bool:
         """
-        判断目录下是否存在指定扩展名的文件
-        :return True存在 False不存在
+        Determines whether a file with the specified extension exists in the directory
+        :return True Remain False Non-existent
         """
 
         if not min_filesize:
@@ -218,7 +218,7 @@ class SystemUtils:
 
         pattern = r".*(" + "|".join(extensions) + ")$"
 
-        # 遍历目录及子目录
+        #  Iterate through directories and subdirectories
         for path in directory.rglob('**/*'):
             if path.is_file() \
                     and re.match(pattern, path.name, re.IGNORECASE) \
@@ -230,7 +230,7 @@ class SystemUtils:
     @staticmethod
     def list_sub_files(directory: Path, extensions: list) -> List[Path]:
         """
-        列出当前目录下的所有指定扩展名的文件(不包括子目录)
+        List all files with the specified extension in the current directory( Excluding subdirectories)
         """
         if not directory.exists():
             return []
@@ -241,7 +241,7 @@ class SystemUtils:
         files = []
         pattern = r".*(" + "|".join(extensions) + ")$"
 
-        # 遍历目录
+        #  Iterate through the catalog
         for path in directory.iterdir():
             if path.is_file() and re.match(pattern, path.name, re.IGNORECASE):
                 files.append(path)
@@ -251,7 +251,7 @@ class SystemUtils:
     @staticmethod
     def list_sub_directory(directory: Path) -> List[Path]:
         """
-        列出当前目录下的所有子目录（不递归）
+        List all subdirectories in the current directory（ Non-recursive）
         """
         if not directory.exists():
             return []
@@ -261,7 +261,7 @@ class SystemUtils:
 
         dirs = []
 
-        # 遍历目录
+        #  Iterate through the catalog
         for path in directory.iterdir():
             if path.is_dir():
                 dirs.append(path)
@@ -271,13 +271,13 @@ class SystemUtils:
     @staticmethod
     def get_directory_size(path: Path) -> float:
         """
-        计算目录的大小
+        Calculating the size of a catalog
 
-        参数:
-            directory_path (Path): 目录路径
+        Parameters:
+            directory_path (Path):  Directory path
 
-        返回:
-            int: 目录的大小（以字节为单位）
+        Come (or go) back:
+            int:  Catalog size（ Byte-based）
         """
         if not path or not path.exists():
             return 0
@@ -293,29 +293,29 @@ class SystemUtils:
     @staticmethod
     def space_usage(dir_list: Union[Path, List[Path]]) -> Tuple[float, float]:
         """
-        计算多个目录的总可用空间/剩余空间（单位：Byte），并去除重复磁盘
+        Calculate total free space for multiple directories/ Headroom（ Work unit (one's workplace)：Byte）， And remove duplicate disks
         """
         if not dir_list:
             return 0.0, 0.0
         if not isinstance(dir_list, list):
             dir_list = [dir_list]
-        # 存储不重复的磁盘
+        #  Storing non-repeatable disks
         disk_set = set()
-        # 存储总剩余空间
+        #  Total remaining storage space
         total_free_space = 0.0
-        # 存储总空间
+        #  Total storage space
         total_space = 0.0
         for dir_path in dir_list:
             if not dir_path:
                 continue
             if not dir_path.exists():
                 continue
-            # 获取目录所在磁盘
+            #  Get the disk where the directory is located
             if os.name == "nt":
                 disk = dir_path.drive
             else:
                 disk = os.stat(dir_path).st_dev
-            # 如果磁盘未出现过，则计算其剩余空间并加入总剩余空间中
+            #  If the disk has not been， Then its remaining space is calculated and added to the total remaining space
             if disk not in disk_set:
                 disk_set.add(disk)
                 total_space += SystemUtils.total_space(dir_path)
@@ -325,7 +325,7 @@ class SystemUtils:
     @staticmethod
     def free_space(path: Path) -> float:
         """
-        获取指定路径的剩余空间（单位：Byte）
+        Get the remaining space of the specified path（ Work unit (one's workplace)：Byte）
         """
         if not os.path.exists(path):
             return 0.0
@@ -334,7 +334,7 @@ class SystemUtils:
     @staticmethod
     def total_space(path: Path) -> float:
         """
-        获取指定路径的总空间（单位：Byte）
+        Get the total space of the specified path（ Work unit (one's workplace)：Byte）
         """
         if not os.path.exists(path):
             return 0.0
@@ -343,7 +343,7 @@ class SystemUtils:
     @staticmethod
     def processes() -> List[schemas.ProcessInfo]:
         """
-        获取所有进程
+        Get all processes
         """
         processes = []
         for proc in psutil.process_iter(['pid', 'name', 'create_time', 'memory_info', 'status']):
@@ -364,11 +364,11 @@ class SystemUtils:
     @staticmethod
     def is_bluray_dir(dir_path: Path) -> bool:
         """
-        判断是否为蓝光原盘目录
+        Determining if a blu-ray disc is an original catalog
         """
-        # 蓝光原盘目录必备的文件或文件夹
+        #  Essential files or folders for blu-ray disc original directory
         required_files = ['BDMV', 'CERTIFICATE']
-        # 检查目录下是否存在所需文件或文件夹
+        #  Check if the required file or folder exists in the directory
         for item in required_files:
             if (dir_path / item).exists():
                 return True
@@ -377,7 +377,7 @@ class SystemUtils:
     @staticmethod
     def get_windows_drives():
         """
-        获取Windows所有盘符
+        GainWindows All disk drives
         """
         vols = []
         for i in range(65, 91):
@@ -389,33 +389,33 @@ class SystemUtils:
     @staticmethod
     def cpu_usage():
         """
-        获取CPU使用率
+        GainCPU Utilization rate
         """
         return psutil.cpu_percent()
 
     @staticmethod
     def memory_usage() -> List[int]:
         """
-        获取内存使用量和使用率
+        Getting memory usage and utilization
         """
         return [psutil.virtual_memory().used, int(psutil.virtual_memory().percent)]
 
     @staticmethod
     def can_restart() -> bool:
         """
-        判断是否可以内部重启
+        Determine if an internal reboot is possible
         """
         return Path("/var/run/docker.sock").exists()
 
     @staticmethod
     def restart() -> Tuple[bool, str]:
         """
-        执行Docker重启操作
+        FulfillmentDocker Reboot operation
         """
         try:
-            # 创建 Docker 客户端
+            #  Establish Docker  Client (computing)
             client = docker.DockerClient(base_url='tcp://127.0.0.1:38379')
-            # 获取当前容器的 ID
+            #  Get the current container's ID
             container_id = None
             with open('/proc/self/mountinfo', 'r') as f:
                 data = f.read()
@@ -431,10 +431,10 @@ class SystemUtils:
                             index_first_slash = data.rfind("/", 0, index_second_slash) + 1
                             container_id = data[index_first_slash:index_second_slash]
             if not container_id:
-                return False, "获取容器ID失败！"
-            # 重启当前容器
+                return False, " Getting the containerID Fail (e.g. experiments)！"
+            #  Restart the current container
             client.containers.get(container_id.strip()).restart()
             return True, ""
         except Exception as err:
             print(str(err))
-            return False, f"重启时发生错误：{str(err)}"
+            return False, f" An error occurred while rebooting：{str(err)}"

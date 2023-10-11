@@ -6,46 +6,46 @@ from app.db.models.site import Site
 
 class SiteOper(DbOper):
     """
-    站点管理
+    Site management
     """
 
     def add(self, **kwargs) -> Tuple[bool, str]:
         """
-        新增站点
+        New sites
         """
         site = Site(**kwargs)
         if not site.get_by_domain(self._db, kwargs.get("domain")):
             site.create(self._db)
-            return True, "新增站点成功"
-        return False, "站点已存在"
+            return True, "New sites成功"
+        return False, " Site already exists"
 
     def get(self, sid: int) -> Site:
         """
-        查询单个站点
+        Querying a single site
         """
         return Site.get(self._db, sid)
 
     def list(self) -> List[Site]:
         """
-        获取站点列表
+        Get site list
         """
         return Site.list(self._db)
 
     def list_active(self) -> List[Site]:
         """
-        按状态获取站点列表
+        按状态Get site list
         """
         return Site.get_actives(self._db)
 
     def delete(self, sid: int):
         """
-        删除站点
+        Delete site
         """
         Site.delete(self._db, sid)
 
     def update(self, sid: int, payload: dict) -> Site:
         """
-        更新站点
+        Updating the site
         """
         site = Site.get(self._db, sid)
         site.update(self._db, payload)
@@ -53,36 +53,36 @@ class SiteOper(DbOper):
 
     def get_by_domain(self, domain: str) -> Site:
         """
-        按域名获取站点
+        Get sites by domain name
         """
         return Site.get_by_domain(self._db, domain)
 
     def exists(self, domain: str) -> bool:
         """
-        判断站点是否存在
+        Determine if a site exists
         """
         return Site.get_by_domain(self._db, domain) is not None
 
     def update_cookie(self, domain: str, cookies: str) -> Tuple[bool, str]:
         """
-        更新站点Cookie
+        Updating the siteCookie
         """
         site = Site.get_by_domain(self._db, domain)
         if not site:
-            return False, "站点不存在"
+            return False, " Site does not exist"
         site.update(self._db, {
             "cookie": cookies
         })
-        return True, "更新站点Cookie成功"
+        return True, "Updating the siteCookie成功"
 
     def update_rss(self, domain: str, rss: str) -> Tuple[bool, str]:
         """
-        更新站点rss
+        Updating the siterss
         """
         site = Site.get_by_domain(self._db, domain)
         if not site:
-            return False, "站点不存在"
+            return False, " Site does not exist"
         site.update(self._db, {
             "rss": rss
         })
-        return True, "更新站点RSS地址成功"
+        return True, "Updating the siteRSS地址成功"

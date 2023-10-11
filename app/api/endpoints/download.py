@@ -16,34 +16,34 @@ from app.schemas import NotExistMediaInfo, MediaType
 router = APIRouter()
 
 
-@router.get("/", summary="正在下载", response_model=List[schemas.DownloadingTorrent])
+@router.get("/", summary=" Downloading", response_model=List[schemas.DownloadingTorrent])
 def read_downloading(
         db: Session = Depends(get_db),
         _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    查询正在下载的任务
+    Query tasks being downloaded
     """
     return DownloadChain(db).downloading()
 
 
-@router.post("/", summary="添加下载", response_model=schemas.Response)
+@router.post("/", summary=" Add download", response_model=schemas.Response)
 def add_downloading(
         media_in: schemas.MediaInfo,
         torrent_in: schemas.TorrentInfo,
         db: Session = Depends(get_db),
         _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    添加下载任务
+    Add download tasks
     """
-    # 元数据
+    #  Metadata
     metainfo = MetaInfo(title=torrent_in.title, subtitle=torrent_in.description)
-    # 媒体信息
+    #  Media information
     mediainfo = MediaInfo()
     mediainfo.from_dict(media_in.dict())
-    # 种子信息
+    #  Seed information
     torrentinfo = TorrentInfo()
     torrentinfo.from_dict(torrent_in.dict())
-    # 上下文
+    #  (textual) context
     context = Context(
         meta_info=metainfo,
         media_info=mediainfo,
@@ -55,14 +55,14 @@ def add_downloading(
     })
 
 
-@router.post("/notexists", summary="查询缺失媒体信息", response_model=List[NotExistMediaInfo])
+@router.post("/notexists", summary=" Query missing media information", response_model=List[NotExistMediaInfo])
 def exists(media_in: schemas.MediaInfo,
            db: Session = Depends(get_db),
            _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    查询缺失媒体信息
+    Query missing media information
     """
-    # 媒体信息
+    #  Media information
     mediainfo = MediaInfo()
     meta = MetaInfo(title=media_in.title)
     if media_in.tmdb_id:
@@ -77,50 +77,50 @@ def exists(media_in: schemas.MediaInfo,
         if context:
             mediainfo = context.media_info
             meta = context.meta_info
-    # 查询缺失信息
+    #  Query missing information
     if not mediainfo or not mediainfo.tmdb_id:
-        raise HTTPException(status_code=404, detail="媒体信息不存在")
+        raise HTTPException(status_code=404, detail=" Media messages do not exist")
     exist_flag, no_exists = DownloadChain(db).get_no_exists_info(meta=meta, mediainfo=mediainfo)
     if mediainfo.type == MediaType.MOVIE:
-        # 电影已存在时返回空列表，存在时返回空对像列表
+        #  Return to empty list when movie already exists， Returns an empty list of images when present
         return [] if exist_flag else [NotExistMediaInfo()]
     elif no_exists and no_exists.get(mediainfo.tmdb_id):
-        # 电视剧返回缺失的剧集
+        #  Tv series returns missing episodes
         return list(no_exists.get(mediainfo.tmdb_id).values())
     return []
 
 
-@router.get("/start/{hashString}", summary="开始任务", response_model=schemas.Response)
+@router.get("/start/{hashString}", summary=" Commencement of mission", response_model=schemas.Response)
 def start_downloading(
         hashString: str,
         db: Session = Depends(get_db),
         _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    开如下载任务
+    Keru download tasks
     """
     ret = DownloadChain(db).set_downloading(hashString, "start")
     return schemas.Response(success=True if ret else False)
 
 
-@router.get("/stop/{hashString}", summary="暂停任务", response_model=schemas.Response)
+@router.get("/stop/{hashString}", summary=" Suspension of the mandate", response_model=schemas.Response)
 def stop_downloading(
         hashString: str,
         db: Session = Depends(get_db),
         _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    控制下载任务
+    Controlling download tasks
     """
     ret = DownloadChain(db).set_downloading(hashString, "stop")
     return schemas.Response(success=True if ret else False)
 
 
-@router.delete("/{hashString}", summary="删除下载任务", response_model=schemas.Response)
+@router.delete("/{hashString}", summary=" Delete download tasks", response_model=schemas.Response)
 def remove_downloading(
         hashString: str,
         db: Session = Depends(get_db),
         _: schemas.TokenPayload = Depends(verify_token)) -> Any:
     """
-    控制下载任务
+    Controlling download tasks
     """
     ret = DownloadChain(db).remove_downloading(hashString)
     return schemas.Response(success=True if ret else False)

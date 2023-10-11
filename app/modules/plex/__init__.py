@@ -23,34 +23,34 @@ class PlexModule(_ModuleBase):
 
     def scheduler_job(self) -> None:
         """
-        定时任务，每10分钟调用一次
+        Timed task， Each10 One call per minute
         """
-        # 定时重连
+        #  Scheduled reconnection
         if not self.plex.is_inactive():
             self.plex.reconnect()
 
     def webhook_parser(self, body: Any, form: Any, args: Any) -> Optional[schemas.WebhookEventInfo]:
         """
-        解析Webhook报文体
-        :param body:  请求体
-        :param form:  请求表单
-        :param args:  请求参数
-        :return: 字典，解析为消息时需要包含：title、text、image
+        AnalyzeWebhook Style of telegram
+        :param body:   Requestor
+        :param form:   Request form
+        :param args:   Request parameters
+        :return:  Dictionaries， Parsing into a message requires the inclusion of the：title、text、image
         """
         return self.plex.get_webhook_message(form)
 
     def media_exists(self, mediainfo: MediaInfo, itemid: str = None) -> Optional[schemas.ExistMediaInfo]:
         """
-        判断媒体文件是否存在
-        :param mediainfo:  识别的媒体信息
-        :param itemid:  媒体服务器ItemID
-        :return: 如不存在返回None，存在时返回信息，包括每季已存在所有集{type: movie/tv, seasons: {season: [episodes]}}
+        Determine if a media file exists
+        :param mediainfo:   Identified media messages
+        :param itemid:   Media serverItemID
+        :return:  Returns if not presentNone， Return information when present， Includes all existing episodes of each season{type: movie/tv, seasons: {season: [episodes]}}
         """
         if mediainfo.type == MediaType.MOVIE:
             if itemid:
                 movie = self.plex.get_iteminfo(itemid)
                 if movie:
-                    logger.info(f"媒体库中已存在：{movie}")
+                    logger.info(f" Already exists in the media library：{movie}")
                     return schemas.ExistMediaInfo(
                         type=MediaType.MOVIE,
                         server="plex",
@@ -61,10 +61,10 @@ class PlexModule(_ModuleBase):
                                           year=mediainfo.year,
                                           tmdb_id=mediainfo.tmdb_id)
             if not movies:
-                logger.info(f"{mediainfo.title_year} 在媒体库中不存在")
+                logger.info(f"{mediainfo.title_year}  Doesn't exist in the media library")
                 return None
             else:
-                logger.info(f"媒体库中已存在：{movies}")
+                logger.info(f" Already exists in the media library：{movies}")
                 return schemas.ExistMediaInfo(
                     type=MediaType.MOVIE,
                     server="plex",
@@ -77,10 +77,10 @@ class PlexModule(_ModuleBase):
                                                      tmdb_id=mediainfo.tmdb_id,
                                                      item_id=itemid)
             if not tvs:
-                logger.info(f"{mediainfo.title_year} 在媒体库中不存在")
+                logger.info(f"{mediainfo.title_year}  Doesn't exist in the media library")
                 return None
             else:
-                logger.info(f"{mediainfo.title_year} 媒体库中已存在：{tvs}")
+                logger.info(f"{mediainfo.title_year}  Already exists in the media library：{tvs}")
                 return schemas.ExistMediaInfo(
                     type=MediaType.TV,
                     seasons=tvs,
@@ -90,10 +90,10 @@ class PlexModule(_ModuleBase):
 
     def refresh_mediaserver(self, mediainfo: MediaInfo, file_path: Path) -> None:
         """
-        刷新媒体库
-        :param mediainfo:  识别的媒体信息
-        :param file_path:  文件路径
-        :return: 成功或失败
+        Refresh media library
+        :param mediainfo:   Identified media messages
+        :param file_path:   File path
+        :return:  Success or failure
         """
         items = [
             schemas.RefreshMediaItem(
@@ -108,7 +108,7 @@ class PlexModule(_ModuleBase):
 
     def media_statistic(self) -> List[schemas.Statistic]:
         """
-        媒体数量统计
+        Statistics on the number of media
         """
         media_statistic = self.plex.get_medias_count()
         media_statistic.user_count = 1
@@ -116,7 +116,7 @@ class PlexModule(_ModuleBase):
 
     def mediaserver_librarys(self, server: str) -> Optional[List[schemas.MediaServerLibrary]]:
         """
-        媒体库列表
+        Media library list
         """
         if server != "plex":
             return None
@@ -124,7 +124,7 @@ class PlexModule(_ModuleBase):
 
     def mediaserver_items(self, server: str, library_id: str) -> Optional[Generator]:
         """
-        媒体库项目列表
+        Media library project list
         """
         if server != "plex":
             return None
@@ -132,7 +132,7 @@ class PlexModule(_ModuleBase):
 
     def mediaserver_iteminfo(self, server: str, item_id: str) -> Optional[schemas.MediaServerItem]:
         """
-        媒体库项目详情
+        Media library project details
         """
         if server != "plex":
             return None
@@ -141,7 +141,7 @@ class PlexModule(_ModuleBase):
     def mediaserver_tv_episodes(self, server: str,
                                 item_id: Union[str, int]) -> Optional[List[schemas.MediaServerSeasonInfo]]:
         """
-        获取剧集信息
+        Get episode information
         """
         if server != "plex":
             return None

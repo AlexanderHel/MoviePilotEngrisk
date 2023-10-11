@@ -29,7 +29,7 @@ class Qbittorrent(metaclass=Singleton):
 
     def is_inactive(self) -> bool:
         """
-        判断是否需要重连
+        Determine if reconnection is required
         """
         if not self._host or not self._port:
             return False
@@ -37,17 +37,17 @@ class Qbittorrent(metaclass=Singleton):
 
     def reconnect(self):
         """
-        重连
+        Reconnect
         """
         self.qbc = self.__login_qbittorrent()
 
     def __login_qbittorrent(self) -> Optional[Client]:
         """
-        连接qbittorrent
-        :return: qbittorrent对象
+        Groutqbittorrent
+        :return: qbittorrent Boyfriend
         """
         try:
-            # 登录
+            #  Log in
             qbt = qbittorrentapi.Client(host=self._host,
                                         port=self._port,
                                         username=self._username,
@@ -57,18 +57,18 @@ class Qbittorrent(metaclass=Singleton):
             try:
                 qbt.auth_log_in()
             except qbittorrentapi.LoginFailed as e:
-                logger.error(f"qbittorrent 登录失败：{e}")
+                logger.error(f"qbittorrent  Login failure：{e}")
             return qbt
         except Exception as err:
-            logger.error(f"qbittorrent 连接出错：{err}")
+            logger.error(f"qbittorrent  Something is wrong with the connection.：{err}")
             return None
 
     def get_torrents(self, ids: Union[str, list] = None,
                      status: Union[str, list] = None,
                      tags: Union[str, list] = None) -> Tuple[List[TorrentDictionary], bool]:
         """
-        获取种子列表
-        return: 种子列表, 是否发生异常
+        Get seed list
+        return:  Seed list,  Whether or not an abnormality occurs
         """
         if not self.qbc:
             return [], True
@@ -86,26 +86,26 @@ class Qbittorrent(metaclass=Singleton):
                 return results, False
             return torrents or [], False
         except Exception as err:
-            logger.error(f"获取种子列表出错：{err}")
+            logger.error(f"Get seed list出错：{err}")
             return [], True
 
     def get_completed_torrents(self, ids: Union[str, list] = None,
                                tags: Union[str, list] = None) -> Optional[List[TorrentDictionary]]:
         """
-        获取已完成的种子
-        return: 种子列表, 如发生异常则返回None
+        Access to completed seeds
+        return:  Seed list,  Returns if an exception occursNone
         """
         if not self.qbc:
             return None
-        # completed会包含移动状态 改为获取seeding状态 包含活动上传, 正在做种, 及强制做种
+        # completed Will contain the movement state  Replace with obtainingseeding State of affairs  Includes event uploads,  It's being planted.,  And compulsory seeding
         torrents, error = self.get_torrents(status=["seeding"], ids=ids, tags=tags)
         return None if error else torrents or []
 
     def get_downloading_torrents(self, ids: Union[str, list] = None,
                                  tags: Union[str, list] = None) -> Optional[List[TorrentDictionary]]:
         """
-        获取正在下载的种子
-        return: 种子列表, 如发生异常则返回None
+        Get the seed being downloaded
+        return:  Seed list,  Returns if an exception occursNone
         """
         if not self.qbc:
             return None
@@ -116,9 +116,9 @@ class Qbittorrent(metaclass=Singleton):
 
     def remove_torrents_tag(self, ids: Union[str, list], tag: Union[str, list]) -> bool:
         """
-        移除种子Tag
-        :param ids: 种子Hash列表
-        :param tag: 标签内容
+        Remove seedsTag
+        :param ids:  TorrentHash Listings
+        :param tag:  Tagged content
         """
         if not self.qbc:
             return False
@@ -126,42 +126,42 @@ class Qbittorrent(metaclass=Singleton):
             self.qbc.torrents_delete_tags(torrent_hashes=ids, tags=tag)
             return True
         except Exception as err:
-            logger.error(f"移除种子Tag出错：{err}")
+            logger.error(f"Remove seedsTag出错：{err}")
             return False
 
     def set_torrents_tag(self, ids: Union[str, list], tags: list):
         """
-        设置种子状态为已整理，以及是否强制做种
+        Set seed status to collated， And whether seeding is mandatory
         """
         if not self.qbc:
             return
         try:
-            # 打标签
+            #  Labeling
             self.qbc.torrents_add_tags(tags=tags, torrent_hashes=ids)
         except Exception as err:
-            logger.error(f"设置种子Tag出错：{err}")
+            logger.error(f" Setting the seedTag Make a mistake：{err}")
 
     def torrents_set_force_start(self, ids: Union[str, list]):
         """
-        设置强制作种
+        Setting up a strong production species
         """
         if not self.qbc:
             return
         try:
             self.qbc.torrents_set_force_start(enable=True, torrent_hashes=ids)
         except Exception as err:
-            logger.error(f"设置强制作种出错：{err}")
+            logger.error(f"Setting up a strong production species出错：{err}")
 
     def __get_last_add_torrentid_by_tag(self, tags: Union[str, list],
                                         status: Union[str, list] = None) -> Optional[str]:
         """
-        根据种子的下载链接获取下载中或暂停的钟子的ID
-        :return: 种子ID
+        According to the download link of the seed to get the download in progress or suspended clock of theID
+        :return:  TorrentID
         """
         try:
             torrents, _ = self.get_torrents(status=status, tags=tags)
         except Exception as err:
-            logger.error(f"获取种子列表出错：{err}")
+            logger.error(f"Get seed list出错：{err}")
             return None
         if torrents:
             return torrents[0].get("hash")
@@ -171,10 +171,10 @@ class Qbittorrent(metaclass=Singleton):
     def get_torrent_id_by_tag(self, tags: Union[str, list],
                               status: Union[str, list] = None) -> Optional[str]:
         """
-        通过标签多次尝试获取刚添加的种子ID，并移除标签
+        Multiple attempts to get the just-added seed by taggingID， And remove the label
         """
         torrent_id = None
-        # QB添加下载后需要时间，重试5次每次等待5秒
+        # QB Takes time after adding downloads， Retry5 Times per wait5 Unit of angle or arc equivalent one sixtieth of a degree
         for i in range(1, 10):
             time.sleep(3)
             torrent_id = self.__get_last_add_torrentid_by_tag(tags=tags,
@@ -196,19 +196,19 @@ class Qbittorrent(metaclass=Singleton):
                     **kwargs
                     ) -> bool:
         """
-        添加种子
-        :param content: 种子urls或文件内容
-        :param is_paused: 添加后暂停
-        :param tag: 标签
-        :param category: 种子分类
-        :param download_dir: 下载路径
-        :param cookie: 站点Cookie用于辅助下载种子
+        Add seeds
+        :param content:  Torrenturls Or the contents of the document
+        :param is_paused:  Pause after adding
+        :param tag:  Tab (of a window) (computing)
+        :param category:  Seed classification
+        :param download_dir:  Download path
+        :param cookie:  WebsiteCookie Used to assist in downloading seeds
         :return: bool
         """
         if not self.qbc or not content:
             return False
 
-        # 下载内容
+        #  Download contents
         if isinstance(content, str):
             urls = content
             torrent_files = None
@@ -216,19 +216,19 @@ class Qbittorrent(metaclass=Singleton):
             urls = None
             torrent_files = content
 
-        # 保存目录
+        #  Save directory
         if download_dir:
             save_path = download_dir
         else:
             save_path = None
 
-        # 标签
+        #  Tab (of a window) (computing)
         if tag:
             tags = tag
         else:
             tags = None
 
-        # 分类自动管理
+        #  Automatic management of classifications
         if category and settings.QB_CATEGORY:
             is_auto = True
         else:
@@ -236,7 +236,7 @@ class Qbittorrent(metaclass=Singleton):
             category = None
 
         try:
-            # 添加下载
+            #  Add download
             qbc_ret = self.qbc.torrents_add(urls=urls,
                                             torrent_files=torrent_files,
                                             save_path=save_path,
@@ -249,12 +249,12 @@ class Qbittorrent(metaclass=Singleton):
                                             **kwargs)
             return True if qbc_ret and str(qbc_ret).find("Ok") != -1 else False
         except Exception as err:
-            logger.error(f"添加种子出错：{err}")
+            logger.error(f"Add seeds出错：{err}")
             return False
 
     def start_torrents(self, ids: Union[str, list]) -> bool:
         """
-        启动种子
+        Seeding
         """
         if not self.qbc:
             return False
@@ -262,12 +262,12 @@ class Qbittorrent(metaclass=Singleton):
             self.qbc.torrents_resume(torrent_hashes=ids)
             return True
         except Exception as err:
-            logger.error(f"启动种子出错：{err}")
+            logger.error(f"Seeding出错：{err}")
             return False
 
     def stop_torrents(self, ids: Union[str, list]) -> bool:
         """
-        暂停种子
+        Suspension of seeds
         """
         if not self.qbc:
             return False
@@ -275,12 +275,12 @@ class Qbittorrent(metaclass=Singleton):
             self.qbc.torrents_pause(torrent_hashes=ids)
             return True
         except Exception as err:
-            logger.error(f"暂停种子出错：{err}")
+            logger.error(f"Suspension of seeds出错：{err}")
             return False
 
     def delete_torrents(self, delete_file: bool, ids: Union[str, list]) -> bool:
         """
-        删除种子
+        Delete seeds
         """
         if not self.qbc:
             return False
@@ -290,24 +290,24 @@ class Qbittorrent(metaclass=Singleton):
             self.qbc.torrents_delete(delete_files=delete_file, torrent_hashes=ids)
             return True
         except Exception as err:
-            logger.error(f"删除种子出错：{err}")
+            logger.error(f"Delete seeds出错：{err}")
             return False
 
     def get_files(self, tid: str) -> Optional[TorrentFilesList]:
         """
-        获取种子文件清单
+        Access to the list of seed files
         """
         if not self.qbc:
             return None
         try:
             return self.qbc.torrents_files(torrent_hash=tid)
         except Exception as err:
-            logger.error(f"获取种子文件列表出错：{err}")
+            logger.error(f" Error getting list of seed files：{err}")
             return None
 
     def set_files(self, **kwargs) -> bool:
         """
-        设置下载文件的状态，priority为0为不下载，priority为1为下载
+        Setting the status of downloaded files，priority Because of0 In order not to download，priority Because of1 Downloads
         """
         if not self.qbc:
             return False
@@ -319,26 +319,26 @@ class Qbittorrent(metaclass=Singleton):
                                             priority=kwargs.get("priority"))
             return True
         except Exception as err:
-            logger.error(f"设置种子文件状态出错：{err}")
+            logger.error(f" Error setting seed file status：{err}")
             return False
 
     def transfer_info(self) -> Optional[TransferInfoDictionary]:
         """
-        获取传输信息
+        Getting transmission information
         """
         if not self.qbc:
             return None
         try:
             return self.qbc.transfer_info()
         except Exception as err:
-            logger.error(f"获取传输信息出错：{err}")
+            logger.error(f"Getting transmission information出错：{err}")
             return None
 
     def set_speed_limit(self, download_limit: float = None, upload_limit: float = None) -> bool:
         """
-        设置速度限制
-        :param download_limit: 下载速度限制，单位KB/s
-        :param upload_limit: 上传速度限制，单位kB/s
+        Setting speed limits
+        :param download_limit:  Download speed limit， Work unit (one's workplace)KB/s
+        :param upload_limit:  Upload speed limit， Work unit (one's workplace)kB/s
         """
         if not self.qbc:
             return False
@@ -349,29 +349,29 @@ class Qbittorrent(metaclass=Singleton):
             self.qbc.transfer.download_limit = int(download_limit)
             return True
         except Exception as err:
-            logger.error(f"设置速度限制出错：{err}")
+            logger.error(f"Setting speed limits出错：{err}")
             return False
 
     def recheck_torrents(self, ids: Union[str, list]):
         """
-        重新校验种子
+        Re-calibrate seeds
         """
         if not self.qbc:
             return False
         try:
             return self.qbc.torrents_recheck(torrent_hashes=ids)
         except Exception as err:
-            logger.error(f"重新校验种子出错：{err}")
+            logger.error(f"Re-calibrate seeds出错：{err}")
             return False
 
     def add_trackers(self, ids: Union[str, list], trackers: list):
         """
-        添加tracker
+        Increasetracker
         """
         if not self.qbc:
             return False
         try:
             return self.qbc.torrents_add_trackers(torrent_hashes=ids, urls=trackers)
         except Exception as err:
-            logger.error(f"添加tracker出错：{err}")
+            logger.error(f"Increasetracker出错：{err}")
             return False

@@ -18,28 +18,28 @@ from app.utils.ip import IpUtils
 
 
 class SpeedLimiter(_PluginBase):
-    # 插件名称
-    plugin_name = "播放限速"
-    # 插件描述
-    plugin_desc = "外网播放媒体库视频时，自动对下载器进行限速。"
-    # 插件图标
+    #  Plug-in name
+    plugin_name = " Playback speed limit"
+    #  Plugin description
+    plugin_desc = " When playing media library videos on the extranet， Automatic speed limiting of downloaders。"
+    #  Plug-in icons
     plugin_icon = "SpeedLimiter.jpg"
-    # 主题色
+    #  Theme color
     plugin_color = "#183883"
-    # 插件版本
+    #  Plug-in version
     plugin_version = "1.0"
-    # 插件作者
+    #  Plug-in authors
     plugin_author = "Shurelol"
-    # 作者主页
+    #  Author's homepage
     author_url = "https://github.com/Shurelol"
-    # 插件配置项ID前缀
+    #  Plug-in configuration itemsID Prefix (linguistics)
     plugin_config_prefix = "speedlimit_"
-    # 加载顺序
+    #  Loading sequence
     plugin_order = 11
-    # 可使用的用户级别
+    #  Available user levels
     auth_level = 1
 
-    # 私有属性
+    #  Private property
     _scheduler = None
     _qb = None
     _tr = None
@@ -55,13 +55,13 @@ class SpeedLimiter(_PluginBase):
     _allocation_ratio: str = ""
     _auto_limit: bool = False
     _limit_enabled: bool = False
-    # 不限速地址
+    #  Unlimited address
     _unlimited_ips = {}
-    # 当前限速状态
+    #  Current speed limit status
     _current_state = ""
 
     def init_plugin(self, config: dict = None):
-        # 读取配置
+        #  Read configuration
         if config:
             self._enabled = config.get("enabled")
             self._notify = config.get("notify")
@@ -71,23 +71,23 @@ class SpeedLimiter(_PluginBase):
             self._noplay_down_speed = float(config.get("noplay_down_speed")) if config.get("noplay_down_speed") else 0
             self._current_state = f"U:{self._noplay_up_speed},D:{self._noplay_down_speed}"
             try:
-                # 总带宽
+                #  Total bandwidth
                 self._bandwidth = int(float(config.get("bandwidth") or 0)) * 1000000
-                # 自动限速开关
+                #  Automatic speed limit switch
                 if self._bandwidth > 0:
                     self._auto_limit = True
                 else:
                     self._auto_limit = False
             except Exception as e:
-                logger.error(f"智能限速上行带宽设置错误：{str(e)}")
+                logger.error(f" Intelligent speed limit uplink bandwidth setting error：{str(e)}")
                 self._bandwidth = 0
 
-            # 限速服务开关
+            #  Speed limit service switch
             self._limit_enabled = True if (self._play_up_speed
                                            or self._play_down_speed
                                            or self._auto_limit) else False
             self._allocation_ratio = config.get("allocation_ratio") or ""
-            # 不限速地址
+            #  Unlimited address
             self._unlimited_ips["ipv4"] = config.get("ipv4") or ""
             self._unlimited_ips["ipv6"] = config.get("ipv6") or ""
 
@@ -98,19 +98,19 @@ class SpeedLimiter(_PluginBase):
                 if 'transmission' in self._downloader:
                     self._tr = Transmission()
 
-        # 移出现有任务
+        #  There's a mission on the horizon.
         self.stop_service()
 
-        # 启动限速任务
+        #  Starting a speed limit task
         if self._enabled and self._limit_enabled:
             self._scheduler = BackgroundScheduler(timezone=settings.TZ)
             self._scheduler.add_job(func=self.check_playing_sessions,
                                     trigger='interval',
                                     seconds=self._interval,
-                                    name="播放限速检查")
+                                    name=" Playback speed limit check")
             self._scheduler.print_jobs()
             self._scheduler.start()
-            logger.info("播放限速检查服务启动")
+            logger.info(" Playback speed limit checking service starts")
 
     def get_state(self) -> bool:
         return self._enabled
@@ -141,7 +141,7 @@ class SpeedLimiter(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'enabled',
-                                            'label': '启用插件',
+                                            'label': ' Enabling plug-ins',
                                         }
                                     }
                                 ]
@@ -157,7 +157,7 @@ class SpeedLimiter(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'notify',
-                                            'label': '发送通知',
+                                            'label': ' Send notification',
                                         }
                                     }
                                 ]
@@ -176,7 +176,7 @@ class SpeedLimiter(_PluginBase):
                                             'chips': True,
                                             'multiple': True,
                                             'model': 'downloader',
-                                            'label': '下载器',
+                                            'label': ' Downloader',
                                             'items': [
                                                 {'title': 'Qbittorrent', 'value': 'qbittorrent'},
                                                 {'title': 'Transmission', 'value': 'transmission'},
@@ -201,7 +201,7 @@ class SpeedLimiter(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'play_up_speed',
-                                            'label': '播放限速（上传）',
+                                            'label': ' Playback speed limit（ Upload）',
                                             'placeholder': 'KB/s'
                                         }
                                     }
@@ -218,7 +218,7 @@ class SpeedLimiter(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'play_down_speed',
-                                            'label': '播放限速（下载）',
+                                            'label': ' Playback speed limit（ Downloading）',
                                             'placeholder': 'KB/s'
                                         }
                                     }
@@ -240,7 +240,7 @@ class SpeedLimiter(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'noplay_up_speed',
-                                            'label': '未播放限速（上传）',
+                                            'label': ' Unplayed speed limit（ Upload）',
                                             'placeholder': 'KB/s'
                                         }
                                     }
@@ -257,7 +257,7 @@ class SpeedLimiter(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'noplay_down_speed',
-                                            'label': '未播放限速（下载）',
+                                            'label': ' Unplayed speed limit（ Downloading）',
                                             'placeholder': 'KB/s'
                                         }
                                     }
@@ -279,7 +279,7 @@ class SpeedLimiter(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'bandwidth',
-                                            'label': '智能限速上行带宽',
+                                            'label': ' Intelligent uplink bandwidth limiting',
                                             'placeholder': 'Mbps'
                                         }
                                     }
@@ -296,9 +296,9 @@ class SpeedLimiter(_PluginBase):
                                         'component': 'VSelect',
                                         'props': {
                                             'model': 'allocation_ratio',
-                                            'label': '智能限速分配比例',
+                                            'label': ' Intelligent speed limit allocation ratio',
                                             'items': [
-                                                {'title': '平均', 'value': ''},
+                                                {'title': ' On average', 'value': ''},
                                                 {'title': '1：9', 'value': '1:9'},
                                                 {'title': '2：8', 'value': '2:8'},
                                                 {'title': '3：7', 'value': '3:7'},
@@ -328,8 +328,8 @@ class SpeedLimiter(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'ipv4',
-                                            'label': '不限速地址范围（ipv4）',
-                                            'placeholder': '留空默认不限速内网ipv4'
+                                            'label': ' Unlimited address range（ipv4）',
+                                            'placeholder': ' Leave the default unlimited speed intranet emptyipv4'
                                         }
                                     }
                                 ]
@@ -345,8 +345,8 @@ class SpeedLimiter(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'ipv6',
-                                            'label': '不限速地址范围（ipv6）',
-                                            'placeholder': '留空默认不限速内网ipv6'
+                                            'label': ' Unlimited address range（ipv6）',
+                                            'placeholder': ' Leave the default unlimited speed intranet emptyipv6'
                                         }
                                     }
                                 ]
@@ -375,7 +375,7 @@ class SpeedLimiter(_PluginBase):
     @eventmanager.register(EventType.WebhookMessage)
     def check_playing_sessions(self, event: Event = None):
         """
-        检查播放会话
+        Check playback sessions
         """
         if not self._qb and not self._tr:
             return
@@ -392,15 +392,15 @@ class SpeedLimiter(_PluginBase):
                 "playback.stop"
             ]:
                 return
-        # 当前播放的总比特率
+        #  Total bitrate of current playback
         total_bit_rate = 0
-        # 媒体服务器类型，多个以,分隔
+        #  Media server type， Many of, Segregation
         if not settings.MEDIASERVER:
             return
         media_servers = settings.MEDIASERVER.split(',')
-        # 查询所有媒体服务器状态
+        #  Query the status of all media servers
         for media_server in media_servers:
-            # 查询播放中会话
+            #  Query playing sessions
             playing_sessions = []
             if media_server == "emby":
                 req_url = "[HOST]emby/Sessions?api_key=[APIKEY]"
@@ -412,16 +412,16 @@ class SpeedLimiter(_PluginBase):
                             if session.get("NowPlayingItem") and not session.get("PlayState", {}).get("IsPaused"):
                                 playing_sessions.append(session)
                 except Exception as e:
-                    logger.error(f"获取Emby播放会话失败：{str(e)}")
+                    logger.error(f" GainEmby Playback session failed：{str(e)}")
                     continue
-                # 计算有效比特率
+                #  Calculating the effective bit rate
                 for session in playing_sessions:
-                    # 设置了不限速范围则判断session ip是否在不限速范围内
+                    #  If the unlimited speed range is set, the judgmentsession ip Whether it is within the unlimited speed limit
                     if self._unlimited_ips["ipv4"] or self._unlimited_ips["ipv6"]:
                         if not self.__allow_access(self._unlimited_ips, session.get("RemoteEndPoint")) \
                                 and session.get("NowPlayingItem", {}).get("MediaType") == "Video":
                             total_bit_rate += int(session.get("NowPlayingItem", {}).get("Bitrate") or 0)
-                    # 未设置不限速范围，则默认不限速内网ip
+                    #  No speed limit set， Then the default unlimited speed intranetip
                     elif not IpUtils.is_private_ip(session.get("RemoteEndPoint")) \
                             and session.get("NowPlayingItem", {}).get("MediaType") == "Video":
                         total_bit_rate += int(session.get("NowPlayingItem", {}).get("Bitrate") or 0)
@@ -435,18 +435,18 @@ class SpeedLimiter(_PluginBase):
                             if session.get("NowPlayingItem") and not session.get("PlayState", {}).get("IsPaused"):
                                 playing_sessions.append(session)
                 except Exception as e:
-                    logger.error(f"获取Jellyfin播放会话失败：{str(e)}")
+                    logger.error(f" GainJellyfin Playback session failed：{str(e)}")
                     continue
-                # 计算有效比特率
+                #  Calculating the effective bit rate
                 for session in playing_sessions:
-                    # 设置了不限速范围则判断session ip是否在不限速范围内
+                    #  If the unlimited speed range is set, the judgmentsession ip Whether it is within the unlimited speed limit
                     if self._unlimited_ips["ipv4"] or self._unlimited_ips["ipv6"]:
                         if not self.__allow_access(self._unlimited_ips, session.get("RemoteEndPoint")) \
                                 and session.get("NowPlayingItem", {}).get("MediaType") == "Video":
                             media_streams = session.get("NowPlayingItem", {}).get("MediaStreams") or []
                             for media_stream in media_streams:
                                 total_bit_rate += int(media_stream.get("BitRate") or 0)
-                    # 未设置不限速范围，则默认不限速内网ip
+                    #  No speed limit set， Then the default unlimited speed intranetip
                     elif not IpUtils.is_private_ip(session.get("RemoteEndPoint")) \
                             and session.get("NowPlayingItem", {}).get("MediaType") == "Video":
                         media_streams = session.get("NowPlayingItem", {}).get("MediaStreams") or []
@@ -463,36 +463,36 @@ class SpeedLimiter(_PluginBase):
                             "bitrate": bitrate,
                             "address": session.player.address
                         })
-                    # 计算有效比特率
+                    #  Calculating the effective bit rate
                     for session in playing_sessions:
-                        # 设置了不限速范围则判断session ip是否在不限速范围内
+                        #  If the unlimited speed range is set, the judgmentsession ip Whether it is within the unlimited speed limit
                         if self._unlimited_ips["ipv4"] or self._unlimited_ips["ipv6"]:
                             if not self.__allow_access(self._unlimited_ips, session.get("address")) \
                                     and session.get("type") == "Video":
                                 total_bit_rate += int(session.get("bitrate") or 0)
-                        # 未设置不限速范围，则默认不限速内网ip
+                        #  No speed limit set， Then the default unlimited speed intranetip
                         elif not IpUtils.is_private_ip(session.get("address")) \
                                 and session.get("type") == "Video":
                             total_bit_rate += int(session.get("bitrate") or 0)
 
         if total_bit_rate:
-            # 开启智能限速计算上传限速
+            #  Enable smart speed limit to calculate upload speed limit
             if self._auto_limit:
                 play_up_speed = self.__calc_limit(total_bit_rate)
             else:
                 play_up_speed = self._play_up_speed
 
-            # 当前正在播放，开始限速
-            self.__set_limiter(limit_type="播放", upload_limit=play_up_speed,
+            #  Currently playing， Start speed limit
+            self.__set_limiter(limit_type=" Playable", upload_limit=play_up_speed,
                                download_limit=self._play_down_speed)
         else:
-            # 当前没有播放，取消限速
-            self.__set_limiter(limit_type="未播放", upload_limit=self._noplay_up_speed,
+            #  Currently not playing， Abolish speed limits
+            self.__set_limiter(limit_type=" Unplayed", upload_limit=self._noplay_up_speed,
                                download_limit=self._noplay_down_speed)
 
     def __calc_limit(self, total_bit_rate: float) -> float:
         """
-        计算智能上传限速
+        Calculate intelligent upload speed limits
         """
         if not self._bandwidth:
             return 10
@@ -500,13 +500,13 @@ class SpeedLimiter(_PluginBase):
 
     def __set_limiter(self, limit_type: str, upload_limit: float, download_limit: float):
         """
-        设置限速
+        Setting speed limit
         """
         if not self._qb and not self._tr:
             return
         state = f"U:{upload_limit},D:{download_limit}"
         if self._current_state == state:
-            # 限速状态没有改变
+            #  No change in speed limit status
             return
         else:
             self._current_state = state
@@ -514,37 +514,37 @@ class SpeedLimiter(_PluginBase):
         try:
             cnt = 0
             for download in self._downloader:
-                if self._auto_limit and limit_type == "播放":
-                    # 开启了播放智能限速
+                if self._auto_limit and limit_type == " Playable":
+                    #  Playback intelligent speed limit is turned on
                     if len(self._downloader) == 1:
-                        # 只有一个下载器
+                        #  There's only one downloader.
                         upload_limit = int(upload_limit)
                     else:
-                        # 多个下载器
+                        #  Multiple downloaders
                         if not self._allocation_ratio:
-                            # 平均
+                            #  On average
                             upload_limit = int(upload_limit / len(self._downloader))
                         else:
-                            # 按比例
+                            #  Sliding scale
                             allocation_count = sum([int(i) for i in self._allocation_ratio.split(":")])
                             upload_limit = int(upload_limit * int(self._allocation_ratio.split(":")[cnt]) / allocation_count)
                             cnt += 1
                 if upload_limit:
-                    text = f"上传：{upload_limit} KB/s"
+                    text = f" Upload：{upload_limit} KB/s"
                 else:
-                    text = f"上传：未限速"
+                    text = f" Upload： Unlimited speed"
                 if download_limit:
-                    text = f"{text}\n下载：{download_limit} KB/s"
+                    text = f"{text}\n Downloading：{download_limit} KB/s"
                 else:
-                    text = f"{text}\n下载：未限速"
+                    text = f"{text}\n Downloading： Unlimited speed"
                 if str(download) == 'qbittorrent':
                     if self._qb:
                         self._qb.set_speed_limit(download_limit=download_limit, upload_limit=upload_limit)
-                        # 发送通知
+                        #  Send notification
                         if self._notify:
-                            title = "【播放限速】"
+                            title = "【 Playback speed limit】"
                             if upload_limit or download_limit:
-                                subtitle = f"Qbittorrent 开始{limit_type}限速"
+                                subtitle = f"Qbittorrent  Commencement{limit_type} Speed limit"
                                 self.post_message(
                                     mtype=NotificationType.MediaServer,
                                     title=title,
@@ -554,16 +554,16 @@ class SpeedLimiter(_PluginBase):
                                 self.post_message(
                                     mtype=NotificationType.MediaServer,
                                     title=title,
-                                    text=f"Qbittorrent 已取消限速"
+                                    text=f"Qbittorrent  The speed limit has been lifted."
                                 )
                 else:
                     if self._tr:
                         self._tr.set_speed_limit(download_limit=download_limit, upload_limit=upload_limit)
-                        # 发送通知
+                        #  Send notification
                         if self._notify:
-                            title = "【播放限速】"
+                            title = "【 Playback speed limit】"
                             if upload_limit or download_limit:
-                                subtitle = f"Transmission 开始{limit_type}限速"
+                                subtitle = f"Transmission  Commencement{limit_type} Speed limit"
                                 self.post_message(
                                     mtype=NotificationType.MediaServer,
                                     title=title,
@@ -573,17 +573,17 @@ class SpeedLimiter(_PluginBase):
                                 self.post_message(
                                     mtype=NotificationType.MediaServer,
                                     title=title,
-                                    text=f"Transmission 已取消限速"
+                                    text=f"Transmission  The speed limit has been lifted."
                                 )
         except Exception as e:
-            logger.error(f"设置限速失败：{str(e)}")
+            logger.error(f"Setting speed limit失败：{str(e)}")
 
     @staticmethod
     def __allow_access(allow_ips: dict, ip: str) -> bool:
         """
-        判断IP是否合法
-        :param allow_ips: 充许的IP范围 {"ipv4":, "ipv6":}
-        :param ip: 需要检查的ip
+        JudgementsIP Legality
+        :param allow_ips:  PermissibleIP Realm {"ipv4":, "ipv6":}
+        :param ip:  Soundip
         """
         if not allow_ips:
             return True
@@ -617,7 +617,7 @@ class SpeedLimiter(_PluginBase):
 
     def stop_service(self):
         """
-        退出插件
+        Exit plugin
         """
         try:
             if self._scheduler:

@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 class TransferTorrent(BaseModel):
     """
-    待转移任务信息
+    Information on tasks to be transferred
     """
     title: Optional[str] = None
     path: Optional[Path] = None
@@ -16,7 +16,7 @@ class TransferTorrent(BaseModel):
 
 class DownloadingTorrent(BaseModel):
     """
-    下载中任务信息
+    Task information in the download
     """
     hash: Optional[str] = None
     title: Optional[str] = None
@@ -33,34 +33,34 @@ class DownloadingTorrent(BaseModel):
 
 class TransferInfo(BaseModel):
     """
-    文件转移结果信息
+    File transfer result information
     """
-    # 是否成功标志
+    #  Success flag
     success: bool = True
-    # 转移⼁路径
+    #  Divert or distract (attention etc)⼁ Trails
     path: Optional[Path] = None
-    # 转移后路径
+    #  Post-transfer path
     target_path: Optional[Path] = None
-    # 是否蓝光原盘
+    #  Whether or not the original blu-ray disc
     is_bluray: Optional[bool] = False
-    # 处理文件数
+    #  Number of documents processed
     file_count: Optional[int] = 0
-    # 处理文件清单
+    #  List of documents processed
     file_list: Optional[list] = []
-    # 目标文件清单
+    #  List of target documents
     file_list_new: Optional[list] = []
-    # 总文件大小
+    #  Total document size
     total_size: Optional[float] = 0
-    # 失败清单
+    #  List of failures
     fail_list: Optional[list] = []
-    # 错误信息
+    #  Error message
     message: Optional[str] = None
 
     def to_dict(self):
         """
-        返回字典
+        Return to dictionary
         """
-        dicts = vars(self).copy()  # 创建一个字典的副本以避免修改原始数据
+        dicts = vars(self).copy()  #  Create a copy of the dictionary to avoid modifying the original data
         dicts["path"] = str(self.path) if self.path else None
         dicts["target_path"] = str(self.target_path) if self.target_path else None
         return dicts
@@ -68,7 +68,7 @@ class TransferInfo(BaseModel):
 
 class EpisodeFormat(BaseModel):
     """
-    剧集自定义识别格式
+    Episode custom recognition format
     """
     format: Optional[str] = None
     detail: Optional[str] = None
