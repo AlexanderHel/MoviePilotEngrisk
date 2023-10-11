@@ -3,7 +3,7 @@ from functools import lru_cache
 from typing import Optional, List
 from urllib.parse import quote
 
-import zhconv
+
 from lxml import etree
 
 from app.core.config import settings
