@@ -32,7 +32,7 @@ class TmdbHelper:
         # APIKEY
         self.tmdb.api_key = settings.TMDB_API_KEY
         #  Language type (in a classification)
-        self.tmdb.language = 'zh'
+        self.tmdb.language = 'en'
         #  Act on behalf of sb. in a responsible position
         self.tmdb.proxies = settings.PROXY
         #  Debug mode
